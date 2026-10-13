@@ -312,9 +312,17 @@ function loop(now) {
   }
   let dt = now - cur.last;
   cur.last = now;
-  // A backgrounded tab, a window that lost focus, or a hitch can hand back one
-  // enormous gap; cap a frame's advance at one tick so playback resumes from
-  // where it paused and never skips the whole run. The cap comes from the core.
+  // Keep a frame's advance within sane bounds. A frame's timestamp can precede
+  // the performance.now() captured when playback started (a real timing quirk,
+  // more likely on a re-run), which would make dt negative; left alone, the
+  // negative time became a huge unsigned value in the core and the run jumped
+  // straight to its end. And a backgrounded tab, a lost focus or a hitch can
+  // hand back one enormous gap. So never go backwards, and never cross more
+  // than one tick in a frame; the cap comes from the core, so no number lives
+  // here. Playback then resumes from where it paused instead of skipping.
+  if (dt < 0) {
+    dt = 0;
+  }
   if (dt > mpt()) {
     dt = mpt();
   }
