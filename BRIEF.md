@@ -74,8 +74,11 @@ and was not built to evade the stop. See `SECOND-ORDER.md` row 16.
 
 - The name. "Packet Alley" is a working title.
 - The roster of levels, their networks, numbers and all text (`data/*.json`),
-  which change without touching a rule. The ten levels and their balance are
-  first-pass and a classroom decides them.
+  which change without touching a rule. The nineteen levels and their balance
+  are first-pass and a classroom decides them. Each teaching chapter has a short
+  intro set and a harder advanced set of three (configure a larger network by
+  click-choice, ramping to one technical finale), added at Sam's request; the
+  map also has an accessibility zoom.
 - Whether to teach students to *carry out* denial of service (the interactive
   attack) by another route than this repo; the watch-only explainer is in.
 

@@ -35,12 +35,21 @@ fn correct() -> Vec<(&'static str, Vec<usize>)> {
         ("address", vec![1]),
         ("hub", vec![1]),
         ("loop", vec![1]),
+        ("crowd", vec![1, 1]),
+        ("backbone", vec![1, 1]),
+        ("floor", vec![1, 1, 1]),
         ("gateway", vec![2]),
         ("route", vec![2]),
         ("ttl", vec![1]),
+        ("point", vec![1, 1]),
+        ("roads", vec![1, 1]),
+        ("across", vec![1, 1, 1]),
         ("arp", vec![1]),
         ("handshake", vec![2, 2]),
         ("transfer", vec![1, 1]),
+        ("window", vec![1, 1]),
+        ("connect", vec![1, 2, 2]),
+        ("reliable", vec![1, 1, 1]),
     ]
 }
 

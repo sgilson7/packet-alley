@@ -18,11 +18,17 @@ level a teaching tool as well (its lesson, a device inspector, a diagnosis of a
 failed run, and a quiz question for a third star); accessible and colour-blind
 friendly throughout; every picture TikZ, after `Sam_Comm_final.png`.
 
-Ten levels, four chapters: Frames on the Block (link layer — addressing,
-hub vs switch, a switching loop), Routes Across Town (network layer — gateway,
-routing table, TTL loop), Handshakes (transport — ARP, the three-way handshake,
-go-back-N on a lossy link), and When Too Much Arrives (availability — one
-watch-only explainer of a server overwhelmed by a flood of ordinary requests).
+Nineteen levels, four chapters. Each teaching chapter now has a short intro set
+and a harder advanced follow-up set of three (configure a larger network by
+click-choice; ramps to one technical finale — SECOND-ORDER row 17). Frames on
+the Block (link layer — addressing, hub vs switch, a switching loop; then
+collision domains, a redundant backbone, a whole segment), Routes Across Town
+(network layer — gateway, routing table, TTL loop; then a junction's two roads
+and a four-router crossing), Handshakes (transport — ARP, the handshake,
+go-back-N; then window/timeout tuning, the handshake across a router, a reliable
+routed transfer), and When Too Much Arrives (availability — one watch-only
+explainer of a server overwhelmed by a flood of ordinary requests). The map also
+has an accessibility zoom (slider + `+`/`−` + reset; SECOND-ORDER row 18).
 
 ## The denial-of-service chapter: what is and is not here
 
@@ -49,6 +55,7 @@ examples — are built.
 | `./scripts/check.sh` (local, three engines) | format, clippy, tests, release WebAssembly build, import audit, browser check in Chromium, Firefox and WebKit: PASS (see below) |
 | `cargo test -p pa_core --test campaign` | every level passes with its intended choices; none passes before a change; the quiz scores |
 | `./scripts/check.sh` final local run | BUILDER CHECK PASSED: browser check in Chromium, Firefox and WebKit |
+| `./scripts/check.sh` after the advanced-mission tier + map zoom | BUILDER CHECK PASSED in Chromium, Firefox and WebKit (19-level campaign probe green; zoom verified by screenshot at 3×) |
 | CI on `main` (Chromium) | check: success, deploy: success |
 | `BUILDER_ORIGIN=https://sgilson7.github.io/packet-alley tests/browser/check.py` | PASSED in Chromium against the live site |
 | Website `make check`, `make packet`, `make gate`, `make deploy` | all passed; the listing is live and filed as a classroom tool |
@@ -56,7 +63,7 @@ examples — are built.
 ## Waiting on the peer / Sam
 
 1. **The name.** "Packet Alley" is a working title.
-2. **The levels and their balance.** Ten levels, their networks, numbers and
+2. **The levels and their balance.** Nineteen levels, their networks, numbers and
    all text are first-pass (`data/levels.json`, `data/copy.json`). One probe
    checks each is winnable with the intended change; a classroom decides the
    rest.

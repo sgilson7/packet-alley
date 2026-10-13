@@ -39,6 +39,11 @@
   "btn_retry": "Change and try again",
   "btn_close": "Close",
   "speed_label": "Speed {a}",
+  "zoom_h": "Map size",
+  "zoom_label": "Map zoom",
+  "zoom_in": "Zoom in",
+  "zoom_out": "Zoom out",
+  "zoom_reset": "Reset size",
 
   "kind_host": "Computer",
   "kind_printer": "Printer",

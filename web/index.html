@@ -132,8 +132,22 @@
 
         <div class="stage">
           <div id="map-wrap" class="map-wrap">
-            <img id="backdrop" class="backdrop" alt="" aria-hidden="true">
-            <svg id="map" class="map" role="img" aria-label="network map"></svg>
+            <div id="map-inner" class="map-inner">
+              <img id="backdrop" class="backdrop" alt="" aria-hidden="true">
+              <svg id="map" class="map" role="img" aria-label="network map"></svg>
+            </div>
+          </div>
+          <!-- Map zoom for accessibility. The slider drives a CSS variable
+               (--zoom) that scales the map and its backdrop together; the
+               wrap scrolls when the map is larger than its frame. Every zoom
+               number lives in HTML attributes and CSS, never in app.js, which
+               only reads the slider's value and calls stepUp()/stepDown(). -->
+          <div id="zoom-row" class="zoom-row">
+            <span id="zoom-h" class="zoom-h"></span>
+            <button id="zoom-out" class="ctl zoom-btn" type="button">&#8722;</button>
+            <input id="zoom" class="zoom-range" type="range" min="1" max="3" step="0.2" value="1">
+            <button id="zoom-in" class="ctl zoom-btn" type="button">&#43;</button>
+            <button id="zoom-reset" class="ctl zoom-btn" type="button"></button>
           </div>
           <div id="hud" class="hud" hidden></div>
           <div id="controls" class="controls" hidden>

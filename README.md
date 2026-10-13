@@ -20,22 +20,35 @@ device inspector that shows what a switch or router actually knows.
 
 ## What it covers
 
-Four chapters, ten levels, roughly one layer of the stack at a time.
+Four chapters, nineteen levels, roughly one layer of the stack at a time. Each
+teaching chapter opens with a set of short, one- or two-choice missions — see
+what happens — and then a tougher follow-up set of three, where you configure a
+whole larger network: more machines, more hops, more decisions, one wrong choice
+anywhere and the goal fails. The difficulty ramps, and only the last mission of
+each chapter gets genuinely technical.
 
 - **Frames on the Block (link layer).** IP and MAC addresses, how a switch
-  learns and a hub does not, collisions, and a switching loop that storms.
+  learns and a hub does not, collisions, and a switching loop that storms — then
+  splitting collision domains across more machines, breaking several loops on a
+  redundant backbone, and commissioning a whole segment at once.
 - **Routes Across Town (network layer).** Gateways, the routing table,
   longest-prefix match, directly-connected blocks, and the TTL that stops a
-  routing loop from lasting forever.
+  routing loop from lasting forever — then pointing two roads apart at a
+  junction and routing a packet, hop by hop, clear across a four-router town.
 - **Handshakes (transport layer).** ARP, the three-way handshake and its
-  acknowledgement numbers, and go-back-N retransmission on a lossy link.
+  acknowledgement numbers, and go-back-N retransmission on a lossy link — then
+  tuning window and timeout for a bigger file, opening a connection across a
+  router, and running a reliable transfer across town over a lossy last mile.
 - **When Too Much Arrives (availability).** One watch-only explainer: a flood
   of ordinary requests overwhelms a single server's link, most are dropped, and
   a question draws out why — and what actually defends against it. See below.
 
-Every packet is labelled with a letter and named in a list beside the map, and
-every map mark is a symbol, so nothing is told apart by colour alone; the status
-colours are the Okabe–Ito set, which stay distinct for colour-blind readers.
+Every choice is a click, never typed text, so no one has to hand-enter an
+address. Every packet is labelled with a letter and named in a list beside the
+map, and every map mark is a symbol, so nothing is told apart by colour alone;
+the status colours are the Okabe–Ito set, which stay distinct for colour-blind
+readers. The map has a zoom slider (with `+`/`−` and reset) and scrolls when
+enlarged, so a crowded network can be read up close; browser zoom works too.
 
 ### Denial of service
 

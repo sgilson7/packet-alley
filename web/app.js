@@ -74,6 +74,14 @@ function mpt() {
   return display.speeds[cur.speedIdx].ms_per_tick;
 }
 
+// Map zoom: the slider's value (a string) becomes the --zoom custom property
+// the stylesheet scales the map by. No number is named here; the slider's
+// range and step live in the HTML, and the buttons nudge it with stepUp and
+// stepDown, which default to one step.
+function applyZoom() {
+  el("map-wrap").style.setProperty("--zoom", el("zoom").value);
+}
+
 function setMode(mode) {
   document.body.dataset.mode = mode;
   el("menu").hidden = mode !== "menu";
@@ -568,6 +576,19 @@ function wire() {
   el("skip-btn").addEventListener("click", skip);
   el("replay-btn").addEventListener("click", replay);
   el("speed-btn").addEventListener("click", cycleSpeed);
+  el("zoom").addEventListener("input", applyZoom);
+  el("zoom-in").addEventListener("click", () => {
+    el("zoom").stepUp();
+    applyZoom();
+  });
+  el("zoom-out").addEventListener("click", () => {
+    el("zoom").stepDown();
+    applyZoom();
+  });
+  el("zoom-reset").addEventListener("click", () => {
+    el("zoom").value = el("zoom").defaultValue;
+    applyZoom();
+  });
   el("teacher").addEventListener("change", (e) => {
     call("set_teacher", e.target.checked);
     store();
@@ -592,6 +613,11 @@ function labels() {
   el("skip-btn").textContent = t("btn_skip");
   el("replay-btn").textContent = t("btn_restart");
   el("speed-btn").textContent = display.speeds[display.default_speed].label;
+  el("zoom-h").textContent = t("zoom_h");
+  el("zoom-reset").textContent = t("zoom_reset");
+  el("zoom-in").setAttribute("aria-label", t("zoom_in"));
+  el("zoom-out").setAttribute("aria-label", t("zoom_out"));
+  el("zoom").setAttribute("aria-label", t("zoom_label"));
 }
 
 function preloadArt() {

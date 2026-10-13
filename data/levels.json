@@ -197,6 +197,236 @@
       "debrief": "That is the whole link layer: addresses, hubs and switches, and loops. Time to leave the block."
     },
     {
+      "id": "crowd",
+      "chapter": "block",
+      "title": "Split the crowd",
+      "story": "The cafe grew. Four registers now share two old boxes on the way to the shop server, and at the lunch rush their sales keep crashing into each other and vanishing. You have two boxes to sort out.",
+      "concept": [
+        "A hub is one shared wire: only one device can talk at a time.",
+        "Two frames arriving together on a hub collide, and both are lost — and the more machines share a hub, the more often that happens.",
+        "A switch gives every machine its own line, so a whole crowd can talk at once without colliding."
+      ],
+      "task": "Decide what each of the two boxes should be, then run it so all four registers get through with no collisions.",
+      "ticks": 40,
+      "nodes": [
+        {"id": "a", "kind": "host", "name": "Register A", "x": 150, "y": 110, "ip": "10.0.0.41/24"},
+        {"id": "b", "kind": "host", "name": "Register B", "x": 150, "y": 250, "ip": "10.0.0.42/24"},
+        {"id": "box1", "kind": "hub", "name": "Front box", "x": 400, "y": 180},
+        {"id": "c", "kind": "host", "name": "Register C", "x": 150, "y": 410, "ip": "10.0.0.43/24"},
+        {"id": "d", "kind": "host", "name": "Register D", "x": 150, "y": 540, "ip": "10.0.0.44/24"},
+        {"id": "box2", "kind": "hub", "name": "Back box", "x": 620, "y": 410},
+        {"id": "srv", "kind": "server", "name": "Shop server", "x": 870, "y": 300, "ip": "10.0.0.30/24"}
+      ],
+      "links": [
+        {"id": "la", "a": "a", "b": "box1"},
+        {"id": "lb", "a": "b", "b": "box1"},
+        {"id": "mid", "a": "box1", "b": "box2"},
+        {"id": "lc", "a": "c", "b": "box2"},
+        {"id": "ld", "a": "d", "b": "box2"},
+        {"id": "up", "a": "box2", "b": "srv"}
+      ],
+      "apps": [
+        {"id": "sa", "kind": "udp", "from": "a", "to": "10.0.0.30", "at": 1, "count": 3, "every": 4, "label": "a sale"},
+        {"id": "sb", "kind": "udp", "from": "b", "to": "10.0.0.30", "at": 2, "count": 3, "every": 4, "label": "a sale"},
+        {"id": "sc", "kind": "udp", "from": "c", "to": "10.0.0.30", "at": 3, "count": 3, "every": 4, "label": "a sale"},
+        {"id": "sd", "kind": "udp", "from": "d", "to": "10.0.0.30", "at": 4, "count": 3, "every": 4, "label": "a sale"}
+      ],
+      "edits": [
+        {
+          "id": "b1",
+          "prompt": "The front box should be:",
+          "target": {"node": "box1", "field": "kind"},
+          "options": [
+            {"label": "A hub (one shared wire)", "value": "hub"},
+            {"label": "A switch (a private line each)", "value": "switch"}
+          ],
+          "start": 0
+        },
+        {
+          "id": "b2",
+          "prompt": "The back box should be:",
+          "target": {"node": "box2", "field": "kind"},
+          "options": [
+            {"label": "A hub (one shared wire)", "value": "hub"},
+            {"label": "A switch (a private line each)", "value": "switch"}
+          ],
+          "start": 0
+        }
+      ],
+      "goal": [
+        {"kind": "no_collisions", "text": "No sale collides with another."},
+        {"kind": "delivered", "app": "sa", "n": 3, "text": "Register A's sales all arrive."},
+        {"kind": "delivered", "app": "sc", "n": 3, "text": "Register C's sales all arrive."}
+      ],
+      "bonus": {"kind": "no_drops", "text": "Nothing is lost anywhere."},
+      "quiz": {
+        "question": "You had four registers this time instead of two. What does adding more machines to a hub do?",
+        "options": [
+          "It makes collisions more likely, because they all share one wire and only one can talk at a time.",
+          "Nothing — a hub gives each machine its own line.",
+          "It speeds the hub up to keep pace."
+        ],
+        "answer": 0,
+        "why": "Every machine on a hub shares the one wire, so the more of them there are, the more often two talk at once and collide. A switch is what lets a crowd grow."
+      },
+      "debrief": "A hub shares one wire among everyone; a switch hands each machine its own. That is why real networks are built from switches. Now about those backup cables the IT crew ran…"
+    },
+    {
+      "id": "backbone",
+      "chapter": "block",
+      "title": "Backup cables everywhere",
+      "story": "To be safe, the crew ran a spare cable beside every link between the shop's switches. Now a single print job multiplies into a storm that circles the backup loops until the lines choke. Every doubled-up cable is a loop waiting to happen.",
+      "concept": [
+        "Two switches joined by two cables make a loop, and a flooded frame rides a loop forever, copying itself.",
+        "Each spare cable here adds its own loop, so each one has to be dealt with.",
+        "Blocking one end of a spare cable breaks that loop while leaving the real path intact — this is what spanning tree does automatically."
+      ],
+      "task": "Block the spare cable at each of the two loops, then run the print job through.",
+      "ticks": 30,
+      "nodes": [
+        {"id": "pc", "kind": "host", "name": "Front desk", "x": 130, "y": 300, "ip": "10.0.0.10/24"},
+        {"id": "sw1", "kind": "switch", "name": "Switch 1", "x": 340, "y": 300},
+        {"id": "sw2", "kind": "switch", "name": "Switch 2", "x": 560, "y": 300},
+        {"id": "sw3", "kind": "switch", "name": "Switch 3", "x": 780, "y": 300},
+        {"id": "prn", "kind": "printer", "name": "Printer", "x": 940, "y": 300, "ip": "10.0.0.20/24"}
+      ],
+      "links": [
+        {"id": "edge", "a": "pc", "b": "sw1"},
+        {"id": "a1", "a": "sw1", "b": "sw2"},
+        {"id": "a2", "a": "sw1", "b": "sw2"},
+        {"id": "b1", "a": "sw2", "b": "sw3"},
+        {"id": "b2", "a": "sw2", "b": "sw3"},
+        {"id": "out", "a": "sw3", "b": "prn"}
+      ],
+      "apps": [
+        {"id": "job", "kind": "udp", "from": "pc", "to": "10.0.0.20", "at": 1, "count": 1, "label": "a print job"}
+      ],
+      "edits": [
+        {
+          "id": "loopa",
+          "prompt": "The spare cable between Switch 1 and Switch 2:",
+          "target": {"node": "sw1", "field": "block"},
+          "options": [
+            {"label": "Leave both cables active", "value": ""},
+            {"label": "Block the spare", "value": "a2"}
+          ],
+          "start": 0
+        },
+        {
+          "id": "loopb",
+          "prompt": "The spare cable between Switch 2 and Switch 3:",
+          "target": {"node": "sw3", "field": "block"},
+          "options": [
+            {"label": "Leave both cables active", "value": ""},
+            {"label": "Block the spare", "value": "b2"}
+          ],
+          "start": 0
+        }
+      ],
+      "goal": [
+        {"kind": "delivered", "app": "job", "n": 1, "text": "The print job reaches the printer."},
+        {"kind": "max_frames", "n": 16, "text": "No more than 16 frames cross a cable (a storm makes far more)."}
+      ],
+      "bonus": {"kind": "no_drops", "text": "Nothing is dropped."},
+      "quiz": {
+        "question": "Why did leaving even one spare cable active still cause a storm?",
+        "options": [
+          "Each pair of cables is its own loop, and one open loop is enough for a flooded frame to circle and multiply forever.",
+          "The printer asked for the job twice.",
+          "Two spare cables cancel each other out, but one does not."
+        ],
+        "answer": 0,
+        "why": "A loop needs no partner to run away: one unbroken loop lets a frame copy itself without end. Every redundant link is its own loop to break."
+      },
+      "debrief": "Redundant cables are good to have — but every one is a loop that must be blocked, which is exactly the job spanning tree does on real switches. Time to wire a whole new floor at once."
+    },
+    {
+      "id": "floor",
+      "chapter": "block",
+      "title": "Open the new floor",
+      "story": "The upstairs floor is being switched on for the first time. Two of its boxes are still cheap hubs, and someone has already run a backup cable between the last two switches. Commission the floor properly: everyone connected, nothing colliding, and no loop left running.",
+      "concept": [
+        "A real segment has to get every part right at once: no shared-wire hubs where machines collide, and no unbroken loop where frames storm.",
+        "Swap each hub for a switch so every machine has its own line.",
+        "Block the one spare cable so the backbone has no loop."
+      ],
+      "task": "Fix both boxes and block the spare cable, then run it: all three machines served, no collisions, no storm.",
+      "ticks": 44,
+      "nodes": [
+        {"id": "h1", "kind": "host", "name": "Desk 1", "x": 140, "y": 130, "ip": "10.0.0.51/24"},
+        {"id": "h2", "kind": "host", "name": "Desk 2", "x": 140, "y": 300, "ip": "10.0.0.52/24"},
+        {"id": "b1", "kind": "hub", "name": "Box 1", "x": 370, "y": 215},
+        {"id": "h3", "kind": "host", "name": "Desk 3", "x": 370, "y": 470, "ip": "10.0.0.53/24"},
+        {"id": "b2", "kind": "hub", "name": "Box 2", "x": 590, "y": 360},
+        {"id": "b3", "kind": "switch", "name": "Backbone switch", "x": 790, "y": 250},
+        {"id": "srv", "kind": "server", "name": "Floor server", "x": 940, "y": 360, "ip": "10.0.0.30/24"}
+      ],
+      "links": [
+        {"id": "l1", "a": "h1", "b": "b1"},
+        {"id": "l2", "a": "h2", "b": "b1"},
+        {"id": "m1", "a": "b1", "b": "b2"},
+        {"id": "l3", "a": "h3", "b": "b2"},
+        {"id": "t1", "a": "b2", "b": "b3"},
+        {"id": "t2", "a": "b2", "b": "b3"},
+        {"id": "up", "a": "b3", "b": "srv"}
+      ],
+      "apps": [
+        {"id": "s1", "kind": "udp", "from": "h1", "to": "10.0.0.30", "at": 1, "count": 3, "every": 2, "label": "a request"},
+        {"id": "s2", "kind": "udp", "from": "h2", "to": "10.0.0.30", "at": 1, "count": 3, "every": 2, "label": "a request"},
+        {"id": "s3", "kind": "udp", "from": "h3", "to": "10.0.0.30", "at": 1, "count": 3, "every": 2, "label": "a request"}
+      ],
+      "edits": [
+        {
+          "id": "box1",
+          "prompt": "Box 1 should be:",
+          "target": {"node": "b1", "field": "kind"},
+          "options": [
+            {"label": "A hub", "value": "hub"},
+            {"label": "A switch", "value": "switch"}
+          ],
+          "start": 0
+        },
+        {
+          "id": "box2",
+          "prompt": "Box 2 should be:",
+          "target": {"node": "b2", "field": "kind"},
+          "options": [
+            {"label": "A hub", "value": "hub"},
+            {"label": "A switch", "value": "switch"}
+          ],
+          "start": 0
+        },
+        {
+          "id": "loop",
+          "prompt": "The spare cable on the backbone:",
+          "target": {"node": "b3", "field": "block"},
+          "options": [
+            {"label": "Leave both cables active", "value": ""},
+            {"label": "Block the spare", "value": "t2"}
+          ],
+          "start": 0
+        }
+      ],
+      "goal": [
+        {"kind": "no_collisions", "text": "No frames collide."},
+        {"kind": "delivered", "app": "s1", "n": 3, "text": "Desk 1 is served."},
+        {"kind": "delivered", "app": "s3", "n": 3, "text": "Desk 3 is served."},
+        {"kind": "max_frames", "n": 90, "text": "No more than 90 frames cross a cable (an unbroken loop makes far more)."}
+      ],
+      "bonus": {"kind": "no_drops", "text": "Nothing is dropped at all."},
+      "quiz": {
+        "question": "A working segment needs both fixes. What is each one guarding against?",
+        "options": [
+          "Switches stop machines colliding on a shared wire; blocking the spare stops frames storming around a loop.",
+          "Both fixes do the same thing, so either alone is enough.",
+          "Switches prevent loops and blocking cables prevents collisions."
+        ],
+        "answer": 0,
+        "why": "They solve different faults: a hub causes collisions because its machines share one wire, and an open loop causes a storm because a frame can circle forever. A healthy segment has neither."
+      },
+      "debrief": "You commissioned a whole segment: switched, loop-free, everyone served. That is the link layer in full. Next chapter, the packets leave the block."
+    },
+    {
       "id": "gateway",
       "chapter": "town",
       "title": "Off the block",
@@ -369,6 +599,236 @@
         "why": "The hop count is the safety net: a misconfigured loop still ends, because every router subtracts one and the packet dies at zero."
       },
       "debrief": "You have moved a packet across town. Now make the delivery reliable."
+    },
+    {
+      "id": "point",
+      "chapter": "town",
+      "title": "Point the way",
+      "story": "The shop is pinging a server two blocks over, with a router at each end and a quiet link between them. The shop PC doesn't know how to leave its own block, and the first router doesn't know where the server's block is. Set them both.",
+      "concept": [
+        "A device reaches its own block directly; for anywhere else it hands the packet to its gateway, which must sit on its own block.",
+        "A router forwards by its table: for each far-off block, the next router toward it.",
+        "Set the hand-off and the signpost, and the packet finds its way."
+      ],
+      "task": "Give the PC its gateway and point the first router toward the server's block, then run the ping.",
+      "ticks": 44,
+      "nodes": [
+        {"id": "pc", "kind": "host", "name": "Shop PC", "x": 130, "y": 300, "ip": "10.0.1.10/24"},
+        {"id": "r1", "kind": "router", "name": "Near router", "x": 380, "y": 300,
+         "ifaces": [{"link": "la", "ip": "10.0.1.1/24"}, {"link": "mid", "ip": "10.0.9.1/30"}]},
+        {"id": "r2", "kind": "router", "name": "Far router", "x": 640, "y": 300,
+         "ifaces": [{"link": "mid", "ip": "10.0.9.2/30"}, {"link": "lc", "ip": "10.0.3.1/24"}],
+         "routes": [{"prefix": "10.0.1.0/24", "via": "10.0.9.1"}]},
+        {"id": "srv", "kind": "server", "name": "River-side server", "x": 900, "y": 300, "ip": "10.0.3.10/24", "gateway": "10.0.3.1"}
+      ],
+      "links": [
+        {"id": "la", "a": "pc", "b": "r1"},
+        {"id": "mid", "a": "r1", "b": "r2"},
+        {"id": "lc", "a": "r2", "b": "srv"}
+      ],
+      "apps": [
+        {"id": "ping", "kind": "ping", "from": "pc", "to": "10.0.3.10", "at": 1, "count": 3, "every": 4}
+      ],
+      "edits": [
+        {
+          "id": "gw",
+          "prompt": "The shop PC's gateway (its way off the block):",
+          "target": {"node": "pc", "field": "gateway"},
+          "options": [
+            {"label": "None set", "value": ""},
+            {"label": "The near router, here on our block (10.0.1.1)", "value": "10.0.1.1"},
+            {"label": "The far router, over the bridge (10.0.3.1)", "value": "10.0.3.1"}
+          ],
+          "start": 0
+        },
+        {
+          "id": "r1route",
+          "prompt": "The near router's signpost for the server's block (10.0.3.0/24):",
+          "target": {"node": "r1", "route": "10.0.3.0/24", "field": "route"},
+          "options": [
+            {"label": "No signpost", "value": ""},
+            {"label": "Toward the far router (10.0.9.2)", "value": "10.0.9.2"},
+            {"label": "Back toward the shop PC (10.0.1.10)", "value": "10.0.1.10"}
+          ],
+          "start": 0
+        }
+      ],
+      "goal": [
+        {"kind": "replies", "app": "ping", "n": 3, "text": "All three pings get a reply."}
+      ],
+      "bonus": {"kind": "no_drops", "text": "No packet is dropped."},
+      "quiz": {
+        "question": "The far router was never given a signpost for the server's block, yet it still delivered there. Why?",
+        "options": [
+          "It is plugged straight into that block, so it is directly connected — no table entry needed.",
+          "The near router told it the way.",
+          "It floods the packet out of every port."
+        ],
+        "answer": 0,
+        "why": "A router always knows the blocks it is wired to. Signposts (routes) are only for blocks it cannot see directly — like the near router needed for the server's block."
+      },
+      "debrief": "A gateway gets a packet off its block; a signpost sends it the right way at each router. Now one router has to tell two roads apart."
+    },
+    {
+      "id": "roads",
+      "chapter": "town",
+      "title": "Two roads out of town",
+      "story": "The junction router has two roads leaving it: one to the market block, one to the harbour block, each with its own server. The shop pings both. Right now the junction has no signposts, so neither ping knows which road to take.",
+      "concept": [
+        "A routing table is a list of signposts: for each destination block, which road leads there.",
+        "Point a block down the wrong road and the packet reaches a router that cannot deliver it — and it is dropped.",
+        "Each block needs its own correct signpost."
+      ],
+      "task": "Point each block down its own road — market to the market router, harbour to the harbour router — then run both pings.",
+      "ticks": 44,
+      "nodes": [
+        {"id": "pc", "kind": "host", "name": "Shop PC", "x": 120, "y": 300, "ip": "10.0.1.10/24", "gateway": "10.0.1.1"},
+        {"id": "r1", "kind": "router", "name": "Junction router", "x": 360, "y": 300,
+         "ifaces": [{"link": "la", "ip": "10.0.1.1/24"}, {"link": "mkt", "ip": "10.0.12.1/30"}, {"link": "hbr", "ip": "10.0.13.1/30"}]},
+        {"id": "r2", "kind": "router", "name": "Market router", "x": 650, "y": 160,
+         "ifaces": [{"link": "mkt", "ip": "10.0.12.2/30"}, {"link": "lb", "ip": "10.0.2.1/24"}],
+         "routes": [{"prefix": "10.0.1.0/24", "via": "10.0.12.1"}]},
+        {"id": "r3", "kind": "router", "name": "Harbour router", "x": 650, "y": 440,
+         "ifaces": [{"link": "hbr", "ip": "10.0.13.2/30"}, {"link": "lc", "ip": "10.0.3.1/24"}],
+         "routes": [{"prefix": "10.0.1.0/24", "via": "10.0.13.1"}]},
+        {"id": "sb", "kind": "server", "name": "Market server", "x": 910, "y": 160, "ip": "10.0.2.10/24", "gateway": "10.0.2.1"},
+        {"id": "sc", "kind": "server", "name": "Harbour server", "x": 910, "y": 440, "ip": "10.0.3.10/24", "gateway": "10.0.3.1"}
+      ],
+      "links": [
+        {"id": "la", "a": "pc", "b": "r1"},
+        {"id": "mkt", "a": "r1", "b": "r2"},
+        {"id": "hbr", "a": "r1", "b": "r3"},
+        {"id": "lb", "a": "r2", "b": "sb"},
+        {"id": "lc", "a": "r3", "b": "sc"}
+      ],
+      "apps": [
+        {"id": "pm", "kind": "ping", "from": "pc", "to": "10.0.2.10", "at": 1, "count": 2, "every": 4},
+        {"id": "ph", "kind": "ping", "from": "pc", "to": "10.0.3.10", "at": 3, "count": 2, "every": 4}
+      ],
+      "edits": [
+        {
+          "id": "tomarket",
+          "prompt": "The junction's signpost for the market block (10.0.2.0/24):",
+          "target": {"node": "r1", "route": "10.0.2.0/24", "field": "route"},
+          "options": [
+            {"label": "No signpost", "value": ""},
+            {"label": "Down the market road (10.0.12.2)", "value": "10.0.12.2"},
+            {"label": "Down the harbour road (10.0.13.2)", "value": "10.0.13.2"}
+          ],
+          "start": 0
+        },
+        {
+          "id": "toharbour",
+          "prompt": "The junction's signpost for the harbour block (10.0.3.0/24):",
+          "target": {"node": "r1", "route": "10.0.3.0/24", "field": "route"},
+          "options": [
+            {"label": "No signpost", "value": ""},
+            {"label": "Down the harbour road (10.0.13.2)", "value": "10.0.13.2"},
+            {"label": "Down the market road (10.0.12.2)", "value": "10.0.12.2"}
+          ],
+          "start": 0
+        }
+      ],
+      "goal": [
+        {"kind": "replies", "app": "pm", "n": 2, "text": "Both market pings get a reply."},
+        {"kind": "replies", "app": "ph", "n": 2, "text": "Both harbour pings get a reply."}
+      ],
+      "bonus": {"kind": "no_drops", "text": "No packet is sent down a dead end."},
+      "quiz": {
+        "question": "What happens if the junction sends the harbour block down the market road?",
+        "options": [
+          "The market router receives it, has no way to the harbour block, and drops it.",
+          "The market router passes it along until it finds the harbour.",
+          "It arrives anyway — any road reaches any block."
+        ],
+        "answer": 0,
+        "why": "A router only knows the blocks it is wired to and the signposts it was given. Sent the wrong way, a packet reaches a router that cannot deliver it, and there the journey ends."
+      },
+      "debrief": "A routing table is just a set of correct signposts, one per destination. For the last trip, you'll set a whole chain of them — and keep the packet alive long enough to arrive."
+    },
+    {
+      "id": "across",
+      "chapter": "town",
+      "title": "Across town",
+      "story": "The longest trip yet: from the shop to a server three routers away. Every router in the chain needs the right signpost, and the packet is leaving with only enough life for two hops — not nearly enough to cross town. This one is the real thing.",
+      "concept": [
+        "A packet crosses one router per hop, and every router subtracts one from its hop count (TTL); at zero it is dropped, so a long trip needs enough hops of life to begin with.",
+        "Every router along the way needs a signpost toward the destination — one missing or wrong signpost strands the packet.",
+        "Set the whole chain, and give the packet the life to reach the end."
+      ],
+      "task": "Give the PC's packets enough hops to survive the trip, and point both near routers toward the server's block. Then run the ping.",
+      "ticks": 60,
+      "nodes": [
+        {"id": "pc", "kind": "host", "name": "Shop PC", "x": 110, "y": 300, "ip": "10.0.1.10/24", "gateway": "10.0.1.1", "ttl": 2},
+        {"id": "r1", "kind": "router", "name": "Router 1", "x": 330, "y": 300,
+         "ifaces": [{"link": "la", "ip": "10.0.1.1/24"}, {"link": "m12", "ip": "10.0.12.1/30"}]},
+        {"id": "r2", "kind": "router", "name": "Router 2", "x": 540, "y": 300,
+         "ifaces": [{"link": "m12", "ip": "10.0.12.2/30"}, {"link": "m23", "ip": "10.0.23.1/30"}],
+         "routes": [{"prefix": "10.0.1.0/24", "via": "10.0.12.1"}]},
+        {"id": "r3", "kind": "router", "name": "Router 3", "x": 750, "y": 300,
+         "ifaces": [{"link": "m23", "ip": "10.0.23.2/30"}, {"link": "lc", "ip": "10.0.3.1/24"}],
+         "routes": [{"prefix": "10.0.1.0/24", "via": "10.0.23.1"}]},
+        {"id": "srv", "kind": "server", "name": "Far-side server", "x": 950, "y": 300, "ip": "10.0.3.10/24", "gateway": "10.0.3.1"}
+      ],
+      "links": [
+        {"id": "la", "a": "pc", "b": "r1"},
+        {"id": "m12", "a": "r1", "b": "r2"},
+        {"id": "m23", "a": "r2", "b": "r3"},
+        {"id": "lc", "a": "r3", "b": "srv"}
+      ],
+      "apps": [
+        {"id": "ping", "kind": "ping", "from": "pc", "to": "10.0.3.10", "at": 1, "count": 3, "every": 5}
+      ],
+      "edits": [
+        {
+          "id": "life",
+          "prompt": "How many hops of life (TTL) each packet leaves with:",
+          "target": {"node": "pc", "field": "ttl"},
+          "options": [
+            {"label": "2 — barely off the block", "value": "2"},
+            {"label": "6 — plenty for the trip", "value": "6"},
+            {"label": "16 — more than enough", "value": "16"}
+          ],
+          "start": 0
+        },
+        {
+          "id": "r1route",
+          "prompt": "Router 1's signpost for the server's block (10.0.3.0/24):",
+          "target": {"node": "r1", "route": "10.0.3.0/24", "field": "route"},
+          "options": [
+            {"label": "No signpost", "value": ""},
+            {"label": "On to Router 2 (10.0.12.2)", "value": "10.0.12.2"},
+            {"label": "Back to the shop PC (10.0.1.10)", "value": "10.0.1.10"}
+          ],
+          "start": 0
+        },
+        {
+          "id": "r2route",
+          "prompt": "Router 2's signpost for the server's block (10.0.3.0/24):",
+          "target": {"node": "r2", "route": "10.0.3.0/24", "field": "route"},
+          "options": [
+            {"label": "No signpost", "value": ""},
+            {"label": "On to Router 3 (10.0.23.2)", "value": "10.0.23.2"},
+            {"label": "Back to Router 1 (10.0.12.1)", "value": "10.0.12.1"}
+          ],
+          "start": 0
+        }
+      ],
+      "goal": [
+        {"kind": "replies", "app": "ping", "n": 3, "text": "All three pings cross town and get a reply."}
+      ],
+      "bonus": {"kind": "no_drops", "text": "No packet runs out of hops or hits a dead end."},
+      "quiz": {
+        "question": "With the signposts all correct, why did the packets still fail until you raised the hop count?",
+        "options": [
+          "Three routers each subtract one, so two hops of life run out before the packet reaches the far side.",
+          "A low hop count makes routers forget their signposts.",
+          "The server ignores packets with a small hop count."
+        ],
+        "answer": 0,
+        "why": "The hop count is a safety limit, not an address. Each of the three routers decrements it; start with only two and the packet dies in transit, however perfect the routes are."
+      },
+      "debrief": "A full routing table, hop by hop, with enough life to arrive — that is how a packet crosses a real network of networks. Next: making the delivery reliable, not just possible."
     },
     {
       "id": "arp",
@@ -554,6 +1014,230 @@
         "why": "Go-back-N resends everything from the oldest unacknowledged segment onward, since the receiver dropped the ones that arrived out of order."
       },
       "debrief": "You have carried data from a single wire to a reliable stream across town. That is TCP/IP."
+    },
+    {
+      "id": "window",
+      "chapter": "wires",
+      "title": "Tune the window",
+      "story": "A customer is downloading an eight-part catalogue, but the line to the server drops a frame now and then. Sending one part at a time is painfully slow; firing all eight at once means re-sending a whole pile whenever one goes missing. Find the balance that gets it done in time.",
+      "concept": [
+        "The window is how many parts may be in flight before any are acknowledged — a bigger window keeps the line busier.",
+        "On a loss, go-back-N resends everything from the oldest unacknowledged part, so too large a window wastes effort when the link is lossy.",
+        "The timeout must be long enough not to resend a part that was only delayed, short enough to recover quickly when one is truly lost."
+      ],
+      "task": "Choose a window and a timeout that get all eight parts across within the time limit, then run it.",
+      "ticks": 160,
+      "seed": 3,
+      "nodes": [
+        {"id": "pc", "kind": "host", "name": "Customer PC", "x": 180, "y": 300, "ip": "10.0.0.10/24"},
+        {"id": "sw", "kind": "switch", "name": "Switch", "x": 500, "y": 300},
+        {"id": "srv", "kind": "server", "name": "Catalogue server", "x": 820, "y": 300, "ip": "10.0.0.80/24"}
+      ],
+      "links": [
+        {"id": "a", "a": "pc", "b": "sw"},
+        {"id": "b", "a": "sw", "b": "srv", "lose_every": 3}
+      ],
+      "apps": [
+        {"id": "dl", "kind": "bulk", "from": "pc", "to": "10.0.0.80", "at": 1, "count": 8, "window": 1, "rto": 14, "label": "part"}
+      ],
+      "edits": [
+        {
+          "id": "win",
+          "prompt": "How many parts in flight at once (the window)?",
+          "target": {"app": "dl", "field": "window"},
+          "options": [
+            {"label": "1 (one at a time)", "value": "1"},
+            {"label": "4", "value": "4"},
+            {"label": "8 (all at once)", "value": "8"}
+          ],
+          "start": 0
+        },
+        {
+          "id": "to",
+          "prompt": "How long to wait before resending (the timeout)?",
+          "target": {"app": "dl", "field": "rto"},
+          "options": [
+            {"label": "4 ticks", "value": "4"},
+            {"label": "8 ticks", "value": "8"},
+            {"label": "14 ticks", "value": "14"}
+          ],
+          "start": 2
+        }
+      ],
+      "goal": [
+        {"kind": "transfer", "app": "dl", "text": "All eight parts arrive, in order."},
+        {"kind": "max_ticks", "n": 70, "text": "The download finishes within 70 ticks."}
+      ],
+      "bonus": {"kind": "max_retransmits", "n": 10, "text": "No more than 10 parts have to be resent."},
+      "quiz": {
+        "question": "Why can firing all eight parts at once actually be slower here than sending four?",
+        "options": [
+          "When a part is lost, go-back-N resends it and everything after it, so a larger window means a bigger pile to resend on each loss.",
+          "The server can only hold one part at a time.",
+          "Eight parts always collide with each other."
+        ],
+        "answer": 0,
+        "why": "A window keeps the line busy, but on a lossy link every loss forces a resend of the whole run behind it. The sweet spot keeps the pipe full without making each loss expensive."
+      },
+      "debrief": "Window and timeout together decide how fast — and how wastefully — a transfer copes with loss. Next, open the connection the data rides on, over a longer path."
+    },
+    {
+      "id": "connect",
+      "chapter": "wires",
+      "title": "Open across town",
+      "story": "The customer's browser is opening a connection to a web server on another block, through a router in between. The three-step handshake works just the same across networks — as long as it is aimed at the right place and the steps are right.",
+      "concept": [
+        "A connection opens with three messages: the client's SYN, the server's SYN-ACK, and the client's ACK.",
+        "The acknowledgement names the next number expected — one past what was heard.",
+        "None of this changes across a router: the handshake is end to end, so it only needs the right destination and the right steps."
+      ],
+      "task": "Aim the connection at the web server and set the first and third messages, then run it.",
+      "ticks": 50,
+      "nodes": [
+        {"id": "pc", "kind": "host", "name": "Customer PC", "x": 140, "y": 300, "ip": "10.0.1.10/24", "gateway": "10.0.1.1"},
+        {"id": "r", "kind": "router", "name": "Block router", "x": 500, "y": 300,
+         "ifaces": [{"link": "la", "ip": "10.0.1.1/24"}, {"link": "lb", "ip": "10.0.2.1/24"}]},
+        {"id": "srv", "kind": "server", "name": "Web server", "x": 860, "y": 300, "ip": "10.0.2.80/24", "gateway": "10.0.2.1"}
+      ],
+      "links": [
+        {"id": "la", "a": "pc", "b": "r"},
+        {"id": "lb", "a": "r", "b": "srv"}
+      ],
+      "apps": [
+        {"id": "conn", "kind": "tcp", "from": "pc", "to": "10.0.1.10", "at": 1, "first_flags": "ACK", "third_ack": "x+1", "retry": 7, "tries": 3, "label": "the page"}
+      ],
+      "edits": [
+        {
+          "id": "dest",
+          "prompt": "Where is the connection aimed?",
+          "target": {"app": "conn", "field": "to"},
+          "options": [
+            {"label": "At itself (10.0.1.10)", "value": "10.0.1.10"},
+            {"label": "At the web server, over the router (10.0.2.80)", "value": "10.0.2.80"},
+            {"label": "At 10.0.2.99 (nobody)", "value": "10.0.2.99"}
+          ],
+          "start": 0
+        },
+        {
+          "id": "first",
+          "prompt": "The PC's first message:",
+          "target": {"app": "conn", "field": "first_flags"},
+          "options": [
+            {"label": "ACK", "value": "ACK"},
+            {"label": "SYN-ACK", "value": "SYN-ACK"},
+            {"label": "SYN", "value": "SYN"}
+          ],
+          "start": 0
+        },
+        {
+          "id": "third",
+          "prompt": "What the PC's third message acknowledges:",
+          "target": {"app": "conn", "field": "third_ack"},
+          "options": [
+            {"label": "x + 1 (its own number)", "value": "x+1"},
+            {"label": "y (the server's number)", "value": "y"},
+            {"label": "y + 1 (the server's number, plus one)", "value": "y+1"}
+          ],
+          "start": 0
+        }
+      ],
+      "goal": [
+        {"kind": "served", "app": "conn", "n": 1, "text": "The connection opens and the page comes back."}
+      ],
+      "bonus": {"kind": "no_drops", "text": "The server never has to reset the connection."},
+      "quiz": {
+        "question": "The server sat on a different block, reached through a router. How did that change the handshake?",
+        "options": [
+          "Not at all — TCP runs end to end, so the three steps are the same however many routers sit between.",
+          "The router had to complete its own handshake first.",
+          "The ACK had to name the router's number instead of the server's."
+        ],
+        "answer": 0,
+        "why": "Routers forward packets; they do not take part in the connection. The handshake is strictly between the two ends, so crossing a network changes nothing about it."
+      },
+      "debrief": "A connection opens the same across town as across the room. For the last test, carry a real transfer over that distance — on a line that loses frames."
+    },
+    {
+      "id": "reliable",
+      "chapter": "wires",
+      "title": "Reliable across town",
+      "story": "The final delivery: an eight-part file from a server three blocks away, over a last stretch of line that keeps dropping frames. You must point the packets the right way, and tune the transfer so it finishes in time without drowning the lossy link in re-sends.",
+      "concept": [
+        "Reliability and routing work together: the route decides where the parts go, the window and timeout decide how well they survive a lossy link.",
+        "A missing signpost strands the transfer no matter how well it is tuned.",
+        "Over a lossy link, the window must be large enough to keep moving but small enough that each loss is cheap to recover."
+      ],
+      "task": "Point the first router toward the server, then choose a window and timeout that finish the transfer in time. Run it.",
+      "ticks": 200,
+      "seed": 3,
+      "nodes": [
+        {"id": "pc", "kind": "host", "name": "Office PC", "x": 120, "y": 300, "ip": "10.0.1.10/24", "gateway": "10.0.1.1"},
+        {"id": "r1", "kind": "router", "name": "Router 1", "x": 350, "y": 300,
+         "ifaces": [{"link": "la", "ip": "10.0.1.1/24"}, {"link": "mid", "ip": "10.0.9.1/30"}]},
+        {"id": "r2", "kind": "router", "name": "Router 2", "x": 610, "y": 300,
+         "ifaces": [{"link": "mid", "ip": "10.0.9.2/30"}, {"link": "lc", "ip": "10.0.3.1/24"}],
+         "routes": [{"prefix": "10.0.1.0/24", "via": "10.0.9.1"}]},
+        {"id": "srv", "kind": "server", "name": "Archive server", "x": 900, "y": 300, "ip": "10.0.3.80/24", "gateway": "10.0.3.1"}
+      ],
+      "links": [
+        {"id": "la", "a": "pc", "b": "r1"},
+        {"id": "mid", "a": "r1", "b": "r2"},
+        {"id": "lc", "a": "r2", "b": "srv", "lose_every": 3}
+      ],
+      "apps": [
+        {"id": "dl", "kind": "bulk", "from": "pc", "to": "10.0.3.80", "at": 1, "count": 8, "window": 1, "rto": 16, "label": "part"}
+      ],
+      "edits": [
+        {
+          "id": "r1route",
+          "prompt": "Router 1's signpost for the server's block (10.0.3.0/24):",
+          "target": {"node": "r1", "route": "10.0.3.0/24", "field": "route"},
+          "options": [
+            {"label": "No signpost", "value": ""},
+            {"label": "On to Router 2 (10.0.9.2)", "value": "10.0.9.2"},
+            {"label": "Back to the office PC (10.0.1.10)", "value": "10.0.1.10"}
+          ],
+          "start": 0
+        },
+        {
+          "id": "win",
+          "prompt": "How many parts in flight at once (the window)?",
+          "target": {"app": "dl", "field": "window"},
+          "options": [
+            {"label": "1 (one at a time)", "value": "1"},
+            {"label": "4", "value": "4"},
+            {"label": "8 (all at once)", "value": "8"}
+          ],
+          "start": 0
+        },
+        {
+          "id": "to",
+          "prompt": "How long to wait before resending (the timeout)?",
+          "target": {"app": "dl", "field": "rto"},
+          "options": [
+            {"label": "4 ticks", "value": "4"},
+            {"label": "10 ticks", "value": "10"},
+            {"label": "16 ticks", "value": "16"}
+          ],
+          "start": 2
+        }
+      ],
+      "goal": [
+        {"kind": "transfer", "app": "dl", "text": "All eight parts arrive across town, in order."},
+        {"kind": "max_ticks", "n": 110, "text": "The transfer finishes within 110 ticks."}
+      ],
+      "bonus": {"kind": "max_retransmits", "n": 12, "text": "No more than 12 parts have to be resent."},
+      "quiz": {
+        "question": "Why does this transfer need both the right route and the right window — neither alone?",
+        "options": [
+          "The route decides whether the parts reach the server at all; the window and timeout decide whether they get there in time over the lossy last link.",
+          "The route sets the speed and the window sets the direction.",
+          "Either one fixes everything; two settings are just a safety margin."
+        ],
+        "answer": 0,
+        "why": "Routing is about reachability, reliability is about coping with loss. Get the signpost wrong and nothing arrives; get the window wrong and it arrives too slowly. A real transfer needs both."
+      },
+      "debrief": "Routed across three blocks and tuned to survive a lossy link, your file arrived whole and in order. That is the internet doing its everyday job."
     },
     {
       "id": "flood",

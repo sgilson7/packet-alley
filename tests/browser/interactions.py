@@ -34,8 +34,8 @@ def run(page, check, engine):
     page.wait_for_selector("body[data-mode='menu']", state="attached", timeout=10000)
     check(page.inner_text("#brand") == COPY["title"], "the title is drawn")
     check(page.locator("#chapters .chapter").count() == 4, "four chapters are shown")
-    check(page.locator(".level-card").count() == 10, "ten levels are listed")
-    check(page.locator(".level-card.locked").count() == 9, "nine levels start locked")
+    check(page.locator(".level-card").count() == 19, "nineteen levels are listed")
+    check(page.locator(".level-card.locked").count() == 18, "all but the first level start locked")
     check(images_loaded(page, "#menu"), "the menu art loaded")
 
     # open the first level
@@ -80,4 +80,4 @@ def run(page, check, engine):
     page.reload()
     page.wait_for_selector("body[data-mode='menu']", state="attached", timeout=10000)
     check(page.locator(".level-card .stars .full").count() >= 2, "the earned stars survive a reload")
-    check(page.locator(".level-card.locked").count() == 8, "passing the first level unlocked the second")
+    check(page.locator(".level-card.locked").count() == 17, "passing the first level unlocked the second")
