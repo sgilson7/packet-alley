@@ -11,6 +11,7 @@ const el = (id) => document.getElementById(id);
 let game = null;
 let copy = {};
 let display = { speeds: [], default_speed: 0 };
+let rafId = 0;
 const cur = { view: null, result: null, playing: false, ms: 0, last: 0, speedIdx: 0, logCount: 0, ran: false };
 
 function t(key) {
@@ -285,21 +286,38 @@ function runLevel() {
   setPlay(true);
 }
 
+// Only ever one animation loop is in flight: a stored handle lets a new run,
+// a replay or a play/pause cancel the previous one instead of stacking loops.
+function stopLoop() {
+  if (rafId) {
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
+}
+
 function setPlay(on) {
   cur.playing = on;
   el("play-btn").textContent = t(on ? "btn_pause" : "btn_play");
+  stopLoop();
   if (on) {
     cur.last = performance.now();
-    requestAnimationFrame(loop);
+    rafId = requestAnimationFrame(loop);
   }
 }
 
 function loop(now) {
+  rafId = 0;
   if (!cur.playing) {
     return;
   }
-  const dt = now - cur.last;
+  let dt = now - cur.last;
   cur.last = now;
+  // A backgrounded tab, a window that lost focus, or a hitch can hand back one
+  // enormous gap; cap a frame's advance at one tick so playback resumes from
+  // where it paused and never skips the whole run. The cap comes from the core.
+  if (dt > mpt()) {
+    dt = mpt();
+  }
   cur.ms += dt;
   drawFrame();
 }
@@ -317,7 +335,7 @@ function drawFrame() {
     el("play-btn").textContent = t("btn_play");
     showResults();
   } else if (cur.playing) {
-    requestAnimationFrame(loop);
+    rafId = requestAnimationFrame(loop);
   }
 }
 
@@ -357,6 +375,7 @@ function appendLog(f) {
 }
 
 function skip() {
+  stopLoop();
   cur.ms = (cur.result.ticks + 1) * mpt();
   cur.playing = false;
   drawFrame();
