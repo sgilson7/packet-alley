@@ -39,9 +39,10 @@ the peer's other two examples — are built.
 | `cargo test --workspace` | 24 unit tests, 11 boundary tests, 4-test level probe: all pass |
 | `./scripts/check.sh` (local, three engines) | format, clippy, tests, release WebAssembly build, import audit, browser check in Chromium, Firefox and WebKit: PASS (see below) |
 | `cargo test -p pa_core --test campaign` | every level passes with its intended choices; none passes before a change; the quiz scores |
-
-(Filled from the final local run and CI in the table above's "live" rows once
-deployed.)
+| `./scripts/check.sh` final local run | BUILDER CHECK PASSED: browser check in Chromium, Firefox and WebKit |
+| CI on `main` (Chromium) | check: success, deploy: success |
+| `BUILDER_ORIGIN=https://sgilson7.github.io/packet-alley tests/browser/check.py` | PASSED in Chromium against the live site |
+| Website `make check`, `make packet`, `make gate`, `make deploy` | all passed; the listing is live and filed as a classroom tool |
 
 ## Waiting on the peer / Sam
 
