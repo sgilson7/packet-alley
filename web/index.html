@@ -12,6 +12,85 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body data-ready="false" data-mode="loading">
+  <!-- Packet glyphs. Each type is told apart four ways, none of them colour
+       alone: a distinct outline shape, a fill pattern that survives greyscale,
+       a letter, and a colour. app.js references these by id with <use>; the
+       map and the legend draw the very same glyph, so they always agree. All
+       geometry lives here (the page JavaScript holds no number but 0 and 1). -->
+  <svg id="glyphs" width="0" height="0" aria-hidden="true" focusable="false">
+    <defs>
+      <pattern id="pat-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <rect width="7" height="7" fill="none"></rect>
+        <line x1="0" y1="0" x2="0" y2="7" stroke="#1c1020" stroke-width="3" stroke-opacity="0.42"></line>
+      </pattern>
+      <pattern id="pat-dots" width="8" height="8" patternUnits="userSpaceOnUse">
+        <circle cx="2.5" cy="2.5" r="1.7" fill="#1c1020" fill-opacity="0.5"></circle>
+      </pattern>
+      <pattern id="pat-grid" width="9" height="9" patternUnits="userSpaceOnUse">
+        <rect x="0" y="0" width="4.5" height="4.5" fill="#1c1020" fill-opacity="0.34"></rect>
+        <rect x="4.5" y="4.5" width="4.5" height="4.5" fill="#1c1020" fill-opacity="0.34"></rect>
+      </pattern>
+
+      <!-- glyph bodies, centred on (0,0); used directly on the map -->
+      <g id="pkt-data">
+        <circle r="19" fill="#0072b2" stroke="#2a1830" stroke-width="3"></circle>
+        <text class="pkt-letter" x="0" y="1">D</text>
+      </g>
+      <g id="pkt-ping">
+        <polygon points="0,-20 18,14 -18,14" fill="#56b4e9" stroke="#2a1830" stroke-width="3" stroke-linejoin="round"></polygon>
+        <text class="pkt-letter" x="0" y="6">P</text>
+      </g>
+      <g id="pkt-reply">
+        <polygon points="0,20 18,-14 -18,-14" fill="#009e73" stroke="#2a1830" stroke-width="3" stroke-linejoin="round"></polygon>
+        <text class="pkt-letter" x="0" y="-5">R</text>
+      </g>
+      <g id="pkt-broadcast">
+        <polygon points="0,-21 21,0 0,21 -21,0" fill="#e69f00" stroke="#2a1830" stroke-width="3" stroke-linejoin="round"></polygon>
+        <polygon points="0,-21 21,0 0,21 -21,0" fill="url(#pat-grid)"></polygon>
+        <text class="pkt-letter" x="0" y="1">B</text>
+      </g>
+      <g id="pkt-arp">
+        <polygon points="0,-20 19,-6 12,19 -12,19 -19,-6" fill="#cc79a7" stroke="#2a1830" stroke-width="3" stroke-linejoin="round"></polygon>
+        <polygon points="0,-20 19,-6 12,19 -12,19 -19,-6" fill="url(#pat-dots)"></polygon>
+        <text class="pkt-letter" x="0" y="3">A</text>
+      </g>
+      <g id="pkt-syn">
+        <polygon points="-17,-15 5,-15 20,0 5,15 -17,15" fill="#d55e00" stroke="#2a1830" stroke-width="3" stroke-linejoin="round"></polygon>
+        <text class="pkt-letter" x="-1" y="1">S</text>
+      </g>
+      <g id="pkt-synack">
+        <polygon points="-17,-15 5,-15 20,0 5,15 -17,15" fill="#f0e442" stroke="#2a1830" stroke-width="3" stroke-linejoin="round"></polygon>
+        <polygon points="-17,-15 5,-15 20,0 5,15 -17,15" fill="url(#pat-hatch)"></polygon>
+        <text class="pkt-letter pkt-letter--sm" x="-1" y="1">SA</text>
+      </g>
+      <g id="pkt-ack">
+        <rect x="-17" y="-17" width="34" height="34" rx="4" fill="#7a6a74" stroke="#2a1830" stroke-width="3"></rect>
+        <text class="pkt-letter" x="0" y="1">K</text>
+      </g>
+      <g id="pkt-seg">
+        <polygon points="0,-21 18,-10 18,11 0,21 -18,11 -18,-10" fill="#0072b2" stroke="#2a1830" stroke-width="3" stroke-linejoin="round"></polygon>
+        <polygon points="0,-21 18,-10 18,11 0,21 -18,11 -18,-10" fill="url(#pat-hatch)"></polygon>
+        <text class="pkt-letter" x="0" y="1">G</text>
+      </g>
+      <g id="pkt-rst">
+        <polygon points="8,-20 20,-8 20,8 8,20 -8,20 -20,8 -20,-8 -8,-20" fill="#2a1830" stroke="#2a1830" stroke-width="3" stroke-linejoin="round"></polygon>
+        <text class="pkt-letter pkt-letter--light" x="0" y="1">X</text>
+      </g>
+
+      <!-- the same glyphs wrapped with a viewBox, for the legend chips -->
+      <symbol id="pkt-sym-data" viewBox="-23 -23 46 46"><use href="#pkt-data"></use></symbol>
+      <symbol id="pkt-sym-ping" viewBox="-23 -23 46 46"><use href="#pkt-ping"></use></symbol>
+      <symbol id="pkt-sym-reply" viewBox="-23 -23 46 46"><use href="#pkt-reply"></use></symbol>
+      <symbol id="pkt-sym-broadcast" viewBox="-23 -23 46 46"><use href="#pkt-broadcast"></use></symbol>
+      <symbol id="pkt-sym-arp" viewBox="-23 -23 46 46"><use href="#pkt-arp"></use></symbol>
+      <symbol id="pkt-sym-syn" viewBox="-23 -23 46 46"><use href="#pkt-syn"></use></symbol>
+      <symbol id="pkt-sym-synack" viewBox="-23 -23 46 46"><use href="#pkt-synack"></use></symbol>
+      <symbol id="pkt-sym-ack" viewBox="-23 -23 46 46"><use href="#pkt-ack"></use></symbol>
+      <symbol id="pkt-sym-seg" viewBox="-23 -23 46 46"><use href="#pkt-seg"></use></symbol>
+      <symbol id="pkt-sym-rst" viewBox="-23 -23 46 46"><use href="#pkt-rst"></use></symbol>
+    </defs>
+  </svg>
+
   <header id="topbar">
     <button id="home-btn" class="ghost" type="button" hidden>&#8592; Levels</button>
     <h1 id="brand">Packet Alley</h1>

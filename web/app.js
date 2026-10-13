@@ -250,7 +250,8 @@ function renderLegend(v) {
   clear(box);
   for (const p of v.legend) {
     const item = tag("span", "item");
-    const chip = tag("span", "chip " + p.cls, p.letter);
+    const chip = svg("svg", { class: "chip-svg", role: "img", "aria-label": p.name });
+    chip.appendChild(svg("use", { href: "#pkt-sym-" + p.cls }));
     item.appendChild(chip);
     item.appendChild(tag("span", null, p.name));
     box.appendChild(item);
@@ -317,10 +318,7 @@ function renderPackets(f) {
   clear(pk);
   for (const p of f.packets) {
     const g = svg("g", { class: "pkt " + p.cls, transform: "translate(" + p.x + "," + p.y + ")" });
-    g.appendChild(svg("circle", { cx: 0, cy: 0 }));
-    const txt = svg("text", { x: 0, y: 0 });
-    txt.textContent = p.letter;
-    g.appendChild(txt);
+    g.appendChild(svg("use", { href: "#pkt-" + p.cls }));
     g.addEventListener("click", () => inspectPacket(p.id));
     pk.appendChild(g);
   }

@@ -157,7 +157,7 @@
 
   "how_title": "How to read the map",
   "how_1": "Devices sit on the map. Lines between them are cables. Click a device to see what it knows.",
-  "how_2": "When you run a level, packets ride along the cables. Each packet shows a letter for what it is; the list beside the map names them. Nothing is told apart by colour alone.",
+  "how_2": "When you run a level, packets ride along the cables. Each packet has its own shape, pattern and letter for what it is; the list beside the map names them. Nothing is told apart by colour alone.",
   "how_3": "A ✓ is a delivery, an ✕ is a loss, a ✻ is a collision. The log on the right lists every step in words.",
   "how_4": "Click a moving packet to open it up, header by header, from the frame to the IP packet to the TCP segment inside.",
   "how_5": "Make the changes the level offers, run it, and watch. Pass the goal to unlock the next level and answer one question for a third star.",

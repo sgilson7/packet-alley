@@ -25,22 +25,26 @@
   --bad: var(--oi-verm);
   --warn: var(--oi-orange);
 
-  /* packet classes (chosen for distinct luminance; the letter is the real
-     label) */
+  /* Packet types. Each differs four ways — shape, fill pattern, letter and
+     colour — so none rests on colour alone (see the glyphs in index.html).
+     Colours are the Okabe–Ito set; data and seg share the "payload" blue on
+     purpose and are told apart by shape (circle vs hexagon), pattern and
+     letter. */
   --p-data: var(--oi-blue);
   --p-ping: var(--oi-sky);
   --p-reply: var(--oi-green);
   --p-broadcast: var(--oi-orange);
   --p-arp: var(--oi-purple);
   --p-syn: var(--oi-verm);
-  --p-synack: var(--oi-orange);
+  --p-synack: var(--oi-yellow);
   --p-ack: var(--muted);
   --p-seg: var(--oi-blue);
-  --p-rst: #000000;
+  --p-rst: #2a1830;
 }
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
+#glyphs { position: absolute; width: 0; height: 0; overflow: hidden; }
 html, body { margin: 0; }
 body {
   background:
@@ -142,23 +146,19 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .cable.blocked { stroke: var(--muted); stroke-dasharray: 10 10; opacity: 0.6; }
 .cable.lossy { stroke-dasharray: 16 8; }
 
-.pkt circle { stroke: var(--ink); stroke-width: 3px; }
-.pkt text { font-size: 22px; font-weight: 800; text-anchor: middle; dominant-baseline: central; fill: #fff; paint-order: stroke; stroke: rgba(0,0,0,0.35); stroke-width: 3px; }
-.pkt.light text { fill: var(--ink); stroke: rgba(255,255,255,0.6); }
+/* Packets are glyphs defined once in index.html (shape + pattern + colour +
+   letter) and placed on the map with <use>. The letter is dark with a white
+   halo, so it stays readable over any fill, light or dark. */
 .pkt { cursor: pointer; }
-.pkt.data circle { fill: var(--p-data); }
-.pkt.ping circle { fill: var(--p-ping); }
-.pkt.reply circle { fill: var(--p-reply); }
-.pkt.broadcast circle { fill: var(--p-broadcast); }
-.pkt.arp circle { fill: var(--p-arp); }
-.pkt.syn circle { fill: var(--p-syn); }
-.pkt.synack circle { fill: var(--p-synack); }
-.pkt.ack circle { fill: var(--p-ack); }
-.pkt.seg circle { fill: var(--p-seg); }
-.pkt.rst circle { fill: var(--p-rst); }
-/* a second shape cue so the class does not rest on colour: broadcasts and
-   resets are diamonds, replies/acks are squares, the rest circles */
-.pkt.broadcast circle, .pkt.rst circle, .pkt.arp circle { rx: 6px; }
+.pkt-letter {
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-weight: 800; font-size: 21px;
+  text-anchor: middle; dominant-baseline: central;
+  fill: var(--ink); stroke: #fff; stroke-width: 3.5px;
+  paint-order: stroke; pointer-events: none;
+}
+.pkt-letter--sm { font-size: 15px; letter-spacing: -0.5px; }
+.pkt-letter--light { fill: #fff; stroke: #2a1830; stroke-width: 3.5px; }
 
 .fx text { font-size: 34px; font-weight: 800; text-anchor: middle; dominant-baseline: central; paint-order: stroke; stroke: #fff; stroke-width: 5px; }
 .fx.deliver text { fill: var(--good); }
@@ -175,10 +175,8 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .legend-row { margin-top: 14px; }
 .legend-row h3, .log-wrap h3 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); margin: 10px 0 6px; }
 .legend { display: flex; flex-wrap: wrap; gap: 8px 14px; }
-.legend .item { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; }
-.legend .chip { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--ink); display: inline-grid; place-items: center; color: #fff; font-weight: 800; font-size: 0.8rem; }
-.legend .chip.diamond { border-radius: 4px; transform: rotate(45deg); }
-.legend .chip.diamond span { transform: rotate(-45deg); }
+.legend .item { display: inline-flex; align-items: center; gap: 7px; font-size: 0.85rem; }
+.legend .chip-svg { width: 30px; height: 30px; flex: 0 0 auto; overflow: visible; }
 
 .log { max-height: 220px; overflow-y: auto; background: var(--panel); border: 2px solid var(--line); border-radius: 10px; padding: 8px 10px 8px 28px; font-size: 0.9rem; }
 .log li { margin: 2px 0; }
