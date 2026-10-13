@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Reference default. connect-src 'self' keeps every fetch on this origin;
+       'wasm-unsafe-eval' lets the page compile its own WebAssembly module;
+       form-action 'none' blocks form posts. The simulated network is values
+       in the core and cannot reach a real one. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Packet Alley</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-ready="false" data-mode="loading">
+  <header id="topbar">
+    <button id="home-btn" class="ghost" type="button" hidden>&#8592; Levels</button>
+    <h1 id="brand">Packet Alley</h1>
+    <div class="spacer"></div>
+    <span id="star-count" class="star-count"></span>
+    <button id="how-btn" class="ghost" type="button">How to read the map</button>
+  </header>
+
+  <main id="main">
+    <!-- menu: chapters and levels -->
+    <section id="menu" class="screen" hidden>
+      <p id="menu-intro" class="intro"></p>
+      <div id="chapters"></div>
+      <div class="menu-foot">
+        <label class="switch"><input id="teacher" type="checkbox"> <span id="teacher-label"></span></label>
+        <button id="reset-btn" class="ghost danger" type="button"></button>
+      </div>
+    </section>
+
+    <!-- level: brief + map -->
+    <section id="level" class="screen" hidden>
+      <div class="level-grid">
+        <aside id="brief" class="brief">
+          <p id="l-chapter" class="eyebrow"></p>
+          <h2 id="l-title"></h2>
+          <p id="l-story"></p>
+          <h3 id="task-h"></h3>
+          <p id="l-task"></p>
+          <h3 id="concept-h"></h3>
+          <ul id="l-concept"></ul>
+          <h3 id="goals-h"></h3>
+          <ul id="l-goals" class="goals"></ul>
+          <p id="l-bonus" class="bonus"></p>
+          <div id="l-edits" class="edits"></div>
+          <div class="run-row">
+            <button id="run-btn" class="primary" type="button"></button>
+          </div>
+        </aside>
+
+        <div class="stage">
+          <div id="map-wrap" class="map-wrap">
+            <img id="backdrop" class="backdrop" alt="" aria-hidden="true">
+            <svg id="map" class="map" role="img" aria-label="network map"></svg>
+          </div>
+          <div id="hud" class="hud" hidden></div>
+          <div id="controls" class="controls" hidden>
+            <button id="play-btn" class="ctl" type="button"></button>
+            <button id="speed-btn" class="ctl" type="button"></button>
+            <button id="skip-btn" class="ctl" type="button"></button>
+            <button id="replay-btn" class="ctl" type="button"></button>
+          </div>
+          <div class="legend-row">
+            <h3 id="legend-h"></h3>
+            <div id="legend" class="legend"></div>
+          </div>
+          <div class="log-wrap">
+            <h3 id="log-h"></h3>
+            <ol id="log" class="log" aria-live="polite"></ol>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- overlays -->
+  <div id="overlay" class="overlay" hidden>
+    <div class="sheet" role="dialog" aria-modal="true">
+      <button id="overlay-close" class="sheet-close ghost" type="button" aria-label="Close">&#10005;</button>
+      <div id="overlay-body"></div>
+    </div>
+  </div>
+
+  <p id="message" class="message" role="status"></p>
+  <noscript><p class="message">Packet Alley needs JavaScript and WebAssembly.</p></noscript>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,771 @@
+\documentclass[tikz,border=0pt]{standalone}
+\usepackage{xcolor}
+\usetikzlibrary{calc}
+% Palette: Sam_Comm_final.png by eye, and the drones and raiders.
+\definecolor{ink}{HTML}{3B2340}
+\definecolor{sky}{HTML}{EFC46A}
+\definecolor{skyhi}{HTML}{F5DA92}
+\definecolor{skylow}{HTML}{E9B060}
+\definecolor{cloud}{HTML}{F2D58A}
+\definecolor{paper}{HTML}{FBEFD0}
+\definecolor{cream}{HTML}{FFF6E0}
+\definecolor{white}{HTML}{FFFFFF}
+\definecolor{wallA}{HTML}{E88A73}
+\definecolor{wallB}{HTML}{EE9F7E}
+\definecolor{wallC}{HTML}{E47A7E}
+\definecolor{wallD}{HTML}{F0B07E}
+\definecolor{wallE}{HTML}{D9765F}
+\definecolor{wallF}{HTML}{E99A8A}
+\definecolor{greenA}{HTML}{8DBB7E}
+\definecolor{greenB}{HTML}{6FA77A}
+\definecolor{greenC}{HTML}{A9C97F}
+\definecolor{greenD}{HTML}{5E9C6A}
+\definecolor{greenE}{HTML}{4A8060}
+\definecolor{sage}{HTML}{9DB98A}
+\definecolor{sagedark}{HTML}{6F8F66}
+\definecolor{sagelight}{HTML}{C2D6A6}
+\definecolor{window}{HTML}{F6E7A0}
+\definecolor{windark}{HTML}{8C5A64}
+\definecolor{metal}{HTML}{8D9A93}
+\definecolor{metaldark}{HTML}{5E6B66}
+\definecolor{metallight}{HTML}{B9C4BC}
+\definecolor{wood}{HTML}{B9835A}
+\definecolor{wooddark}{HTML}{8C5A3C}
+\definecolor{woodlight}{HTML}{D9A66F}
+\definecolor{stone}{HTML}{E7C9A0}
+\definecolor{stonedark}{HTML}{C9A47E}
+\definecolor{concrete}{HTML}{D8C3A4}
+\definecolor{concretedark}{HTML}{B8A084}
+\definecolor{asphalt}{HTML}{8E7A86}
+\definecolor{asphaltdark}{HTML}{6E5C68}
+\definecolor{roadline}{HTML}{F6E7A0}
+\definecolor{kerb}{HTML}{D8B48C}
+\definecolor{red}{HTML}{E0483E}
+\definecolor{redlight}{HTML}{F27A6A}
+\definecolor{gold}{HTML}{FFB000}
+\definecolor{goldlight}{HTML}{FFD54F}
+\definecolor{teal}{HTML}{4FA3A0}
+\definecolor{tealdark}{HTML}{3C8582}
+\definecolor{magenta}{HTML}{FF2E88}
+\definecolor{cyan}{HTML}{13CFE3}
+\definecolor{violet}{HTML}{8A5BD6}
+\definecolor{orange}{HTML}{F2803A}
+\definecolor{pink}{HTML}{F48FB1}
+\definecolor{glow}{HTML}{4FE6E0}
+\definecolor{glowhi}{HTML}{C8FFF9}
+\definecolor{hot}{HTML}{FF6A1A}
+\definecolor{hothi}{HTML}{FFD07A}
+\definecolor{armour}{HTML}{7E7A86}
+\definecolor{armourdark}{HTML}{5A5466}
+\definecolor{armourlight}{HTML}{A8A2B0}
+\definecolor{wasp}{HTML}{E0A82E}
+\definecolor{waspdark}{HTML}{B07E1A}
+\definecolor{moth}{HTML}{F2E6C8}
+\definecolor{mothdark}{HTML}{D2C09A}
+\definecolor{hornet}{HTML}{3C8582}
+\definecolor{hornetdark}{HTML}{2C6260}
+\definecolor{warden}{HTML}{E47A7E}
+\definecolor{wardendark}{HTML}{B85A62}
+\definecolor{tick}{HTML}{8DBB7E}
+\definecolor{tickdark}{HTML}{5E8A5A}
+\definecolor{strider}{HTML}{D9765F}
+\definecolor{striderdark}{HTML}{A8543F}
+\definecolor{queen}{HTML}{7E5C94}
+\definecolor{queendark}{HTML}{4C3A60}
+\definecolor{jacket}{HTML}{6FA77A}
+\definecolor{jacketb}{HTML}{4FA3A0}
+\definecolor{jacketc}{HTML}{E88A73}
+\definecolor{jacketd}{HTML}{F0B07E}
+\definecolor{skin}{HTML}{F2C49A}
+\definecolor{skinb}{HTML}{C98C6A}
+\definecolor{skinc}{HTML}{8C5A3C}
+\definecolor{hair}{HTML}{3B2340}
+\definecolor{goo}{HTML}{B6E35A}
+\definecolor{goodark}{HTML}{7FB23A}
+\definecolor{melee}{HTML}{E0483E}
+\definecolor{meleesoft}{HTML}{F6B3A4}
+\definecolor{magic}{HTML}{8A5BD6}
+\definecolor{magicsoft}{HTML}{CDB6F0}
+\definecolor{ranged}{HTML}{2F9A8A}
+\definecolor{rangedsoft}{HTML}{A6DCCF}
+\definecolor{chum}{HTML}{6FB07A}
+\definecolor{chumdark}{HTML}{4E8A5E}
+\definecolor{chumlight}{HTML}{A8D49A}
+\definecolor{poodle}{HTML}{F6DDB0}
+\definecolor{poodledark}{HTML}{E2BF86}
+\definecolor{hairA}{HTML}{3B2340}
+\definecolor{hairB}{HTML}{6E3F2C}
+\definecolor{hairC}{HTML}{C9C2CF}
+\definecolor{hairD}{HTML}{D9A04A}
+\definecolor{lips}{HTML}{C25A5A}
+\definecolor{pteal}{HTML}{3FA9A4}
+\definecolor{pcoral}{HTML}{EE7A62}
+\definecolor{pgold}{HTML}{F2B632}
+\definecolor{pviolet}{HTML}{8E6AD0}
+\definecolor{hubgrey}{HTML}{B3ACA6}
+\definecolor{hubgreydark}{HTML}{8A827D}
+\definecolor{brick}{HTML}{D0694F}
+\definecolor{brickdark}{HTML}{A84C3A}
+\definecolor{mortar}{HTML}{EFD8B8}
+\definecolor{noodle}{HTML}{F4D27A}
+\definecolor{broth}{HTML}{E8A55A}
+\definecolor{bowl}{HTML}{F4F0E6}
+\definecolor{oiorange}{HTML}{E69F00}
+\definecolor{oisky}{HTML}{56B4E9}
+\definecolor{oigreen}{HTML}{009E73}
+\definecolor{oiyellow}{HTML}{F0E442}
+\definecolor{oiblue}{HTML}{0072B2}
+\definecolor{oiverm}{HTML}{D55E00}
+\definecolor{oipurple}{HTML}{CC79A7}
+\definecolor{dusk}{HTML}{C9A8D8}
+\definecolor{duskhi}{HTML}{E7D3E6}
+\definecolor{dusklow}{HTML}{F2B48A}
+\definecolor{duskwall}{HTML}{B88AA6}
+\newcommand{\Ink}{1.15pt}
+\tikzset{inked/.style={draw=ink, line width=\Ink, line join=round, line cap=round}}
+\begin{document}
+\begin{tikzpicture}
+\clip (0,0) rectangle (20,11.25);
+\fill[sky] (0,0) rectangle (20,11.25);
+\fill[skyhi] (0,8.775) rectangle (20,11.25);
+\fill[skylow] (0,0) rectangle (20,3.375);
+\filldraw[inked,fill=cloud] (0.85,10.3) circle (0.413);
+\filldraw[inked,fill=cloud] (1.263,10.488) circle (0.525);
+\filldraw[inked,fill=cloud] (1.75,10.562) circle (0.6);
+\filldraw[inked,fill=cloud] (2.237,10.413) circle (0.45);
+\filldraw[inked,fill=cloud] (2.613,10.263) circle (0.338);
+\fill[cloud] (0.85,10.188) rectangle (2.613,10.338);
+\draw[ink, line width=1.15pt, line cap=round] (0.663,10.188) -- (2.8,10.188);
+\filldraw[inked,fill=cloud] (5.25,9.2) circle (0.303);
+\filldraw[inked,fill=cloud] (5.553,9.337) circle (0.385);
+\filldraw[inked,fill=cloud] (5.91,9.393) circle (0.44);
+\filldraw[inked,fill=cloud] (6.268,9.282) circle (0.33);
+\filldraw[inked,fill=cloud] (6.543,9.172) circle (0.248);
+\fill[cloud] (5.25,9.117) rectangle (6.543,9.227);
+\draw[ink, line width=1.15pt, line cap=round] (5.112,9.117) -- (6.68,9.117);
+\filldraw[inked,fill=cloud] (12,10.4) circle (0.44);
+\filldraw[inked,fill=cloud] (12.44,10.6) circle (0.56);
+\filldraw[inked,fill=cloud] (12.96,10.68) circle (0.64);
+\filldraw[inked,fill=cloud] (13.48,10.52) circle (0.48);
+\filldraw[inked,fill=cloud] (13.88,10.36) circle (0.36);
+\fill[cloud] (12,10.28) rectangle (13.88,10.44);
+\draw[ink, line width=1.15pt, line cap=round] (11.8,10.28) -- (14.08,10.28);
+\filldraw[inked,fill=cloud] (17.6,10.6) circle (0.33);
+\filldraw[inked,fill=cloud] (17.93,10.75) circle (0.42);
+\filldraw[inked,fill=cloud] (18.32,10.81) circle (0.48);
+\filldraw[inked,fill=cloud] (18.71,10.69) circle (0.36);
+\filldraw[inked,fill=cloud] (19.01,10.57) circle (0.27);
+\fill[cloud] (17.6,10.51) rectangle (19.01,10.63);
+\draw[ink, line width=1.15pt, line cap=round] (17.45,10.51) -- (19.16,10.51);
+\begin{scope}\clip (8,12.25) -- (21,12.25) -- (21,-1) -- (-1,-1) -- (-1,7.6) -- (8,7.6) -- cycle;
+\begin{scope}[shift={(7.75,3.6)}, rotate=0, xscale=0.85, yscale=0.85]
+\filldraw[inked,fill=chum] (1.05,3.2) -- (0.6,5.85) -- (2.35,4.6) -- cycle;
+\filldraw[inked,fill=chumdark] (1.25,3.6) -- (0.95,5.25) -- (2,4.5) -- cycle;
+\filldraw[inked,fill=chum] (4.95,3.2) -- (5.4,5.85) -- (3.65,4.6) -- cycle;
+\filldraw[inked,fill=chumdark] (4.75,3.6) -- (5.05,5.25) -- (4,4.5) -- cycle;
+\filldraw[inked,fill=chum] (0.7,2.9) .. controls (0.6,4.9) and (5.4,4.9) .. (5.3,2.9) .. controls (5.2,1) and (4,0.1) .. (3,0.1) .. controls (2,0.1) and (0.8,1) .. cycle;
+\filldraw[inked,fill=chumlight,line width=0.7pt] (1.3,2.4) ellipse (0.35 and 0.22);
+\filldraw[inked,fill=chumlight,line width=0.7pt] (4.6,2.2) ellipse (0.3 and 0.2);
+\filldraw[inked,fill=chumlight,line width=0.7pt] (2.2,0.9) ellipse (0.3 and 0.18);
+\filldraw[inked,fill=chumlight,line width=0.7pt] (4,0.9) ellipse (0.25 and 0.17);
+\filldraw[inked,fill=chumlight,line width=0.7pt] (3.9,4.15) ellipse (0.3 and 0.15);
+\draw[ink, line width=0.9pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(0.9,3.4) (2,3) (3,2.95) (4,3) (5.1,3.4)};
+\filldraw[inked,fill=chumlight,rounded corners=0.1cm] (2,3.55) rectangle (4,4.2);
+\filldraw[inked,fill=metal,line width=0.5pt] (2.12,3.67) circle (0.06);
+\filldraw[inked,fill=metal,line width=0.5pt] (3.88,3.67) circle (0.06);
+\filldraw[inked,fill=metal,line width=0.5pt] (2.12,4.08) circle (0.06);
+\filldraw[inked,fill=metal,line width=0.5pt] (3.88,4.08) circle (0.06);
+\filldraw[inked,fill=orange,line width=0.6pt] (2.35,3.8) rectangle (3.65,3.95);
+\filldraw[inked,fill=chumlight] (1.85,2.45) circle (0.62);
+\filldraw[inked,fill=cyan!35!white] (1.85,2.45) circle (0.42);
+\draw[ink, line width=0.8pt, line cap=round] (1.43,2.45) -- (2.27,2.45);
+\draw[ink, line width=0.8pt, line cap=round] (1.85,2.03) -- (1.85,2.87);
+\filldraw[inked,fill=ink] (1.75,2.45) circle (0.14);
+\fill[white, opacity=0.9] (1.87,2.6) circle (0.06);
+\filldraw[inked,fill=chumlight] (4.15,2.45) circle (0.62);
+\filldraw[inked,fill=cyan!35!white] (4.15,2.45) circle (0.42);
+\draw[ink, line width=0.8pt, line cap=round] (3.73,2.45) -- (4.57,2.45);
+\draw[ink, line width=0.8pt, line cap=round] (4.15,2.03) -- (4.15,2.87);
+\filldraw[inked,fill=ink] (4.05,2.45) circle (0.14);
+\fill[white, opacity=0.9] (4.17,2.6) circle (0.06);
+\draw[ink, line width=1.2pt, line cap=round] (2.75,2.15) -- (3.25,2.15);
+\draw[ink, line width=1.2pt, line cap=round] (2.75,2.02) -- (3.25,2.02);
+\draw[ink, line width=1.2pt, line cap=round] (2.75,1.89) -- (3.25,1.89);
+\filldraw[inked,fill=orange] (1.75,1.35) .. controls (2.4,0.55) and (3.6,0.55) .. (4.25,1.35) .. controls (3.6,1.15) and (2.4,1.15) .. cycle;
+\filldraw[inked,fill=white] (2.02,1.22) -- (2.15,0.98) -- (2.28,1.22) -- cycle;
+\filldraw[inked,fill=white] (2.44,1.22) -- (2.57,0.98) -- (2.7,1.22) -- cycle;
+\filldraw[inked,fill=white] (2.86,1.22) -- (2.99,0.98) -- (3.12,1.22) -- cycle;
+\filldraw[inked,fill=white] (3.28,1.22) -- (3.41,0.98) -- (3.54,1.22) -- cycle;
+\filldraw[inked,fill=white] (3.7,1.22) -- (3.83,0.98) -- (3.96,1.22) -- cycle;
+\filldraw[inked,fill=metal,line width=0.5pt] (4.926,3.25) circle (0.06);
+\filldraw[inked,fill=metal,line width=0.5pt] (4.761,3.572) circle (0.06);
+\filldraw[inked,fill=metal,line width=0.5pt] (4.534,3.86) circle (0.06);
+\filldraw[inked,fill=metal,line width=0.5pt] (4.253,4.103) circle (0.06);
+\filldraw[inked,fill=metal,line width=0.5pt] (3.928,4.294) circle (0.06);
+\filldraw[inked,fill=metal,line width=0.5pt] (3.57,4.425) circle (0.06);
+\filldraw[inked,fill=metal,line width=0.5pt] (3.192,4.492) circle (0.06);
+\filldraw[inked,fill=metal,line width=0.5pt] (2.808,4.492) circle (0.06);
+\filldraw[inked,fill=metal,line width=0.5pt] (2.43,4.425) circle (0.06);
+\filldraw[inked,fill=metal,line width=0.5pt] (2.072,4.294) circle (0.06);
+\filldraw[inked,fill=metal,line width=0.5pt] (1.747,4.103) circle (0.06);
+\filldraw[inked,fill=metal,line width=0.5pt] (1.466,3.86) circle (0.06);
+\filldraw[inked,fill=metal,line width=0.5pt] (1.239,3.572) circle (0.06);
+\filldraw[inked,fill=metal,line width=0.5pt] (1.074,3.25) circle (0.06);
+\end{scope}
+\filldraw[inked,fill=wallD] (7.3,2.9) rectangle (8.565,5.086);
+\filldraw[inked,fill=wallD!75!ink] (7.2,5.086) rectangle (8.665,5.266);
+\filldraw[inked,fill=wallD!60!windark,line width=0.6pt] (7.58,4.266) rectangle (8,4.766);
+\filldraw[inked,fill=wallB] (8.645,2.9) rectangle (10.329,5.06);
+\filldraw[inked,fill=wallB!75!ink] (8.545,5.06) rectangle (10.429,5.24);
+\filldraw[inked,fill=wallB!60!windark,line width=0.6pt] (8.925,4.24) rectangle (9.345,4.74);
+\filldraw[inked,fill=window,line width=0.6pt] (9.625,4.24) rectangle (10.045,4.74);
+\filldraw[inked,fill=metallight,line width=0.8pt] (9.196,4.23) rectangle (9.871,4.68);
+\filldraw[inked,fill=metal,line width=0.6pt] (9.421,4.455) circle (0.153);
+\draw[ink, line width=0.5pt, line cap=round] (9.646,4.338) -- (9.826,4.338);
+\draw[ink, line width=0.5pt, line cap=round] (9.646,4.455) -- (9.826,4.455);
+\draw[ink, line width=0.5pt, line cap=round] (9.646,4.572) -- (9.826,4.572);
+\draw[ink, line width=5.714pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(9.809,5.06) (9.809,3.7)};
+\draw[metallight, line width=3.414pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(9.809,5.06) (9.809,3.7)};
+\filldraw[inked,fill=wallB] (10.409,2.9) rectangle (12.17,5.243);
+\filldraw[inked,fill=wallB!75!ink] (10.309,5.243) rectangle (12.27,5.423);
+\filldraw[inked,fill=wallB!60!windark,line width=0.6pt] (10.689,4.423) rectangle (11.109,4.923);
+\filldraw[inked,fill=window,line width=0.6pt] (11.389,4.423) rectangle (11.809,4.923);
+\filldraw[inked,fill=wallB] (12.25,2.9) rectangle (13.689,5.053);
+\filldraw[inked,fill=wallB!75!ink] (12.15,5.053) rectangle (13.789,5.233);
+\filldraw[inked,fill=teal!50!window,line width=0.6pt] (12.53,4.233) rectangle (12.95,4.733);
+\draw[ink, line width=5.714pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(13.325,5.053) (13.325,3.7)};
+\draw[metallight, line width=3.414pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(13.325,5.053) (13.325,3.7)};
+\filldraw[inked,fill=wallA] (-0.5,2.6) rectangle (2.4,7.1);
+\filldraw[inked,fill=wallA!75!ink] (-0.6,7.1) rectangle (2.5,7.28);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (-0.22,6.28) rectangle (0.2,6.78);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (0.48,6.28) rectangle (0.9,6.78);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (1.18,6.28) rectangle (1.6,6.78);
+\filldraw[inked,fill=window,line width=0.6pt] (-0.22,5.46) rectangle (0.2,5.96);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (0.48,5.46) rectangle (0.9,5.96);
+\filldraw[inked,fill=window,line width=0.6pt] (1.18,5.46) rectangle (1.6,5.96);
+\filldraw[inked,fill=teal!50!window,line width=0.6pt] (-0.22,4.64) rectangle (0.2,5.14);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (0.48,4.64) rectangle (0.9,5.14);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (1.18,4.64) rectangle (1.6,5.14);
+\filldraw[inked,fill=window,line width=0.6pt] (-0.22,3.82) rectangle (0.2,4.32);
+\draw[ink, line width=0.5pt, line cap=round] (-0.01,3.82) -- (-0.01,4.32);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (0.48,3.82) rectangle (0.9,4.32);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (1.18,3.82) rectangle (1.6,4.32);
+\filldraw[inked,fill=metallight,line width=0.8pt] (-0.27,4.406) rectangle (0.405,4.856);
+\filldraw[inked,fill=metal,line width=0.6pt] (-0.045,4.631) circle (0.153);
+\draw[ink, line width=0.5pt, line cap=round] (0.18,4.514) -- (0.36,4.514);
+\draw[ink, line width=0.5pt, line cap=round] (0.18,4.631) -- (0.36,4.631);
+\draw[ink, line width=0.5pt, line cap=round] (0.18,4.748) -- (0.36,4.748);
+\draw[ink, line width=5.714pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(0.457,7.1) (0.457,3.4)};
+\draw[metallight, line width=3.414pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(0.457,7.1) (0.457,3.4)};
+\filldraw[inked,fill=wallF] (2.3,2.6) rectangle (4.7,6.3);
+\filldraw[inked,fill=wallF!75!ink] (2.2,6.3) rectangle (4.8,6.48);
+\filldraw[inked,fill=wallF!60!windark,line width=0.6pt] (2.58,5.48) rectangle (3,5.98);
+\filldraw[inked,fill=wallF!60!windark,line width=0.6pt] (3.28,5.48) rectangle (3.7,5.98);
+\filldraw[inked,fill=window,line width=0.6pt] (3.98,5.48) rectangle (4.4,5.98);
+\draw[ink, line width=0.5pt, line cap=round] (4.19,5.48) -- (4.19,5.98);
+\filldraw[inked,fill=wallF!60!windark,line width=0.6pt] (2.58,4.66) rectangle (3,5.16);
+\filldraw[inked,fill=wallF!60!windark,line width=0.6pt] (3.28,4.66) rectangle (3.7,5.16);
+\filldraw[inked,fill=window,line width=0.6pt] (3.98,4.66) rectangle (4.4,5.16);
+\draw[ink, line width=0.5pt, line cap=round] (4.19,4.66) -- (4.19,5.16);
+\filldraw[inked,fill=window,line width=0.6pt] (2.58,3.84) rectangle (3,4.34);
+\filldraw[inked,fill=wallF!60!windark,line width=0.6pt] (3.28,3.84) rectangle (3.7,4.34);
+\filldraw[inked,fill=wallF!60!windark,line width=0.6pt] (3.98,3.84) rectangle (4.4,4.34);
+\filldraw[inked,fill=metaldark,line width=0.6pt] (4,6.1) rectangle (4.65,6.22);
+\filldraw[inked,fill=pink] (4.05,4.346) rectangle (4.6,6.1);
+\filldraw[inked,fill=pink!55!white,line width=0.6pt] (4.13,4.426) rectangle (4.52,6.02);
+\filldraw[inked,fill=pink,line width=0.5pt] (4.188,5.55) rectangle (4.462,5.85);
+\filldraw[inked,fill=pink,line width=0.5pt] (4.188,5.05) rectangle (4.462,5.35);
+\filldraw[inked,fill=pink,line width=0.5pt] (4.188,4.55) rectangle (4.462,4.85);
+\filldraw[inked,fill=metallight,line width=0.8pt] (3.662,4.277) rectangle (4.337,4.727);
+\filldraw[inked,fill=metal,line width=0.6pt] (3.887,4.502) circle (0.153);
+\draw[ink, line width=0.5pt, line cap=round] (4.112,4.385) -- (4.292,4.385);
+\draw[ink, line width=0.5pt, line cap=round] (4.112,4.502) -- (4.292,4.502);
+\draw[ink, line width=0.5pt, line cap=round] (4.112,4.619) -- (4.292,4.619);
+\filldraw[inked,fill=wallE] (4.6,2.6) rectangle (7.5,5);
+\filldraw[inked,fill=wallE!75!ink] (4.5,5) rectangle (7.6,5.18);
+\filldraw[inked,fill=wallE!60!windark,line width=0.6pt] (4.88,4.18) rectangle (5.3,4.68);
+\filldraw[inked,fill=wallE!60!windark,line width=0.6pt] (5.58,4.18) rectangle (6,4.68);
+\filldraw[inked,fill=wallE!60!windark,line width=0.6pt] (6.28,4.18) rectangle (6.7,4.68);
+\filldraw[inked,fill=metallight,line width=0.8pt] (5.76,3.921) rectangle (6.435,4.371);
+\filldraw[inked,fill=metal,line width=0.6pt] (5.985,4.146) circle (0.153);
+\draw[ink, line width=0.5pt, line cap=round] (6.21,4.029) -- (6.39,4.029);
+\draw[ink, line width=0.5pt, line cap=round] (6.21,4.146) -- (6.39,4.146);
+\draw[ink, line width=0.5pt, line cap=round] (6.21,4.263) -- (6.39,4.263);
+\filldraw[inked,fill=wallB] (15.6,2.6) rectangle (18,9.2);
+\filldraw[inked,fill=wallB!75!ink] (15.5,9.2) rectangle (18.1,9.38);
+\filldraw[inked,fill=wallB!60!windark,line width=0.6pt] (15.88,8.38) rectangle (16.3,8.88);
+\filldraw[inked,fill=window,line width=0.6pt] (16.58,8.38) rectangle (17,8.88);
+\draw[ink, line width=0.5pt, line cap=round] (16.79,8.38) -- (16.79,8.88);
+\filldraw[inked,fill=wallB!60!windark,line width=0.6pt] (17.28,8.38) rectangle (17.7,8.88);
+\filldraw[inked,fill=window,line width=0.6pt] (15.88,7.56) rectangle (16.3,8.06);
+\draw[ink, line width=0.5pt, line cap=round] (16.09,7.56) -- (16.09,8.06);
+\filldraw[inked,fill=wallB!60!windark,line width=0.6pt] (16.58,7.56) rectangle (17,8.06);
+\filldraw[inked,fill=window,line width=0.6pt] (17.28,7.56) rectangle (17.7,8.06);
+\draw[ink, line width=0.5pt, line cap=round] (17.49,7.56) -- (17.49,8.06);
+\filldraw[inked,fill=wallB!60!windark,line width=0.6pt] (15.88,6.74) rectangle (16.3,7.24);
+\filldraw[inked,fill=window,line width=0.6pt] (16.58,6.74) rectangle (17,7.24);
+\filldraw[inked,fill=wallB!60!windark,line width=0.6pt] (17.28,6.74) rectangle (17.7,7.24);
+\filldraw[inked,fill=wallB!60!windark,line width=0.6pt] (15.88,5.92) rectangle (16.3,6.42);
+\filldraw[inked,fill=wallB!60!windark,line width=0.6pt] (16.58,5.92) rectangle (17,6.42);
+\filldraw[inked,fill=wallB!60!windark,line width=0.6pt] (17.28,5.92) rectangle (17.7,6.42);
+\filldraw[inked,fill=window,line width=0.6pt] (15.88,5.1) rectangle (16.3,5.6);
+\draw[ink, line width=0.5pt, line cap=round] (16.09,5.1) -- (16.09,5.6);
+\filldraw[inked,fill=window,line width=0.6pt] (16.58,5.1) rectangle (17,5.6);
+\filldraw[inked,fill=window,line width=0.6pt] (17.28,5.1) rectangle (17.7,5.6);
+\draw[ink, line width=0.5pt, line cap=round] (17.49,5.1) -- (17.49,5.6);
+\filldraw[inked,fill=teal!50!window,line width=0.6pt] (15.88,4.28) rectangle (16.3,4.78);
+\filldraw[inked,fill=window,line width=0.6pt] (16.58,4.28) rectangle (17,4.78);
+\draw[ink, line width=0.5pt, line cap=round] (16.79,4.28) -- (16.79,4.78);
+\filldraw[inked,fill=wallB!60!windark,line width=0.6pt] (17.28,4.28) rectangle (17.7,4.78);
+\filldraw[inked,fill=metaldark,line width=0.6pt] (17.3,7.384) rectangle (17.95,7.504);
+\filldraw[inked,fill=violet] (17.35,4.784) rectangle (17.9,7.384);
+\filldraw[inked,fill=violet!55!white,line width=0.6pt] (17.43,4.864) rectangle (17.82,7.304);
+\filldraw[inked,fill=violet,line width=0.5pt] (17.488,6.834) rectangle (17.763,7.134);
+\filldraw[inked,fill=violet,line width=0.5pt] (17.488,6.334) rectangle (17.763,6.634);
+\filldraw[inked,fill=violet,line width=0.5pt] (17.488,5.834) rectangle (17.763,6.134);
+\filldraw[inked,fill=violet,line width=0.5pt] (17.488,5.334) rectangle (17.763,5.634);
+\draw[ink, line width=5.714pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(16.005,9.2) (16.005,3.4)};
+\draw[metallight, line width=3.414pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(16.005,9.2) (16.005,3.4)};
+\draw[ink, line width=1pt, line cap=round] (16.083,9.38) -- (16.083,9.8);
+\draw[ink, line width=1pt, line cap=round] (16.573,9.38) -- (16.573,9.8);
+\draw[ink, line width=0.7pt, line cap=round] (16.083,9.59) -- (16.573,9.59);
+\filldraw[inked,fill=wood,rounded corners=0.056cm] (15.978,9.8) rectangle (16.678,10.43);
+\draw[ink, line width=0.6pt, line cap=round] (15.978,9.94) -- (16.678,9.94);
+\draw[ink, line width=0.6pt, line cap=round] (15.978,10.115) -- (16.678,10.115);
+\draw[ink, line width=0.6pt, line cap=round] (15.978,10.29) -- (16.678,10.29);
+\filldraw[inked,fill=wooddark] (15.943,10.43) -- (16.328,10.675) -- (16.713,10.43) -- cycle;
+\filldraw[inked,fill=wallA] (17.9,2.6) rectangle (20.5,10.6);
+\filldraw[inked,fill=wallA!75!ink] (17.8,10.6) rectangle (20.6,10.78);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (18.18,9.78) rectangle (18.6,10.28);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (18.88,9.78) rectangle (19.3,10.28);
+\filldraw[inked,fill=window,line width=0.6pt] (19.58,9.78) rectangle (20,10.28);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (18.18,8.96) rectangle (18.6,9.46);
+\filldraw[inked,fill=window,line width=0.6pt] (18.88,8.96) rectangle (19.3,9.46);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (19.58,8.96) rectangle (20,9.46);
+\filldraw[inked,fill=window,line width=0.6pt] (18.18,8.14) rectangle (18.6,8.64);
+\draw[ink, line width=0.5pt, line cap=round] (18.39,8.14) -- (18.39,8.64);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (18.88,8.14) rectangle (19.3,8.64);
+\filldraw[inked,fill=window,line width=0.6pt] (19.58,8.14) rectangle (20,8.64);
+\draw[ink, line width=0.5pt, line cap=round] (19.79,8.14) -- (19.79,8.64);
+\filldraw[inked,fill=window,line width=0.6pt] (18.18,7.32) rectangle (18.6,7.82);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (18.88,7.32) rectangle (19.3,7.82);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (19.58,7.32) rectangle (20,7.82);
+\filldraw[inked,fill=window,line width=0.6pt] (18.18,6.5) rectangle (18.6,7);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (18.88,6.5) rectangle (19.3,7);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (19.58,6.5) rectangle (20,7);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (18.18,5.68) rectangle (18.6,6.18);
+\filldraw[inked,fill=teal!50!window,line width=0.6pt] (18.88,5.68) rectangle (19.3,6.18);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (19.58,5.68) rectangle (20,6.18);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (18.18,4.86) rectangle (18.6,5.36);
+\filldraw[inked,fill=window,line width=0.6pt] (18.88,4.86) rectangle (19.3,5.36);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (19.58,4.86) rectangle (20,5.36);
+\filldraw[inked,fill=wallA!60!windark,line width=0.6pt] (18.18,4.04) rectangle (18.6,4.54);
+\filldraw[inked,fill=window,line width=0.6pt] (18.88,4.04) rectangle (19.3,4.54);
+\filldraw[inked,fill=window,line width=0.6pt] (19.58,4.04) rectangle (20,4.54);
+\filldraw[inked,fill=metallight,line width=0.8pt] (18.308,4.952) rectangle (18.983,5.402);
+\filldraw[inked,fill=metal,line width=0.6pt] (18.533,5.177) circle (0.153);
+\draw[ink, line width=0.5pt, line cap=round] (18.758,5.06) -- (18.938,5.06);
+\draw[ink, line width=0.5pt, line cap=round] (18.758,5.177) -- (18.938,5.177);
+\draw[ink, line width=0.5pt, line cap=round] (18.758,5.294) -- (18.938,5.294);
+\draw[ink, line width=0.9pt, line cap=round] (19.245,10.78) -- (19.245,11.428);
+\draw[ink, line width=0.8pt, line cap=round] (19.045,11.234) -- (19.445,11.234);
+\draw[ink, line width=0.9pt, line cap=round] (18.954,10.78) -- (18.954,11.648);
+\draw[ink, line width=0.8pt, line cap=round] (18.754,11.388) -- (19.154,11.388);
+\draw[ink, line width=1pt, line cap=round] (18.735,10.78) -- (18.735,11.32);
+\draw[ink, line width=1pt, line cap=round] (19.365,10.78) -- (19.365,11.32);
+\draw[ink, line width=0.7pt, line cap=round] (18.735,11.05) -- (19.365,11.05);
+\filldraw[inked,fill=wood,rounded corners=0.072cm] (18.6,11.32) rectangle (19.5,12.13);
+\draw[ink, line width=0.6pt, line cap=round] (18.6,11.5) -- (19.5,11.5);
+\draw[ink, line width=0.6pt, line cap=round] (18.6,11.725) -- (19.5,11.725);
+\draw[ink, line width=0.6pt, line cap=round] (18.6,11.95) -- (19.5,11.95);
+\filldraw[inked,fill=wooddark] (18.555,12.13) -- (19.05,12.445) -- (19.545,12.13) -- cycle;
+\filldraw[inked,fill=wallC] (13.2,2.6) rectangle (15.7,7.4);
+\filldraw[inked,fill=wallC!75!ink] (13.1,7.4) rectangle (15.8,7.58);
+\filldraw[inked,fill=metallight,line width=0.8pt] (13.389,5.959) rectangle (14.064,6.409);
+\filldraw[inked,fill=metal,line width=0.6pt] (13.614,6.184) circle (0.153);
+\draw[ink, line width=0.5pt, line cap=round] (13.839,6.067) -- (14.019,6.067);
+\draw[ink, line width=0.5pt, line cap=round] (13.839,6.184) -- (14.019,6.184);
+\draw[ink, line width=0.5pt, line cap=round] (13.839,6.301) -- (14.019,6.301);
+\filldraw[inked,fill=window,line width=0.6pt] (13.48,6.58) rectangle (13.9,7.08);
+\filldraw[inked,fill=wallC!60!windark,line width=0.6pt] (14.18,6.58) rectangle (14.6,7.08);
+\filldraw[inked,fill=window,line width=0.6pt] (14.88,6.58) rectangle (15.3,7.08);
+\filldraw[inked,fill=window!70!cream] (13.45,3.1) rectangle (14.8,4.7);
+\filldraw[inked,fill=wood,line width=0.8pt] (13.45,3.55) rectangle (14.8,3.7);
+\draw[ink, line width=2.913pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(13.977,3.839) (14.131,4.015)};
+\draw[ink, line width=2.913pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(14.01,3.828) (14.164,3.982)};
+\draw[woodlight, line width=0.613pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(13.977,3.839) (14.131,4.015)};
+\draw[woodlight, line width=0.613pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(14.01,3.828) (14.164,3.982)};
+\filldraw[inked,fill=bowl] (13.68,3.85) .. controls (13.691,3.718) and (13.79,3.685) .. (13.9,3.685) .. controls (14.01,3.685) and (14.109,3.718) .. (14.12,3.85) -- cycle;
+\fill[red] (13.706,3.784) rectangle (14.094,3.766);
+\filldraw[inked,fill=broth] (13.9,3.85) ellipse (0.22 and 0.037);
+\draw[noodle!70!wooddark, line width=1pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(13.779,3.841) (13.799,3.865) (13.819,3.841)};
+\draw[noodle!70!wooddark, line width=1pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(13.852,3.841) (13.871,3.865) (13.891,3.841)};
+\draw[noodle!70!wooddark, line width=1pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(13.924,3.841) (13.944,3.865) (13.964,3.841)};
+\draw[noodle!70!wooddark, line width=1pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(13.997,3.841) (14.017,3.865) (14.036,3.841)};
+\draw[ink, line width=2.913pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(14.477,3.839) (14.631,4.015)};
+\draw[ink, line width=2.913pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(14.51,3.828) (14.664,3.982)};
+\draw[woodlight, line width=0.613pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(14.477,3.839) (14.631,4.015)};
+\draw[woodlight, line width=0.613pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(14.51,3.828) (14.664,3.982)};
+\filldraw[inked,fill=bowl] (14.18,3.85) .. controls (14.191,3.718) and (14.29,3.685) .. (14.4,3.685) .. controls (14.51,3.685) and (14.609,3.718) .. (14.62,3.85) -- cycle;
+\fill[red] (14.206,3.784) rectangle (14.594,3.766);
+\filldraw[inked,fill=broth] (14.4,3.85) ellipse (0.22 and 0.037);
+\draw[noodle!70!wooddark, line width=1pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(14.279,3.841) (14.299,3.865) (14.319,3.841)};
+\draw[noodle!70!wooddark, line width=1pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(14.352,3.841) (14.371,3.865) (14.391,3.841)};
+\draw[noodle!70!wooddark, line width=1pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(14.424,3.841) (14.444,3.865) (14.464,3.841)};
+\draw[noodle!70!wooddark, line width=1pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(14.497,3.841) (14.517,3.865) (14.536,3.841)};
+\filldraw[inked,fill=ink!80!wooddark] (15.1,2.8) rectangle (15.35,5);
+\filldraw[inked,fill=teal] (15.12,4.25) rectangle (15.163,5);
+\filldraw[inked,fill=white,line width=0.6pt] (15.142,4.65) circle (0.09);
+\filldraw[inked,fill=teal] (15.203,4.25) rectangle (15.247,5);
+\filldraw[inked,fill=white,line width=0.6pt] (15.225,4.65) circle (0.09);
+\filldraw[inked,fill=teal] (15.287,4.25) rectangle (15.33,5);
+\filldraw[inked,fill=white,line width=0.6pt] (15.308,4.65) circle (0.09);
+\filldraw[inked,fill=red] (13.3,5.55) -- (15.6,5.55) -- (15.85,4.85) -- (13.05,4.85) -- cycle;
+\filldraw[inked,fill=white,line width=0.6pt] (13.3,5.55) -- (13.76,5.55) -- (13.61,4.85) -- (13.05,4.85) -- cycle;
+\filldraw[inked,fill=white,line width=0.6pt] (14.22,5.55) -- (14.68,5.55) -- (14.73,4.85) -- (14.17,4.85) -- cycle;
+\filldraw[inked,fill=white,line width=0.6pt] (15.14,5.55) -- (15.6,5.55) -- (15.85,4.85) -- (15.29,4.85) -- cycle;
+\filldraw[inked,fill=red] (12.85,4.85) arc[start angle=180,end angle=360,radius=0.2] -- cycle;
+\filldraw[inked,fill=red] (13.41,4.85) arc[start angle=180,end angle=360,radius=0.2] -- cycle;
+\filldraw[inked,fill=red] (13.97,4.85) arc[start angle=180,end angle=360,radius=0.2] -- cycle;
+\filldraw[inked,fill=red] (14.53,4.85) arc[start angle=180,end angle=360,radius=0.2] -- cycle;
+\filldraw[inked,fill=red] (15.09,4.85) arc[start angle=180,end angle=360,radius=0.2] -- cycle;
+\filldraw[inked,fill=red] (15.65,4.85) arc[start angle=180,end angle=360,radius=0.2] -- cycle;
+\draw[ink, line width=2.2pt, line cap=round] (13.2,7.65) -- (12.45,7.65);
+\draw[ink, line width=1.2pt, line cap=round] (12.45,7.65) -- (12.45,7.45);
+\filldraw[inked,fill=gold] (12.45,6.7) circle (0.78);
+\filldraw[inked,fill=cream,line width=0.9pt] (12.45,6.7) circle (0.62);
+\draw[ink!60!cream, line width=1.6pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(12.261,6.783) (12.324,6.838) (12.211,6.955) (12.286,7.056)};
+\draw[ink!60!cream, line width=1.6pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(12.45,6.783) (12.513,6.874) (12.4,7.029) (12.475,7.161)};
+\draw[ink!60!cream, line width=1.6pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(12.639,6.783) (12.702,6.838) (12.589,6.955) (12.664,7.056)};
+\draw[ink, line width=3.471pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(12.597,6.699) (12.891,7.035)};
+\draw[ink, line width=3.471pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(12.66,6.678) (12.954,6.972)};
+\draw[woodlight, line width=1.171pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(12.597,6.699) (12.891,7.035)};
+\draw[woodlight, line width=1.171pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(12.66,6.678) (12.954,6.972)};
+\filldraw[inked,fill=bowl] (12.03,6.72) .. controls (12.051,6.468) and (12.24,6.405) .. (12.45,6.405) .. controls (12.66,6.405) and (12.849,6.468) .. (12.87,6.72) -- cycle;
+\fill[red] (12.08,6.594) rectangle (12.82,6.56);
+\filldraw[inked,fill=broth] (12.45,6.72) ellipse (0.42 and 0.071);
+\draw[noodle!70!wooddark, line width=1pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(12.219,6.703) (12.257,6.749) (12.295,6.703)};
+\draw[noodle!70!wooddark, line width=1pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(12.358,6.703) (12.395,6.749) (12.433,6.703)};
+\draw[noodle!70!wooddark, line width=1pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(12.496,6.703) (12.534,6.749) (12.572,6.703)};
+\draw[noodle!70!wooddark, line width=1pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(12.635,6.703) (12.673,6.749) (12.71,6.703)};
+\filldraw[inked,fill=metaldark,line width=0.6pt] (14.9,8.4) rectangle (15.6,8.52);
+\filldraw[inked,fill=teal] (14.95,6) rectangle (15.55,8.4);
+\filldraw[inked,fill=teal!55!white,line width=0.6pt] (15.03,6.08) rectangle (15.47,8.32);
+\filldraw[inked,fill=teal,line width=0.5pt] (15.1,7.85) rectangle (15.4,8.15);
+\filldraw[inked,fill=teal,line width=0.5pt] (15.1,7.35) rectangle (15.4,7.65);
+\filldraw[inked,fill=teal,line width=0.5pt] (15.1,6.85) rectangle (15.4,7.15);
+\filldraw[inked,fill=teal,line width=0.5pt] (15.1,6.35) rectangle (15.4,6.65);
+\draw[ink, line width=0.9pt, line cap=round] (13.55,5.06) -- (13.55,5.3);
+\filldraw[inked,fill=ink] (13.454,5.004) rectangle (13.646,5.084);
+\filldraw[inked,fill=red] (13.55,4.7) ellipse (0.24 and 0.336);
+\filldraw[inked,fill=redlight,line width=0.6pt] (13.55,4.7) ellipse (0.104 and 0.336);
+\filldraw[inked,fill=ink] (13.454,4.316) rectangle (13.646,4.396);
+\draw[gold, line width=0.8pt, line cap=round] (13.55,4.316) -- (13.55,4.14);
+\draw[ink, line width=0.9pt, line cap=round] (15.5,5.06) -- (15.5,5.3);
+\filldraw[inked,fill=ink] (15.404,5.004) rectangle (15.596,5.084);
+\filldraw[inked,fill=red] (15.5,4.7) ellipse (0.24 and 0.336);
+\filldraw[inked,fill=redlight,line width=0.6pt] (15.5,4.7) ellipse (0.104 and 0.336);
+\filldraw[inked,fill=ink] (15.404,4.316) rectangle (15.596,4.396);
+\draw[gold, line width=0.8pt, line cap=round] (15.5,4.316) -- (15.5,4.14);
+\draw[ink, line width=1pt, line cap=round] (14.312,7.58) -- (14.312,8.03);
+\draw[ink, line width=1pt, line cap=round] (14.837,7.58) -- (14.837,8.03);
+\draw[ink, line width=0.7pt, line cap=round] (14.312,7.805) -- (14.837,7.805);
+\filldraw[inked,fill=wood,rounded corners=0.06cm] (14.2,8.03) rectangle (14.95,8.705);
+\draw[ink, line width=0.6pt, line cap=round] (14.2,8.18) -- (14.95,8.18);
+\draw[ink, line width=0.6pt, line cap=round] (14.2,8.367) -- (14.95,8.367);
+\draw[ink, line width=0.6pt, line cap=round] (14.2,8.555) -- (14.95,8.555);
+\filldraw[inked,fill=wooddark] (14.162,8.705) -- (14.575,8.968) -- (14.987,8.705) -- cycle;
+\begin{scope}[shift={(5.3,5.06)}, rotate=0, xscale=0.6, yscale=0.6]
+\fill[ink, opacity=0.18] (1.5,0.2) ellipse (1.25 and 0.12);
+\draw[ink, line width=1.4pt, line cap=round] (0.64,2.856) arc[start angle=60, end angle=160, radius=0.18];
+\draw[ink, line width=1.4pt, line cap=round] (0.71,2.977) arc[start angle=60, end angle=160, radius=0.32];
+\draw[ink, line width=1.4pt, line cap=round] (2.619,2.762) arc[start angle=20, end angle=120, radius=0.18];
+\draw[ink, line width=1.4pt, line cap=round] (2.751,2.809) arc[start angle=20, end angle=120, radius=0.32];
+\draw[ink, line width=5.999pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(0.7,1.4) (0.55,2.7)};
+\draw[ink, line width=5.999pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(2.3,1.4) (2.45,2.7)};
+\draw[metaldark, line width=3.699pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(0.7,1.4) (0.55,2.7)};
+\draw[metaldark, line width=3.699pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(2.3,1.4) (2.45,2.7)};
+\filldraw[inked,fill=oiverm,line width=1.2pt] (0.55,2.7) circle (0.1);
+\filldraw[inked,fill=oiverm,line width=1.2pt] (2.45,2.7) circle (0.1);
+\filldraw[inked,fill=wallD,rounded corners=0.25cm] (0.2,0.2) rectangle (2.8,1.55);
+\filldraw[inked,fill=wallB,rounded corners=0.15cm] (0.2,1.25) rectangle (2.8,1.55);
+\filldraw[inked,fill=oigreen,line width=0.8pt] (2.45,0.55) circle (0.075);
+\filldraw[inked,fill=oiorange,line width=0.8pt] (2.45,0.87) circle (0.075);
+\filldraw[inked,fill=oigreen,line width=0.8pt] (0.55,0.55) circle (0.075);
+\filldraw[inked,fill=oiorange,line width=0.8pt] (0.55,0.87) circle (0.075);
+\filldraw[inked,fill=cream,line width=1.4pt] (1.5,0.8) circle (0.5);
+\filldraw[inked,fill=oisky!45!white,line width=1pt] (1.5,1.24) -- (1.422,0.878) -- (1.06,0.8) -- (1.422,0.722) -- (1.5,0.36) -- (1.578,0.722) -- (1.94,0.8) -- (1.578,0.878) -- cycle;
+\filldraw[inked,fill=oiverm,line width=1pt] (1.5,1.24) -- (1.42,0.88) -- (1.58,0.88) -- cycle;
+\filldraw[inked,fill=gold,line width=0.8pt] (1.5,0.8) circle (0.06);
+\end{scope}
+\filldraw[inked,fill=concrete] (-0.5,-0.5) rectangle (20.5,3.4);
+\draw[ink, line width=1.15pt, line cap=round] (-0.5,3.4) -- (20.5,3.4);
+\draw[concrete!70!ink, line width=0.6pt] (6.9,3.4) -- (-28.8,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (7.15,3.4) -- (-26,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (7.4,3.4) -- (-23.2,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (7.65,3.4) -- (-20.4,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (7.9,3.4) -- (-17.6,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (8.15,3.4) -- (-14.8,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (8.4,3.4) -- (-12,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (8.65,3.4) -- (-9.2,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (8.9,3.4) -- (-6.4,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (9.15,3.4) -- (-3.6,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (9.4,3.4) -- (-0.8,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (9.65,3.4) -- (2,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (9.9,3.4) -- (4.8,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (10.15,3.4) -- (7.6,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (10.4,3.4) -- (10.4,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (10.65,3.4) -- (13.2,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (10.9,3.4) -- (16,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (11.15,3.4) -- (18.8,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (11.4,3.4) -- (21.6,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (11.65,3.4) -- (24.4,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (11.9,3.4) -- (27.2,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (12.15,3.4) -- (30,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (12.4,3.4) -- (32.8,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (12.65,3.4) -- (35.6,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (12.9,3.4) -- (38.4,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (13.15,3.4) -- (41.2,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (13.4,3.4) -- (44,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (13.65,3.4) -- (46.8,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (13.9,3.4) -- (49.6,-0.5);
+\draw[concrete!70!ink, line width=0.6pt] (-0.5,3.4) -- (20.5,3.4);
+\draw[concrete!70!ink, line width=0.6pt] (-0.5,3.15) -- (20.5,3.15);
+\draw[concrete!70!ink, line width=0.6pt] (-0.5,2.788) -- (20.5,2.788);
+\draw[concrete!70!ink, line width=0.6pt] (-0.5,2.262) -- (20.5,2.262);
+\draw[concrete!70!ink, line width=0.6pt] (-0.5,1.5) -- (20.5,1.5);
+\draw[concrete!70!ink, line width=0.6pt] (-0.5,0.395) -- (20.5,0.395);
+\filldraw[inked,fill=metallight,rotate around={22.685:(8.949,2.737)}] (8.849,2.588) rectangle (9.049,2.887);
+\filldraw[inked,fill=red,rotate around={57.245:(11.341,0.735)}] (11.249,0.597) rectangle (11.433,0.873);
+\filldraw[inked,fill=wallF] (12.109,0.948) rectangle (12.597,1.281);
+\draw[ink, line width=0.7pt, line cap=round] (12.109,0.948) -- (12.597,1.281);
+\filldraw[inked,fill=wallF!80!ink,line width=0.6pt] (12.109,1.088) rectangle (12.597,1.141);
+\filldraw[inked,fill=red,rotate around={32.107:(12.658,2.71)}] (12.523,2.507) rectangle (12.794,2.913);
+\filldraw[inked,fill=ink!60!wood] (11.229,2.421) circle (0.05);
+\filldraw[inked,fill=metallight,rotate around={-21.447:(1.906,2.433)}] (1.791,2.261) rectangle (2.021,2.606);
+\filldraw[inked,fill=ink!60!wood] (11.964,1.099) circle (0.05);
+\filldraw[inked,fill=woodlight] (3.667,1.032) rectangle (4.202,1.343);
+\draw[ink, line width=0.7pt, line cap=round] (3.667,1.032) -- (4.202,1.343);
+\filldraw[inked,fill=woodlight!80!ink,line width=0.6pt] (3.667,1.162) rectangle (4.202,1.212);
+\filldraw[inked,fill=cream,rotate around={-10.032:(5.084,1.485)}] (4.884,1.365) rectangle (5.284,1.605);
+\filldraw[inked,fill=cream,rotate around={27.127:(14.6,1.347)}] (14.4,1.227) rectangle (14.8,1.467);
+\filldraw[inked,fill=cream,rotate around={-13.52:(9.126,1.355)}] (8.926,1.235) rectangle (9.326,1.475);
+\filldraw[inked,fill=woodlight] (7.212,1.85) rectangle (7.624,2.333);
+\draw[ink, line width=0.7pt, line cap=round] (7.212,1.85) -- (7.624,2.333);
+\filldraw[inked,fill=woodlight!80!ink,line width=0.6pt] (7.212,2.053) rectangle (7.624,2.13);
+\filldraw[inked,fill=cream,rotate around={10.471:(10.417,1.561)}] (10.217,1.441) rectangle (10.617,1.681);
+\filldraw[inked,fill=woodlight] (3.718,1.865) rectangle (4.2,2.351);
+\draw[ink, line width=0.7pt, line cap=round] (3.718,1.865) -- (4.2,2.351);
+\filldraw[inked,fill=woodlight!80!ink,line width=0.6pt] (3.718,2.069) rectangle (4.2,2.147);
+\filldraw[inked,fill=cream,rotate around={2.904:(6.229,1.264)}] (6.029,1.144) rectangle (6.429,1.384);
+\filldraw[inked,fill=ink!60!wood] (8.639,1.308) circle (0.05);
+\filldraw[inked,fill=metal] (10.2,0.9) ellipse (0.9 and 0.28);
+\filldraw[inked,fill=metaldark,line width=0.7pt] (10.2,0.9) ellipse (0.65 and 0.18);
+\draw[ink, line width=9.129pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(1.7,0.6) (1.7,7.35)};
+\draw[wood, line width=6.829pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(1.7,0.6) (1.7,7.35)};
+\filldraw[inked,fill=wooddark,line width=0.9pt] (0.85,6.92) rectangle (2.55,7.08);
+\filldraw[inked,fill=metallight,line width=0.6pt] (0.9,7.08) rectangle (1,7.22);
+\filldraw[inked,fill=metallight,line width=0.6pt] (2.4,7.08) rectangle (2.5,7.22);
+\filldraw[inked,fill=wooddark,line width=0.9pt] (0.85,6.37) rectangle (2.55,6.53);
+\filldraw[inked,fill=metallight,line width=0.6pt] (0.9,6.53) rectangle (1,6.67);
+\filldraw[inked,fill=metallight,line width=0.6pt] (2.4,6.53) rectangle (2.5,6.67);
+\filldraw[inked,fill=metal,rounded corners=0.06cm] (1.4,5.35) rectangle (2,5.85);
+\filldraw[inked,fill=woodlight] (2.6,0.6) rectangle (3.9,1.4);
+\draw[ink, line width=0.7pt, line cap=round] (2.6,0.6) -- (3.9,1.4);
+\filldraw[inked,fill=woodlight!80!ink,line width=0.6pt] (2.6,0.936) rectangle (3.9,1.064);
+\begin{scope}[shift={(2.75,1.55)}, rotate=-12, xscale=0.55, yscale=0.55]
+\filldraw[inked,fill=pteal] (-0.42,-0.28) rectangle (0.42,0.28);
+\draw[ink, line width=0.9pt, line join=round] (-0.42,0.28) -- (0,-0.04) -- (0.42,0.28);
+\end{scope}
+\begin{scope}[shift={(3.05,1.55)}, rotate=-3, xscale=0.55, yscale=0.55]
+\filldraw[inked,fill=pcoral] (-0.42,-0.28) rectangle (0.42,0.28);
+\draw[ink, line width=0.9pt, line join=round] (-0.42,0.28) -- (0,-0.04) -- (0.42,0.28);
+\end{scope}
+\begin{scope}[shift={(3.35,1.55)}, rotate=6, xscale=0.55, yscale=0.55]
+\filldraw[inked,fill=pgold] (-0.42,-0.28) rectangle (0.42,0.28);
+\draw[ink, line width=0.9pt, line join=round] (-0.42,0.28) -- (0,-0.04) -- (0.42,0.28);
+\end{scope}
+\begin{scope}[shift={(3.65,1.55)}, rotate=15, xscale=0.55, yscale=0.55]
+\filldraw[inked,fill=pviolet] (-0.42,-0.28) rectangle (0.42,0.28);
+\draw[ink, line width=0.9pt, line join=round] (-0.42,0.28) -- (0,-0.04) -- (0.42,0.28);
+\end{scope}
+\draw[ink, line width=5.145pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(15.45,1.8) (15.45,3.1)};
+\draw[metaldark, line width=2.845pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(15.45,1.8) (15.45,3.1)};
+\draw[ink, line width=5.145pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(18.15,1.8) (18.15,3.1)};
+\draw[metaldark, line width=2.845pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(18.15,1.8) (18.15,3.1)};
+\filldraw[inked,fill=teal] (15.2,3.35) -- (18.4,3.35) -- (18.65,2.85) -- (14.95,2.85) -- cycle;
+\filldraw[inked,fill=white,line width=0.6pt] (15.2,3.35) -- (15.657,3.35) -- (15.479,2.85) -- (14.95,2.85) -- cycle;
+\filldraw[inked,fill=white,line width=0.6pt] (16.114,3.35) -- (16.571,3.35) -- (16.536,2.85) -- (16.007,2.85) -- cycle;
+\filldraw[inked,fill=white,line width=0.6pt] (17.029,3.35) -- (17.486,3.35) -- (17.593,2.85) -- (17.064,2.85) -- cycle;
+\filldraw[inked,fill=white,line width=0.6pt] (17.943,3.35) -- (18.4,3.35) -- (18.65,2.85) -- (18.121,2.85) -- cycle;
+\filldraw[inked,fill=teal] (14.75,2.85) arc[start angle=180,end angle=360,radius=0.2] -- cycle;
+\filldraw[inked,fill=teal] (15.279,2.85) arc[start angle=180,end angle=360,radius=0.2] -- cycle;
+\filldraw[inked,fill=teal] (15.807,2.85) arc[start angle=180,end angle=360,radius=0.2] -- cycle;
+\filldraw[inked,fill=teal] (16.336,2.85) arc[start angle=180,end angle=360,radius=0.2] -- cycle;
+\filldraw[inked,fill=teal] (16.864,2.85) arc[start angle=180,end angle=360,radius=0.2] -- cycle;
+\filldraw[inked,fill=teal] (17.393,2.85) arc[start angle=180,end angle=360,radius=0.2] -- cycle;
+\filldraw[inked,fill=teal] (17.921,2.85) arc[start angle=180,end angle=360,radius=0.2] -- cycle;
+\filldraw[inked,fill=teal] (18.45,2.85) arc[start angle=180,end angle=360,radius=0.2] -- cycle;
+\draw[white, line width=1.4pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(16.2,2.35) (16.3,2.55) (16.12,2.75)};
+\draw[white, line width=1.4pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(16.6,2.35) (16.7,2.55) (16.52,2.75)};
+\draw[white, line width=1.4pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(17,2.35) (17.1,2.55) (16.92,2.75)};
+\filldraw[inked,fill=metallight,rounded corners=0.08cm] (16,1.8) rectangle (17.2,2.3);
+\filldraw[inked,fill=metal,line width=0.8pt] (15.9,2.25) rectangle (17.3,2.38);
+\draw[ink, line width=2.997pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(17.787,1.968) (17.962,2.167)};
+\draw[ink, line width=2.997pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(17.825,1.955) (18,2.13)};
+\draw[woodlight, line width=0.697pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(17.787,1.968) (17.962,2.167)};
+\draw[woodlight, line width=0.697pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(17.825,1.955) (18,2.13)};
+\filldraw[inked,fill=bowl] (17.45,1.98) .. controls (17.462,1.83) and (17.575,1.792) .. (17.7,1.792) .. controls (17.825,1.792) and (17.938,1.83) .. (17.95,1.98) -- cycle;
+\fill[red] (17.48,1.905) rectangle (17.92,1.885);
+\filldraw[inked,fill=broth] (17.7,1.98) ellipse (0.25 and 0.043);
+\draw[noodle!70!wooddark, line width=1pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(17.562,1.97) (17.585,1.998) (17.608,1.97)};
+\draw[noodle!70!wooddark, line width=1pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(17.645,1.97) (17.668,1.998) (17.69,1.97)};
+\draw[noodle!70!wooddark, line width=1pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(17.727,1.97) (17.75,1.998) (17.773,1.97)};
+\draw[noodle!70!wooddark, line width=1pt, line cap=round, line join=round] plot[smooth, tension=0.6] coordinates {(17.81,1.97) (17.832,1.998) (17.855,1.97)};
+\filldraw[inked,fill=wallC] (15.3,0.95) rectangle (18.3,1.8);
+\filldraw[inked,fill=wallC!70!white,line width=0.7pt] (15.5,1.1) rectangle (18.1,1.65);
+\draw[ink, line width=0.9pt, line cap=round] (18.05,2.748) -- (18.05,2.913);
+\filldraw[inked,fill=ink] (17.984,2.709) rectangle (18.116,2.764);
+\filldraw[inked,fill=red] (18.05,2.5) ellipse (0.165 and 0.231);
+\filldraw[inked,fill=redlight,line width=0.6pt] (18.05,2.5) ellipse (0.072 and 0.231);
+\filldraw[inked,fill=ink] (17.984,2.236) rectangle (18.116,2.291);
+\draw[gold, line width=0.8pt, line cap=round] (18.05,2.236) -- (18.05,2.115);
+\filldraw[inked,fill=metaldark] (15.9,0.85) circle (0.33);
+\filldraw[inked,fill=metallight,line width=0.6pt] (15.9,0.85) circle (0.12);
+\filldraw[inked,fill=metaldark] (17.7,0.85) circle (0.33);
+\filldraw[inked,fill=metallight,line width=0.6pt] (17.7,0.85) circle (0.12);
+\begin{scope}[shift={(11.6,1.2)}, rotate=0, xscale=1, yscale=1]
+\filldraw[inked,fill=metallight] (0,0) ellipse (0.3 and 0.2);
+\filldraw[inked,fill=metallight,line width=0.7pt] (0.25,0.22) circle (0.13);
+\filldraw[inked,fill=gold,line width=0.5pt] (0.37,0.23) -- (0.5,0.19) -- (0.37,0.15) -- cycle;
+\draw[ink, line width=0.8pt, line cap=round] (-0.05,-0.2) -- (-0.05,-0.32);
+\draw[ink, line width=0.8pt, line cap=round] (0.08,-0.2) -- (0.08,-0.32);
+\end{scope}
+\begin{scope}[shift={(12.3,1)}, rotate=0, xscale=-1, yscale=1]
+\filldraw[inked,fill=metallight] (0,0) ellipse (0.3 and 0.2);
+\filldraw[inked,fill=metallight,line width=0.7pt] (0.25,0.22) circle (0.13);
+\filldraw[inked,fill=gold,line width=0.5pt] (0.37,0.23) -- (0.5,0.19) -- (0.37,0.15) -- cycle;
+\draw[ink, line width=0.8pt, line cap=round] (-0.05,-0.2) -- (-0.05,-0.32);
+\draw[ink, line width=0.8pt, line cap=round] (0.08,-0.2) -- (0.08,-0.32);
+\end{scope}
+\draw[ink, line width=0.9pt, line cap=round, line join=round] plot[smooth, tension=0.5] coordinates {(6.92,5.72) (7.643,5.66) (8.367,5.65) (9.09,5.69) (9.813,5.78) (10.537,5.92) (11.26,6.11) (11.983,6.35) (12.707,6.64) (13.43,6.98) (14.153,7.37) (14.877,7.81) (15.6,8.3)};
+\filldraw[inked,fill=metallight,line width=0.7pt] (6.92,5.72) circle (0.07);
+\filldraw[inked,fill=metallight,line width=0.7pt] (15.6,8.3) circle (0.07);
+\draw[ink, line width=0.9pt, line cap=round, line join=round] plot[smooth, tension=0.5] coordinates {(6.92,5.72) (7.443,5.656) (7.967,5.617) (8.49,5.602) (9.013,5.613) (9.537,5.649) (10.06,5.71) (10.583,5.796) (11.107,5.907) (11.63,6.042) (12.153,6.203) (12.677,6.389) (13.2,6.6)};
+\filldraw[inked,fill=metallight,line width=0.7pt] (6.92,5.72) circle (0.07);
+\filldraw[inked,fill=metallight,line width=0.7pt] (13.2,6.6) circle (0.07);
+\draw[ink, line width=0.9pt, line cap=round, line join=round] plot[smooth, tension=0.5] coordinates {(6.92,5.36) (7.443,5.273) (7.967,5.206) (8.49,5.157) (9.013,5.129) (9.537,5.12) (10.06,5.13) (10.583,5.16) (11.107,5.209) (11.63,5.277) (12.153,5.366) (12.677,5.473) (13.2,5.6)};
+\filldraw[inked,fill=metallight,line width=0.7pt] (6.92,5.36) circle (0.07);
+\filldraw[inked,fill=metallight,line width=0.7pt] (13.2,5.6) circle (0.07);
+\draw[ink, line width=0.9pt, line cap=round, line join=round] plot[smooth, tension=0.5] coordinates {(2.45,7) (2.703,6.786) (2.955,6.592) (3.208,6.417) (3.46,6.262) (3.712,6.126) (3.965,6.01) (4.218,5.913) (4.47,5.836) (4.723,5.777) (4.975,5.739) (5.227,5.72) (5.48,5.72)};
+\filldraw[inked,fill=metallight,line width=0.7pt] (2.45,7) circle (0.07);
+\filldraw[inked,fill=metallight,line width=0.7pt] (5.48,5.72) circle (0.07);
+\draw[ink, line width=0.9pt, line cap=round, line join=round] plot[smooth, tension=0.5] coordinates {(0.95,6.45) (0.821,6.383) (0.692,6.325) (0.562,6.275) (0.433,6.233) (0.304,6.2) (0.175,6.175) (0.046,6.158) (-0.083,6.15) (-0.212,6.15) (-0.342,6.158) (-0.471,6.175) (-0.6,6.2)};
+\filldraw[inked,fill=metallight,line width=0.7pt] (0.95,6.45) circle (0.07);
+\filldraw[inked,fill=metallight,line width=0.7pt] (-0.6,6.2) circle (0.07);
+\draw[ink, line width=0.9pt, line cap=round, line join=round] plot[smooth, tension=0.5] coordinates {(2.45,6.45) (2.638,6.318) (2.825,6.197) (3.013,6.087) (3.2,5.989) (3.388,5.901) (3.575,5.825) (3.763,5.76) (3.95,5.706) (4.138,5.662) (4.325,5.631) (4.513,5.61) (4.7,5.6)};
+\filldraw[inked,fill=metallight,line width=0.7pt] (2.45,6.45) circle (0.07);
+\filldraw[inked,fill=metallight,line width=0.7pt] (4.7,5.6) circle (0.07);
+\draw[ink, line width=0.9pt, line cap=round, line join=round] plot[smooth, tension=0.5] coordinates {(15.7,6.9) (15.883,6.9) (16.067,6.917) (16.25,6.95) (16.433,7) (16.617,7.067) (16.8,7.15) (16.983,7.25) (17.167,7.367) (17.35,7.5) (17.533,7.65) (17.717,7.817) (17.9,8)};
+\filldraw[inked,fill=metallight,line width=0.7pt] (15.7,6.9) circle (0.07);
+\filldraw[inked,fill=metallight,line width=0.7pt] (17.9,8) circle (0.07);
+\draw[ink, line width=0.9pt, line cap=round, line join=round] plot[smooth, tension=0.5] coordinates {(15.7,8.8) (15.883,8.832) (16.067,8.878) (16.25,8.938) (16.433,9.011) (16.617,9.099) (16.8,9.2) (16.983,9.315) (17.167,9.444) (17.35,9.588) (17.533,9.744) (17.717,9.915) (17.9,10.1)};
+\filldraw[inked,fill=metallight,line width=0.7pt] (15.7,8.8) circle (0.07);
+\filldraw[inked,fill=metallight,line width=0.7pt] (17.9,10.1) circle (0.07);
+\draw[ink, line width=0.9pt, line cap=round, line join=round] plot[smooth, tension=0.5] coordinates {(18,9.5) (18.217,9.333) (18.433,9.183) (18.65,9.05) (18.867,8.933) (19.083,8.833) (19.3,8.75) (19.517,8.683) (19.733,8.633) (19.95,8.6) (20.167,8.583) (20.383,8.583) (20.6,8.6)};
+\filldraw[inked,fill=metallight,line width=0.7pt] (18,9.5) circle (0.07);
+\filldraw[inked,fill=metallight,line width=0.7pt] (20.6,8.6) circle (0.07);
+\draw[ink, line width=0.9pt, line cap=round, line join=round] plot[smooth, tension=0.5] coordinates {(13.3,7.1) (13.492,7.072) (13.683,7.056) (13.875,7.05) (14.067,7.056) (14.258,7.072) (14.45,7.1) (14.642,7.139) (14.833,7.189) (15.025,7.25) (15.217,7.322) (15.408,7.406) (15.6,7.5)};
+\filldraw[inked,fill=metallight,line width=0.7pt] (13.3,7.1) circle (0.07);
+\filldraw[inked,fill=metallight,line width=0.7pt] (15.6,7.5) circle (0.07);
+\draw[ink, line width=0.9pt, line cap=round, line join=round] plot[smooth, tension=0.5] coordinates {(2.45,7) (3.546,6.729) (4.642,6.533) (5.737,6.412) (6.833,6.367) (7.929,6.396) (9.025,6.5) (10.121,6.679) (11.217,6.933) (12.312,7.262) (13.408,7.667) (14.504,8.146) (15.6,8.7)};
+\filldraw[inked,fill=metallight,line width=0.7pt] (2.45,7) circle (0.07);
+\filldraw[inked,fill=metallight,line width=0.7pt] (15.6,8.7) circle (0.07);
+\draw[ink, line width=0.8pt, line cap=round, line join=round] plot[smooth, tension=0.5] coordinates {(7.5,5) (7.975,4.914) (8.45,4.856) (8.925,4.825) (9.4,4.822) (9.875,4.847) (10.35,4.9) (10.825,4.981) (11.3,5.089) (11.775,5.225) (12.25,5.389) (12.725,5.581) (13.2,5.8)};
+\fill[cyan, opacity=0.3] (8.07,4.78) circle (0.2);
+\filldraw[inked,fill=cyan,line width=0.5pt] (8.07,4.78) circle (0.08);
+\fill[gold, opacity=0.3] (8.64,4.72) circle (0.2);
+\filldraw[inked,fill=gold,line width=0.5pt] (8.64,4.72) circle (0.08);
+\fill[pink, opacity=0.3] (9.21,4.7) circle (0.2);
+\filldraw[inked,fill=pink,line width=0.5pt] (9.21,4.7) circle (0.08);
+\fill[pink, opacity=0.3] (9.78,4.72) circle (0.2);
+\filldraw[inked,fill=pink,line width=0.5pt] (9.78,4.72) circle (0.08);
+\fill[goldlight, opacity=0.3] (10.35,4.78) circle (0.2);
+\filldraw[inked,fill=goldlight,line width=0.5pt] (10.35,4.78) circle (0.08);
+\fill[gold, opacity=0.3] (10.92,4.88) circle (0.2);
+\filldraw[inked,fill=gold,line width=0.5pt] (10.92,4.88) circle (0.08);
+\fill[pink, opacity=0.3] (11.49,5.02) circle (0.2);
+\filldraw[inked,fill=pink,line width=0.5pt] (11.49,5.02) circle (0.08);
+\fill[goldlight, opacity=0.3] (12.06,5.2) circle (0.2);
+\filldraw[inked,fill=goldlight,line width=0.5pt] (12.06,5.2) circle (0.08);
+\fill[cyan, opacity=0.3] (12.63,5.42) circle (0.2);
+\filldraw[inked,fill=cyan,line width=0.5pt] (12.63,5.42) circle (0.08);
+\begin{scope}[shift={(9.35,5.717)}, rotate=3.928, xscale=0.8, yscale=0.8]
+\draw[ink, line width=1pt, line cap=round] (0,0) -- (0,-0.2);
+\filldraw[inked,fill=pteal] (-0.42,-0.74) rectangle (0.42,-0.18);
+\draw[ink, line width=0.9pt, line join=round] (-0.42,-0.18) -- (0,-0.5) -- (0.42,-0.18);
+\filldraw[inked,fill=metallight,line width=0.8pt] (0,0) circle (0.09);
+\end{scope}
+\begin{scope}[shift={(12.649,6.615)}, rotate=13.959, xscale=0.8, yscale=0.8]
+\draw[ink, line width=1pt, line cap=round] (0,0) -- (0,-0.2);
+\filldraw[inked,fill=pcoral] (-0.42,-0.74) rectangle (0.42,-0.18);
+\draw[ink, line width=0.9pt, line join=round] (-0.42,-0.18) -- (0,-0.5) -- (0.42,-0.18);
+\filldraw[inked,fill=metallight,line width=0.8pt] (0,0) circle (0.09);
+\end{scope}
+\begin{scope}[shift={(10.374,5.758)}, rotate=5.748, xscale=0.8, yscale=0.8]
+\draw[ink, line width=1pt, line cap=round] (0,0) -- (0,-0.2);
+\filldraw[inked,fill=pgold] (-0.42,-0.74) rectangle (0.42,-0.18);
+\draw[ink, line width=0.9pt, line join=round] (-0.42,-0.18) -- (0,-0.5) -- (0.42,-0.18);
+\filldraw[inked,fill=metallight,line width=0.8pt] (0,0) circle (0.09);
+\end{scope}
+\begin{scope}[shift={(10.06,5.13)}, rotate=1.313, xscale=0.8, yscale=0.8]
+\draw[ink, line width=1pt, line cap=round] (0,0) -- (0,-0.2);
+\filldraw[inked,fill=pviolet] (-0.42,-0.74) rectangle (0.42,-0.18);
+\draw[ink, line width=0.9pt, line join=round] (-0.42,-0.18) -- (0,-0.5) -- (0.42,-0.18);
+\filldraw[inked,fill=metallight,line width=0.8pt] (0,0) circle (0.09);
+\end{scope}
+\begin{scope}[shift={(3.965,6.01)}, rotate=-13.741, xscale=0.8, yscale=0.8]
+\draw[ink, line width=1pt, line cap=round] (0,0) -- (0,-0.2);
+\filldraw[inked,fill=pteal] (-0.42,-0.74) rectangle (0.42,-0.18);
+\draw[ink, line width=0.9pt, line join=round] (-0.42,-0.18) -- (0,-0.5) -- (0.42,-0.18);
+\filldraw[inked,fill=metallight,line width=0.8pt] (0,0) circle (0.09);
+\end{scope}
+\begin{scope}[shift={(5.08,6.476)}, rotate=-4.008, xscale=0.8, yscale=0.8]
+\draw[ink, line width=1pt, line cap=round] (0,0) -- (0,-0.2);
+\filldraw[inked,fill=pgold] (-0.42,-0.74) rectangle (0.42,-0.18);
+\draw[ink, line width=0.9pt, line join=round] (-0.42,-0.18) -- (0,-0.5) -- (0.42,-0.18);
+\filldraw[inked,fill=metallight,line width=0.8pt] (0,0) circle (0.09);
+\end{scope}
+\begin{scope}[shift={(13.233,7.597)}, rotate=12.846, xscale=0.8, yscale=0.8]
+\draw[ink, line width=1pt, line cap=round] (0,0) -- (0,-0.2);
+\filldraw[inked,fill=pviolet] (-0.42,-0.74) rectangle (0.42,-0.18);
+\draw[ink, line width=0.9pt, line join=round] (-0.42,-0.18) -- (0,-0.5) -- (0.42,-0.18);
+\filldraw[inked,fill=metallight,line width=0.8pt] (0,0) circle (0.09);
+\end{scope}
+\begin{scope}[shift={(16.8,7.15)}, rotate=15.939, xscale=0.8, yscale=0.8]
+\draw[ink, line width=1pt, line cap=round] (0,0) -- (0,-0.2);
+\filldraw[inked,fill=pteal] (-0.42,-0.74) rectangle (0.42,-0.18);
+\draw[ink, line width=0.9pt, line join=round] (-0.42,-0.18) -- (0,-0.5) -- (0.42,-0.18);
+\filldraw[inked,fill=metallight,line width=0.8pt] (0,0) circle (0.09);
+\end{scope}
+\begin{scope}[shift={(19.17,8.798)}, rotate=-12.852, xscale=0.8, yscale=0.8]
+\draw[ink, line width=1pt, line cap=round] (0,0) -- (0,-0.2);
+\filldraw[inked,fill=pcoral] (-0.42,-0.74) rectangle (0.42,-0.18);
+\draw[ink, line width=0.9pt, line join=round] (-0.42,-0.18) -- (0,-0.5) -- (0.42,-0.18);
+\filldraw[inked,fill=metallight,line width=0.8pt] (0,0) circle (0.09);
+\end{scope}
+\begin{scope}[shift={(16.8,9.2)}, rotate=18.348, xscale=0.8, yscale=0.8]
+\draw[ink, line width=1pt, line cap=round] (0,0) -- (0,-0.2);
+\filldraw[inked,fill=pgold] (-0.42,-0.74) rectangle (0.42,-0.18);
+\draw[ink, line width=0.9pt, line join=round] (-0.42,-0.18) -- (0,-0.5) -- (0.42,-0.18);
+\filldraw[inked,fill=metallight,line width=0.8pt] (0,0) circle (0.09);
+\end{scope}
+\begin{scope}[shift={(3.575,5.825)}, rotate=-12.417, xscale=0.8, yscale=0.8]
+\draw[ink, line width=1pt, line cap=round] (0,0) -- (0,-0.2);
+\filldraw[inked,fill=pcoral] (-0.42,-0.74) rectangle (0.42,-0.18);
+\draw[ink, line width=0.9pt, line join=round] (-0.42,-0.18) -- (0,-0.5) -- (0.42,-0.18);
+\filldraw[inked,fill=metallight,line width=0.8pt] (0,0) circle (0.09);
+\end{scope}
+\end{scope}
+\end{tikzpicture}
+\end{document}

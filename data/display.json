@@ -1,0 +1,9 @@
+{
+  "speeds": [
+    {"label": "1×", "ms_per_tick": 820},
+    {"label": "2×", "ms_per_tick": 410},
+    {"label": "4×", "ms_per_tick": 200}
+  ],
+  "default_speed": 0,
+  "effect_ms": 650
+}
