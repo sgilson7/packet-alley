@@ -502,7 +502,8 @@ function inspectPacket(id) {
   const body = el("overlay-body");
   clear(body);
   const head = tag("h2", null, "");
-  const chip = tag("span", "chip " + p.cls, p.letter);
+  const chip = svg("svg", { class: "chip-svg", role: "img", "aria-label": p.cls });
+  chip.appendChild(svg("use", { href: "#pkt-sym-" + p.cls }));
   head.appendChild(chip);
   head.appendChild(document.createTextNode(" " + t("panel_legend")));
   body.appendChild(head);

@@ -176,7 +176,8 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .legend-row h3, .log-wrap h3 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); margin: 10px 0 6px; }
 .legend { display: flex; flex-wrap: wrap; gap: 8px 14px; }
 .legend .item { display: inline-flex; align-items: center; gap: 7px; font-size: 0.85rem; }
-.legend .chip-svg { width: 30px; height: 30px; flex: 0 0 auto; overflow: visible; }
+.chip-svg { width: 30px; height: 30px; flex: 0 0 auto; overflow: visible; vertical-align: middle; }
+.legend .chip-svg { margin: 0; }
 
 .log { max-height: 220px; overflow-y: auto; background: var(--panel); border: 2px solid var(--line); border-radius: 10px; padding: 8px 10px 8px 28px; font-size: 0.9rem; }
 .log li { margin: 2px 0; }

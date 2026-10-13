@@ -77,6 +77,28 @@ fn the_starting_choices_do_not_already_pass() {
 }
 
 #[test]
+fn the_explainer_passes_by_being_watched_and_its_quiz_scores() {
+    // The "flood" level has no edits: it is watched, not played, so it passes
+    // the moment it is run, and its quiz still awards the knowledge star.
+    let mut g = game();
+    g.set_teacher(true);
+    g.open("flood").expect("open flood");
+    let out = g.run().expect("run flood");
+    println!("flood: {}", if passed(&out) { "PASS" } else { "FAIL" });
+    assert!(passed(&out), "the explainer should pass just by running: {out}");
+    // It is meant to show a flood: the run must actually drop frames, or the
+    // lesson has no pile-up to point at. The summary carries the exact line
+    // "{n} frames were lost."; the quoted "0 ..." matches only a run with none.
+    assert!(
+        !out.contains("\"0 frames were lost.\""),
+        "the flood should drop frames, but none were lost: {out}"
+    );
+    // The quiz answer is option 0.
+    assert!(g.answer(1).unwrap().contains("\"correct\":false"));
+    assert!(g.answer(0).unwrap().contains("\"correct\":true"));
+}
+
+#[test]
 fn a_fresh_player_sees_only_the_first_level_unlocked() {
     let g = game();
     let home = g.home();

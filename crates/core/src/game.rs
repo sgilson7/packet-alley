@@ -228,6 +228,7 @@ fn check_cond(l: &Level, c: &Cond) -> Result<(), String> {
             | "no_collisions"
             | "max_ticks"
             | "max_retransmits"
+            | "observe"
     );
     if !known {
         return Err(format!("{}: unknown goal {}", l.id, c.kind));
@@ -273,6 +274,9 @@ fn holds(l: &Level, c: &Cond, s: &crate::sim::Stats, _ticks: u32) -> bool {
         "no_drops" => s.drops == 0,
         "no_collisions" => s.collisions == 0,
         "max_retransmits" => s.retransmits <= c.n,
+        // An explainer level is passed by watching it; there is nothing to
+        // get right, so the goal always holds once the run has played.
+        "observe" => true,
         _ => true,
     }
 }

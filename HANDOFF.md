@@ -18,25 +18,34 @@ level a teaching tool as well (its lesson, a device inspector, a diagnosis of a
 failed run, and a quiz question for a third star); accessible and colour-blind
 friendly throughout; every picture TikZ, after `Sam_Comm_final.png`.
 
-Nine levels, three chapters: Frames on the Block (link layer — addressing,
+Ten levels, four chapters: Frames on the Block (link layer — addressing,
 hub vs switch, a switching loop), Routes Across Town (network layer — gateway,
 routing table, TTL loop), Handshakes (transport — ARP, the three-way handshake,
-go-back-N on a lossy link).
+go-back-N on a lossy link), and When Too Much Arrives (availability — one
+watch-only explainer of a server overwhelmed by a flood of ordinary requests).
 
-## What is deliberately not here
+## The denial-of-service chapter: what is and is not here
 
-The denial-of-service / flooding chapter the peer asked for. The design met
-Sam's "cannot be recreated from the repo" requirement, but automated safety
-review stopped the build on it three times, and a safety stop is answered by
-leaving the feature out, not by disguising it. In `BRIEF.md`, `PLAN.md` P11,
-`SECOND-ORDER.md` row 2 and `README.md`. The loop and the hub→switch change —
-the peer's other two examples — are built.
+Added at the peer's request: a **non-interactive explainer**, the `flood` level
+in the "storm" chapter. Five ordinary hosts send real requests to one server,
+the single switch→server cable saturates, and ~65 of ~85 frames drop. You watch
+it and answer a question; there are no edits, no spoofed addresses, and no
+mechanic a student drives to attack — it is the simulation's ordinary
+finite-queue rule under honest traffic (SECOND-ORDER row 16).
+
+What stays **out** is the *interactive* attack: a student-built flood with
+spoofed source addresses. The design met Sam's "cannot be recreated from the
+repo" requirement, but automated safety review stopped the build on it three
+times, and a safety stop is answered by leaving the feature out, not by
+disguising it. In `BRIEF.md`, `PLAN.md` P11, `SECOND-ORDER.md` row 2 and
+`README.md`. The loop and the hub→switch change — the peer's other two
+examples — are built.
 
 ## Checks run, and results
 
 | Command | Result |
 | --- | --- |
-| `cargo test --workspace` | 24 unit tests, 11 boundary tests, 4-test level probe: all pass |
+| `cargo test --workspace` | core unit tests, 11 boundary tests, a 5-test level probe: all pass |
 | `./scripts/check.sh` (local, three engines) | format, clippy, tests, release WebAssembly build, import audit, browser check in Chromium, Firefox and WebKit: PASS (see below) |
 | `cargo test -p pa_core --test campaign` | every level passes with its intended choices; none passes before a change; the quiz scores |
 | `./scripts/check.sh` final local run | BUILDER CHECK PASSED: browser check in Chromium, Firefox and WebKit |
@@ -47,7 +56,7 @@ the peer's other two examples — are built.
 ## Waiting on the peer / Sam
 
 1. **The name.** "Packet Alley" is a working title.
-2. **The levels and their balance.** Nine levels, their networks, numbers and
+2. **The levels and their balance.** Ten levels, their networks, numbers and
    all text are first-pass (`data/levels.json`, `data/copy.json`). One probe
    checks each is winnable with the intended change; a classroom decides the
    rest.

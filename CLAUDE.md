@@ -14,4 +14,6 @@
 
 Levels, networks and quizzes are in `data/levels.json`; every reader-visible string in `data/copy.json`; playback speeds in `data/display.json`. `cargo test -p pa_core --test campaign -- --nocapture` plays every level with its intended choices and prints whether each passes. The simulation is `crates/core/src/sim.rs` (frames, hubs, switches, routers, TCP), the address maths `ip.rs`, the level format `level.rs`, and the page's one door `game.rs`. Art is TikZ: `python3 tools/art.py` writes `web/art/`.
 
-A denial-of-service / flooding chapter is deliberately absent (SECOND-ORDER row 2). Do not add an attack mechanic to evade a safety stop.
+The **interactive** denial-of-service / flooding mechanic is deliberately absent (SECOND-ORDER row 2): no student-driven flood, no spoofed source addresses. Do not add an attack mechanic to evade a safety stop.
+
+What *is* here (SECOND-ORDER row 16) is a **non-interactive explainer**, the "storm" chapter's `flood` level: five ordinary hosts send real UDP requests to one server, the single switch→server link saturates, and most are dropped. It has no edits (watch, then answer a quiz), no spoofing, and no mechanic a student drives to generate an attack — the pile-up is just the existing finite-queue rule (`PORT_QUEUE` in `sim.rs`) under honest traffic. Explainer levels use the `observe` goal kind, which always holds, so the level passes by being watched.

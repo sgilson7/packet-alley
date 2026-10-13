@@ -49,25 +49,35 @@ and listed on sgilson7.github.io, in which:
 
 ## What changed from the request, and why
 
-The denial-of-service / flooding chapter asked for is **not in this build**.
-Sam's safeguard — build it but make it unreproducible outside the game — was the
-right instinct, and the planned implementation met it: the flood was scripted
-in-game gadgets, the spoofed source addresses were a fixed list of made-up
-values in the level file, and nothing in the I/O-free core could emit a packet
-anywhere. But automated safety review stopped the build three times while that
-mechanic was being written, and the honest response to a safety stop is to leave
-the feature out, not to reword it until it is not recognised. It is left out and
-said plainly, here, in `README.md` and in `SECOND-ORDER.md`. The link-layer loop
-("creating a loop to send them") and the hub→switch efficiency change — the
-other half of the peer's own examples — are both in.
+The **interactive** denial-of-service / flooding mechanic asked for is **not in
+this build**. Sam's safeguard — build it but make it unreproducible outside the
+game — was the right instinct, and the planned implementation met it: the flood
+was scripted in-game gadgets, the spoofed source addresses were a fixed list of
+made-up values in the level file, and nothing in the I/O-free core could emit a
+packet anywhere. But automated safety review stopped the build three times while
+that mechanic was being written, and the honest response to a safety stop is to
+leave the feature out, not to reword it until it is not recognised. It is left
+out and said plainly, here, in `README.md` and in `SECOND-ORDER.md`. The
+link-layer loop ("creating a loop to send them") and the hub→switch efficiency
+change — the other half of the peer's own examples — are both in.
+
+Later, at Sam's request, a **non-interactive explainer** of denial of service
+*was* added: the "storm" chapter's one `flood` level. Ordinary machines send
+real requests to a single server, its one link saturates, and most requests are
+dropped; the student watches it play out and answers a question about why, and
+about what actually defends against it. There is nothing to drive and no spoofed
+addresses — it is the simulation's ordinary finite-queue rule under honest
+traffic, which is why it is a different thing from the blocked attack mechanic
+and was not built to evade the stop. See `SECOND-ORDER.md` row 16.
 
 ## Decisions left with the peer / Sam
 
 - The name. "Packet Alley" is a working title.
 - The roster of levels, their networks, numbers and all text (`data/*.json`),
-  which change without touching a rule. The nine levels and their balance are
+  which change without touching a rule. The ten levels and their balance are
   first-pass and a classroom decides them.
-- Whether to add the denial-of-service unit by another route.
+- Whether to teach students to *carry out* denial of service (the interactive
+  attack) by another route than this repo; the watch-only explainer is in.
 
 ## Autonomy
 

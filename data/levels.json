@@ -20,6 +20,13 @@
       "layer": "Transport layer — reliable streams",
       "blurb": "Finding a neighbour's hardware address, opening a connection the TCP way, and finishing a transfer over a line that drops frames.",
       "backdrop": "wires"
+    },
+    {
+      "id": "storm",
+      "title": "When Too Much Arrives",
+      "layer": "Availability — a service overwhelmed",
+      "blurb": "Watch what a flood of ordinary requests does to one small server, and why no single machine can answer an unlimited crowd. This chapter is to watch and think about, not to play.",
+      "backdrop": "town"
     }
   ],
   "levels": [
@@ -547,6 +554,61 @@
         "why": "Go-back-N resends everything from the oldest unacknowledged segment onward, since the receiver dropped the ones that arrived out of order."
       },
       "debrief": "You have carried data from a single wire to a reliable stream across town. That is TCP/IP."
+    },
+    {
+      "id": "flood",
+      "chapter": "storm",
+      "title": "The server that could not keep up",
+      "story": "Five machines across town all send requests to one little shop server at the same moment. They funnel through a single street switch, and the one cable from that switch to the server can only carry one frame at a time. Press Run and watch the pile-up. There is nothing to change here — just watch.",
+      "concept": [
+        "Every link carries only so many frames per tick, and every device can hold only so many waiting in line before it must drop the next one.",
+        "When requests arrive faster than the server's link can carry them, the queue fills and the extra requests are thrown away — lost, not served.",
+        "That is what a denial-of-service attack abuses: not a clever trick, just more requests than the target can answer. The defence is more capacity, or turning the flood away before it reaches the server — rate limits and filtering further out."
+      ],
+      "task": "Run it and watch. Count the ✕ drops piling up where the switch meets the server — that one cable is the bottleneck.",
+      "ticks": 16,
+      "seed": 1,
+      "nodes": [
+        {"id": "c1", "kind": "host", "name": "Cafe laptop", "x": 170, "y": 100, "ip": "10.0.0.21/24"},
+        {"id": "c2", "kind": "host", "name": "Library PC", "x": 170, "y": 200, "ip": "10.0.0.22/24"},
+        {"id": "c3", "kind": "host", "name": "Dorm phone", "x": 170, "y": 300, "ip": "10.0.0.23/24"},
+        {"id": "c4", "kind": "host", "name": "Office PC", "x": 170, "y": 400, "ip": "10.0.0.24/24"},
+        {"id": "c5", "kind": "host", "name": "Street kiosk", "x": 170, "y": 500, "ip": "10.0.0.25/24"},
+        {"id": "sw", "kind": "switch", "name": "Street switch", "x": 500, "y": 300},
+        {"id": "srv", "kind": "server", "name": "Shop server", "x": 840, "y": 300, "ip": "10.0.0.80/24"}
+      ],
+      "links": [
+        {"id": "l1", "a": "c1", "b": "sw"},
+        {"id": "l2", "a": "c2", "b": "sw"},
+        {"id": "l3", "a": "c3", "b": "sw"},
+        {"id": "l4", "a": "c4", "b": "sw"},
+        {"id": "l5", "a": "c5", "b": "sw"},
+        {"id": "up", "a": "sw", "b": "srv"}
+      ],
+      "apps": [
+        {"id": "r1", "kind": "udp", "from": "c1", "to": "10.0.0.80", "at": 1, "count": 5, "every": 1, "label": "a request"},
+        {"id": "r2", "kind": "udp", "from": "c2", "to": "10.0.0.80", "at": 1, "count": 5, "every": 1, "label": "a request"},
+        {"id": "r3", "kind": "udp", "from": "c3", "to": "10.0.0.80", "at": 1, "count": 5, "every": 1, "label": "a request"},
+        {"id": "r4", "kind": "udp", "from": "c4", "to": "10.0.0.80", "at": 1, "count": 5, "every": 1, "label": "a request"},
+        {"id": "r5", "kind": "udp", "from": "c5", "to": "10.0.0.80", "at": 1, "count": 5, "every": 1, "label": "a request"}
+      ],
+      "edits": [],
+      "goal": [
+        {"kind": "observe", "text": "Run the flood and watch it reach the server."}
+      ],
+      "bonus": {"kind": "observe", "text": "Stay to the end and see how many requests the server never got."},
+      "quiz": {
+        "question": "In this setup, why are so many requests dropped?",
+        "options": [
+          "More requests arrive each tick than the single switch-to-server cable can carry, so the queue fills and the rest are dropped.",
+          "The requests are addressed to the wrong server.",
+          "The server crashed and stopped answering.",
+          "The switch is broken and should be a hub instead."
+        ],
+        "answer": 0,
+        "why": "No address is wrong and nothing is broken. The server's one link has a fixed capacity; five senders at once exceed it, the switch's queue for that cable fills, and every frame past the limit is dropped. More senders would only drop more — which is exactly how a flood denies service."
+      },
+      "debrief": "A single server behind a single link can always be swamped by enough senders. That is why real services spread load across many machines and push filtering and rate limits out toward the edge, so a flood is turned away before it reaches the one cable that cannot grow."
     }
   ]
 }

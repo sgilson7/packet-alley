@@ -20,7 +20,7 @@ device inspector that shows what a switch or router actually knows.
 
 ## What it covers
 
-Three chapters, nine levels, one layer of the stack at a time.
+Four chapters, ten levels, roughly one layer of the stack at a time.
 
 - **Frames on the Block (link layer).** IP and MAC addresses, how a switch
   learns and a hub does not, collisions, and a switching loop that storms.
@@ -29,21 +29,31 @@ Three chapters, nine levels, one layer of the stack at a time.
   routing loop from lasting forever.
 - **Handshakes (transport layer).** ARP, the three-way handshake and its
   acknowledgement numbers, and go-back-N retransmission on a lossy link.
+- **When Too Much Arrives (availability).** One watch-only explainer: a flood
+  of ordinary requests overwhelms a single server's link, most are dropped, and
+  a question draws out why — and what actually defends against it. See below.
 
 Every packet is labelled with a letter and named in a list beside the map, and
 every map mark is a symbol, so nothing is told apart by colour alone; the status
 colours are the Okabe–Ito set, which stay distinct for colour-blind readers.
 
-### Not in this build
+### Denial of service
 
-A denial-of-service / flooding chapter was planned (spoofed source addresses, a
-SYN flood, and the defences against it — SYN cookies, source-address filtering,
-rate limiting). It is not included. Automated safety review repeatedly stopped
-the build while that attack mechanic was being written, even though it ran only
-inside a closed simulation, and the right response to a safety stop is not to
-disguise the same feature and slip it past. An instructor who wants to teach
-denial of service should use their own materials or a dedicated lab environment.
-`SECOND-ORDER.md` records this in full.
+The fourth chapter, **When Too Much Arrives**, is a single *explainer* level you
+watch rather than play: five ordinary machines send real requests to one small
+server, the one cable from the switch to the server saturates, and most requests
+are dropped. You watch it play out and answer a question about why — the picture
+of a service overwhelmed, and why spreading load and filtering at the edge are
+the defences. There is nothing to drive: it uses the simulation's ordinary
+finite-queue rule under honest traffic, with no spoofed addresses.
+
+What is **not** here is an *interactive* attack: no student-built flood, no
+spoofed source addresses, no SYN flood to assemble. That mechanic was planned,
+but automated safety review repeatedly stopped the build while it was being
+written — even inside a closed simulation — and the right response to a safety
+stop is not to disguise the same feature and slip it past. An instructor who
+wants students to *carry out* a denial-of-service attack should use their own
+materials or a dedicated lab environment. `SECOND-ORDER.md` records this in full.
 
 ## How it is built
 
