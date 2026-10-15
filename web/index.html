@@ -146,17 +146,9 @@
           </div>
           <p id="edits-hint" class="edits-hint"></p>
           <div id="l-edits" class="edits"></div>
-          <!-- Evidence-first prediction (Phase 2). Shown only for a migrated
-               level; the student commits an outcome before the run. -->
-          <div id="l-predict" class="predict" hidden>
-            <h3 id="predict-h"></h3>
-            <p id="predict-hint" class="edits-hint"></p>
-            <p id="predict-prompt" class="prompt"></p>
-            <div id="predict-opts" class="opts"></div>
-          </div>
-          <div class="run-row">
-            <button id="run-btn" class="primary" type="button"></button>
-            <p id="commit-hint" class="commit-hint" hidden></p>
+          <div class="legend-row">
+            <h3 id="legend-h"></h3>
+            <div id="legend" class="legend"></div>
           </div>
         </aside>
 
@@ -189,6 +181,21 @@
             <button id="zoom-in" class="ctl zoom-btn" type="button">&#43;</button>
             <button id="zoom-reset" class="ctl zoom-btn" type="button"></button>
           </div>
+          <!-- The action area, kept on the right by the map so the commit
+               button is in view without scrolling. Evidence-first prediction
+               (Phase 2) shows only for a migrated level. -->
+          <div id="action" class="action">
+            <div id="l-predict" class="predict" hidden>
+              <h3 id="predict-h"></h3>
+              <p id="predict-hint" class="edits-hint"></p>
+              <p id="predict-prompt" class="prompt"></p>
+              <div id="predict-opts" class="opts"></div>
+            </div>
+            <div class="run-row">
+              <button id="run-btn" class="primary" type="button"></button>
+              <p id="commit-hint" class="commit-hint" hidden></p>
+            </div>
+          </div>
           <div id="hud" class="hud" hidden></div>
           <div id="controls" class="controls" hidden>
             <button id="play-btn" class="ctl" type="button"></button>
@@ -196,14 +203,33 @@
             <button id="skip-btn" class="ctl" type="button"></button>
             <button id="replay-btn" class="ctl" type="button"></button>
           </div>
-          <div class="legend-row">
-            <h3 id="legend-h"></h3>
-            <div id="legend" class="legend"></div>
-          </div>
-          <div class="log-wrap">
-            <h3 id="log-h"></h3>
-            <ol id="log" class="log" aria-live="polite"></ol>
-          </div>
+          <!-- The step-by-step log. It can be searched, filtered by machine
+               and by what happened, blown up to full screen, and collapsed.
+               Every control's text comes from copy; no sizing lives here. -->
+          <section id="log-panel" class="log-panel">
+            <div class="log-head">
+              <h3 id="log-h"></h3>
+              <div class="log-head-btns">
+                <button id="log-full-btn" class="ghost small" type="button"></button>
+                <button id="log-toggle-btn" class="ghost small" type="button" aria-expanded="true"></button>
+              </div>
+            </div>
+            <div id="log-tools" class="log-tools">
+              <input id="log-search" class="log-search" type="search">
+              <div class="log-filter-group">
+                <span id="log-by-action" class="log-filter-label"></span>
+                <div id="log-kinds" class="log-chips"></div>
+              </div>
+              <div class="log-filter-group">
+                <span id="log-by-machine" class="log-filter-label"></span>
+                <div id="log-machines" class="log-chips"></div>
+              </div>
+            </div>
+            <div id="log-body" class="log-body">
+              <ol id="log" class="log" aria-live="polite"></ol>
+              <p id="log-note" class="log-note"></p>
+            </div>
+          </section>
         </div>
       </div>
     </section>

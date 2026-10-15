@@ -178,13 +178,42 @@ pub struct Stats {
     pub frames: u32,
 }
 
+/// One titled table in a node's inspector (a switch's MAC table, a router's
+/// routes). Column headers and the title are copy keys; the page translates
+/// them and draws the grid. `empty` (a copy key) is shown when there are no
+/// rows.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InfoTable {
+    pub title: &'static str,
+    pub cols: Vec<&'static str>,
+    pub rows: Vec<Vec<String>>,
+    pub empty: Option<&'static str>,
+}
+
+/// A fact's value: either a literal (an address, a count — data, not words) or
+/// a copy key the page translates (e.g. "(none)").
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FactVal {
+    Text(String),
+    Copy(&'static str),
+}
+
+/// What a node knows, for its inspector: a set of plain facts (each a copy key
+/// label and a value) and any titled tables. The page draws facts as a
+/// key/value grid and each table as a grid, all in the game's own style.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct NodeInfo {
+    pub facts: Vec<(&'static str, FactVal)>,
+    pub tables: Vec<InfoTable>,
+}
+
 #[derive(Debug, Clone)]
 pub struct Record {
     pub ticks: u32,
     pub transits: Vec<Transit>,
     pub events: Vec<Event>,
-    /// Per tick (index = tick), per node: the lines of its tables.
-    pub tables: Vec<Vec<Vec<String>>>,
+    /// Per tick (index = tick), per node: what its inspector shows.
+    pub tables: Vec<Vec<NodeInfo>>,
     /// Per tick: the totals at the end of that tick.
     pub stats_at: Vec<Stats>,
 }
@@ -1245,60 +1274,94 @@ impl Sim {
         self.rec.stats_at.push(self.stats.clone());
     }
 
-    /// What a node knows right now, as lines for the node inspector.
-    fn table(&self, n: usize) -> Vec<String> {
+    /// What a node knows right now, as facts and tables for the inspector.
+    fn table(&self, n: usize) -> NodeInfo {
         let node = &self.nodes[n];
-        let mut out = Vec::new();
+        let mut facts: Vec<(&'static str, FactVal)> = Vec::new();
+        let mut tables: Vec<InfoTable> = Vec::new();
+        let txt = FactVal::Text;
         match node.role {
             Role::Host => {
                 if let Some(c) = node.ip {
-                    out.push(format!("IP {}", c.show()));
+                    facts.push(("tbl_ip", txt(c.show())));
                 }
-                out.push(format!("MAC {}", show_mac(node.mac)));
-                out.push(match node.gateway {
-                    Some(g) => format!("gateway {}", show_ip(g)),
-                    None => "gateway (none)".to_string(),
-                });
+                facts.push(("tbl_mac", txt(show_mac(node.mac))));
+                facts.push((
+                    "tbl_gateway",
+                    match node.gateway {
+                        Some(g) => txt(show_ip(g)),
+                        None => FactVal::Copy("tbl_none"),
+                    },
+                ));
                 if !node.established.is_empty() {
-                    out.push(format!("open connections {}", node.established.len()));
+                    facts.push(("tbl_open_conns", txt(node.established.len().to_string())));
                 }
             }
-            Role::Hub => out.push(format!("ports {}", node.ports.len())),
+            Role::Hub => {
+                facts.push(("tbl_ports", txt(node.ports.len().to_string())));
+            }
             Role::Switch => {
-                out.push(format!("MAC {}", show_mac(node.mac)));
-                if node.mac_table.is_empty() {
-                    out.push("MAC table (empty)".to_string());
-                }
-                for (mac, port) in &node.mac_table {
-                    out.push(format!("{} → port {}", show_mac(*mac), port + 1));
-                }
-                for (p, b) in node.blocked.iter().enumerate() {
-                    if *b {
-                        out.push(format!("port {} blocked", p + 1));
-                    }
+                facts.push(("tbl_mac", txt(show_mac(node.mac))));
+                let rows: Vec<Vec<String>> = node
+                    .mac_table
+                    .iter()
+                    .map(|(mac, port)| vec![show_mac(*mac), (port + 1).to_string()])
+                    .collect();
+                tables.push(InfoTable {
+                    title: "tbl_mac_table",
+                    cols: vec!["tbl_col_mac", "tbl_col_port"],
+                    rows,
+                    empty: Some("tbl_mac_table_empty"),
+                });
+                let blocked: Vec<Vec<String>> = node
+                    .blocked
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, b)| **b)
+                    .map(|(p, _)| vec![(p + 1).to_string()])
+                    .collect();
+                if !blocked.is_empty() {
+                    tables.push(InfoTable {
+                        title: "tbl_blocked",
+                        cols: vec!["tbl_col_port"],
+                        rows: blocked,
+                        empty: None,
+                    });
                 }
             }
             Role::Router => {
-                out.push(format!("MAC {}", show_mac(node.mac)));
-                for (p, c) in node.ifaces.iter().enumerate() {
-                    if let Some(c) = c {
-                        out.push(format!(
-                            "port {}: {} (on block {})",
-                            p + 1,
-                            show_ip(c.ip),
-                            c.network().show()
-                        ));
-                    }
-                }
-                for (prefix, via) in &node.routes {
-                    out.push(format!("{} via {}", prefix.show(), show_ip(*via)));
-                }
+                facts.push(("tbl_mac", txt(show_mac(node.mac))));
+                let ifaces: Vec<Vec<String>> = node
+                    .ifaces
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(p, c)| {
+                        c.map(|c| vec![(p + 1).to_string(), show_ip(c.ip), c.network().show()])
+                    })
+                    .collect();
+                tables.push(InfoTable {
+                    title: "tbl_ifaces",
+                    cols: vec!["tbl_col_port", "tbl_col_ip", "tbl_col_block"],
+                    rows: ifaces,
+                    empty: None,
+                });
+                let routes: Vec<Vec<String>> = node
+                    .routes
+                    .iter()
+                    .map(|(prefix, via)| vec![prefix.show(), show_ip(*via)])
+                    .collect();
+                tables.push(InfoTable {
+                    title: "tbl_routes",
+                    cols: vec!["tbl_col_dest", "tbl_col_via"],
+                    rows: routes,
+                    empty: Some("tbl_routes_empty"),
+                });
             }
         }
         let waiting: usize = node.outq.iter().map(|q| q.len()).sum();
         if waiting > 0 {
-            out.push(format!("waiting to send {waiting}"));
+            facts.push(("tbl_waiting", txt(waiting.to_string())));
         }
-        out
+        NodeInfo { facts, tables }
     }
 }

@@ -253,7 +253,13 @@ function renderLevel() {
   el("log-h").textContent = t("panel_log");
   el("hud").hidden = true;
   el("controls").hidden = true;
-  clear(el("log"));
+  resetLog();
+}
+
+function clearLogRows() {
+  logRows.length = 0;
+  renderLogChips();
+  renderLogRows();
 }
 
 // One option button, shown the same way in the side panel and in the on-map
@@ -609,7 +615,7 @@ function runLevel() {
   cur.ms = 0;
   cur.logCount = 0;
   cur.speedIdx = display.default_speed;
-  clear(el("log"));
+  clearLogRows();
   el("hud").hidden = false;
   el("controls").hidden = false;
   el("run-btn").textContent = t(cur.view.predict ? "btn_commit" : "btn_rerun");
@@ -700,19 +706,145 @@ function renderPackets(f) {
   }
 }
 
+// The log keeps every line of the run so it can be searched and filtered
+// without replaying. `off*` hold the categories and machines the student has
+// switched off (empty means everything shows).
+const logRows = [];
+const logView = { search: "", offKinds: new Set(), offMachines: new Set() };
+
+function resetLog() {
+  logRows.length = 0;
+  logView.search = "";
+  logView.offKinds.clear();
+  logView.offMachines.clear();
+  el("log-search").value = "";
+  el("log-panel").classList.remove("full", "collapsed");
+  el("log-full-btn").textContent = t("log_full");
+  el("log-toggle-btn").textContent = t("log_hide");
+  el("log-toggle-btn").setAttribute("aria-expanded", "true");
+  renderLogChips();
+  renderLogRows();
+}
+
 function appendLog(f) {
   if (f.log_count === cur.logCount) {
     return;
   }
-  const log = el("log");
   for (const line of f.log) {
-    const li = tag("li", line.fx);
-    li.appendChild(tag("span", "sym", line.symbol));
-    li.appendChild(document.createTextNode(line.t + "  " + line.text));
-    log.appendChild(li);
+    logRows.push(line);
   }
   cur.logCount = f.log_count;
-  log.scrollTop = log.scrollHeight;
+  renderLogChips();
+  renderLogRows();
+  const body = el("log-body");
+  body.scrollTop = body.scrollHeight;
+}
+
+// A row shown or hidden by the current search and filter chips.
+function logShown(line) {
+  if (logView.offKinds.has(line.kind) || logView.offMachines.has(line.node)) {
+    return false;
+  }
+  const q = logView.search.trim().toLowerCase();
+  if (!q) {
+    return true;
+  }
+  return (line.t + " " + line.node + " " + line.text).toLowerCase().includes(q);
+}
+
+function distinct(key) {
+  const seen = [];
+  for (const line of logRows) {
+    if (!seen.includes(line[key])) {
+      seen.push(line[key]);
+    }
+  }
+  return seen;
+}
+
+// One filter chip: toggles a value into/out of an `off` set. A chip is pressed
+// (on) unless its value sits in the off set.
+function filterChip(label, sym, off, value, symClass) {
+  const on = !off.has(value);
+  const b = tag("button", "log-chip");
+  b.type = "button";
+  b.setAttribute("aria-pressed", on ? "true" : "false");
+  if (sym) {
+    b.appendChild(tag("span", "chip-sym" + (symClass ? " " + symClass : ""), sym));
+  }
+  b.appendChild(tag("span", null, label));
+  b.addEventListener("click", () => {
+    if (off.has(value)) {
+      off.delete(value);
+    } else {
+      off.add(value);
+    }
+    renderLogChips();
+    renderLogRows();
+  });
+  return b;
+}
+
+function renderLogChips() {
+  const kinds = distinct("kind");
+  const machines = distinct("node");
+  const kbox = el("log-kinds");
+  clear(kbox);
+  for (const k of kinds) {
+    kbox.appendChild(filterChip(t("logkind_" + k), t("logsym_" + k), logView.offKinds, k, k));
+  }
+  const mbox = el("log-machines");
+  clear(mbox);
+  for (const m of machines) {
+    mbox.appendChild(filterChip(m, "", logView.offMachines, m));
+  }
+}
+
+function renderLogRows() {
+  const log = el("log");
+  clear(log);
+  let shown = 0;
+  for (const line of logRows) {
+    if (!logShown(line)) {
+      continue;
+    }
+    shown += 1;
+    const li = tag("li");
+    li.appendChild(tag("span", "l-t", line.t));
+    const tagEl = tag("span", "l-tag " + line.kind);
+    tagEl.appendChild(tag("span", "chip-sym", t("logsym_" + line.kind)));
+    tagEl.appendChild(tag("span", null, t("logkind_" + line.kind)));
+    li.appendChild(tagEl);
+    li.appendChild(tag("span", "l-machine", line.node));
+    li.appendChild(tag("span", "l-text", line.text));
+    log.appendChild(li);
+  }
+  const note = el("log-note");
+  if (!logRows.length) {
+    note.hidden = false;
+    note.textContent = t("log_empty");
+  } else if (!shown) {
+    note.hidden = false;
+    note.textContent = t("log_none_match");
+  } else {
+    note.hidden = true;
+  }
+}
+
+function toggleLogFull() {
+  const full = el("log-panel").classList.toggle("full");
+  if (full) {
+    el("log-panel").classList.remove("collapsed");
+    el("log-toggle-btn").textContent = t("log_hide");
+    el("log-toggle-btn").setAttribute("aria-expanded", "true");
+  }
+  el("log-full-btn").textContent = t(full ? "log_exit_full" : "log_full");
+}
+
+function toggleLogCollapse() {
+  const hidden = el("log-panel").classList.toggle("collapsed");
+  el("log-toggle-btn").textContent = t(hidden ? "log_show" : "log_hide");
+  el("log-toggle-btn").setAttribute("aria-expanded", hidden ? "false" : "true");
 }
 
 function skip() {
@@ -726,7 +858,7 @@ function skip() {
 function replay() {
   cur.ms = 0;
   cur.logCount = 0;
-  clear(el("log"));
+  clearLogRows();
   clear(el("packets"));
   setPlay(true);
 }
@@ -976,11 +1108,45 @@ function inspectNode(i) {
   body.appendChild(tag("p", "eyebrow", n.kind_name));
   body.appendChild(tag("p", null, n.blurb));
   body.appendChild(tag("h3", null, t("panel_node")));
-  const ul = tag("ul");
-  for (const line of n.lines) {
-    ul.appendChild(tag("li", null, line));
+  // Facts (IP, MAC, gateway…) as a key/value grid.
+  if (n.facts.length) {
+    const table = tag("table", "node-facts");
+    for (const row of n.facts) {
+      const tr = tag("tr");
+      tr.appendChild(tag("td", "k", row[0]));
+      tr.appendChild(tag("td", "v", row[1]));
+      table.appendChild(tr);
+    }
+    body.appendChild(table);
   }
-  body.appendChild(ul);
+  // Titled tables (a switch's MAC table, a router's routes) as styled grids.
+  for (const tbl of n.tables) {
+    const wrap = tag("div", "node-table");
+    wrap.appendChild(tag("div", "nt-title", tbl.title));
+    if (tbl.rows.length) {
+      const table = tag("table");
+      const thead = tag("thead");
+      const htr = tag("tr");
+      for (const col of tbl.cols) {
+        htr.appendChild(tag("th", null, col));
+      }
+      thead.appendChild(htr);
+      table.appendChild(thead);
+      const tbody = tag("tbody");
+      for (const row of tbl.rows) {
+        const tr = tag("tr");
+        for (const cell of row) {
+          tr.appendChild(tag("td", null, cell));
+        }
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+      wrap.appendChild(table);
+    } else if (tbl.empty) {
+      wrap.appendChild(tag("p", "nt-empty", tbl.empty));
+    }
+    body.appendChild(wrap);
+  }
   openOverlay();
 }
 
@@ -1026,6 +1192,12 @@ function wire() {
   el("skip-btn").addEventListener("click", skip);
   el("replay-btn").addEventListener("click", replay);
   el("speed-btn").addEventListener("click", cycleSpeed);
+  el("log-search").addEventListener("input", (e) => {
+    logView.search = e.target.value;
+    renderLogRows();
+  });
+  el("log-full-btn").addEventListener("click", toggleLogFull);
+  el("log-toggle-btn").addEventListener("click", toggleLogCollapse);
   el("zoom").addEventListener("input", applyZoom);
   el("zoom-in").addEventListener("click", () => {
     el("zoom").stepUp();
@@ -1063,6 +1235,12 @@ function labels() {
   el("skip-btn").textContent = t("btn_skip");
   el("replay-btn").textContent = t("btn_restart");
   el("speed-btn").textContent = display.speeds[display.default_speed].label;
+  el("log-search").setAttribute("placeholder", t("log_search_ph"));
+  el("log-search").setAttribute("aria-label", t("log_search"));
+  el("log-by-action").textContent = t("log_by_action");
+  el("log-by-machine").textContent = t("log_by_machine");
+  el("log-full-btn").textContent = t("log_full");
+  el("log-toggle-btn").textContent = t("log_hide");
   el("zoom-h").textContent = t("zoom_h");
   el("zoom-reset").textContent = t("zoom_reset");
   el("zoom-in").setAttribute("aria-label", t("zoom_in"));

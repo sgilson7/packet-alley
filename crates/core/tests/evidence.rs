@@ -273,3 +273,52 @@ fn each_chapter_scene_watches_and_its_prediction_grades() {
         "scenes stay out of the star total: {home}"
     );
 }
+
+#[test]
+fn a_switch_inspector_shows_a_structured_mac_table() {
+    // The switch's inspector carries its own MAC as a fact and a titled MAC
+    // address table the page draws as a grid. Before any run the table names
+    // itself empty; once a frame has crossed, the switch has learned a port.
+    let mut g = game();
+    let before = g.node(1, 0, 1).expect("the switch inspects before a run");
+    assert!(
+        has(&before, "\"title\":\"MAC address table\""),
+        "the switch shows a MAC address table: {before}"
+    );
+    assert!(
+        has(&before, "MAC address") && !has(&before, "[\"tbl"),
+        "facts are translated, not raw copy keys: {before}"
+    );
+    assert!(
+        has(&before, "Nothing learned yet."),
+        "an untouched switch has learned nothing: {before}"
+    );
+    g.choose(0, 1).unwrap();
+    g.predict(0).unwrap();
+    g.run().unwrap();
+    let after = g.node(1, 1_000_000, 1).expect("the switch inspects after a run");
+    assert!(
+        has(&after, "\"cols\":[\"MAC address\",\"Port\"]"),
+        "the MAC table has MAC and port columns: {after}"
+    );
+    assert!(
+        has(&after, "\"rows\":[[\"") && !has(&after, "\"rows\":[]"),
+        "after a frame crosses, the switch has learned a MAC table row: {after}"
+    );
+}
+
+#[test]
+fn log_lines_carry_a_machine_and_an_action_kind() {
+    // Each log line names the machine it concerns and an action category, so
+    // the page can filter the log by machine and by what happened.
+    let mut g = game();
+    g.choose(0, 1).unwrap();
+    g.predict(0).unwrap();
+    g.run().unwrap();
+    let f = g.frame(1_000_000, 1, 0).expect("a frame at the end of the run");
+    assert!(has(&f, "\"kind\":\"deliver\""), "a delivery is categorised: {f}");
+    assert!(
+        has(&f, "\"kind\":\"learn\"") && has(&f, "\"node\":\"SW\""),
+        "the switch's learn line names the switch: {f}"
+    );
+}

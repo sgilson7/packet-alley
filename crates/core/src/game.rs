@@ -10,7 +10,7 @@ use serde_json::{json, Value};
 
 use crate::ip::{show_ip, show_mac, BROADCAST_MAC};
 use crate::level::{self, Claim, Cond, Level, LevelFile};
-use crate::sim::{Body, Proto, Record, Sim};
+use crate::sim::{Body, FactVal, Proto, Record, Sim};
 
 /// The map's size in its own units; node coordinates in the level file are
 /// in these units.
@@ -168,7 +168,45 @@ const OTHER_KEYS: &[&str] = &[
     "err_quiz_first",
     "err_inspect_first",
     "err_predict_first",
+    "tbl_ip",
+    "tbl_mac",
+    "tbl_gateway",
+    "tbl_none",
+    "tbl_ports",
+    "tbl_open_conns",
+    "tbl_waiting",
+    "tbl_mac_table",
+    "tbl_mac_table_empty",
+    "tbl_blocked",
+    "tbl_ifaces",
+    "tbl_routes",
+    "tbl_routes_empty",
+    "tbl_col_mac",
+    "tbl_col_port",
+    "tbl_col_ip",
+    "tbl_col_block",
+    "tbl_col_dest",
+    "tbl_col_via",
 ];
+
+/// The action category a log line belongs to, so the page can filter the log
+/// by what happened (a forward, a loss, a collision…). Most follow the event's
+/// map effect (`fx`); a few keys are split out into their own category so a
+/// student can pick them apart.
+fn log_kind(key: &str, fx: &str) -> &'static str {
+    match key {
+        "ev_route" => "forward",
+        "ev_retry" | "ev_timeout" | "ev_synack" => "retry",
+        _ => match fx {
+            "deliver" => "deliver",
+            "drop" => "drop",
+            "collision" => "collision",
+            "ignore" => "ignore",
+            "learn" => "learn",
+            _ => "other",
+        },
+    }
+}
 
 fn fill(template: &str, args: &[String]) -> String {
     let mut out = template.to_string();
@@ -1103,7 +1141,8 @@ impl Game {
             .take_while(|e| e.t <= tick)
             .map(|e| {
                 json!({"t": fill(&self.t("log_tick"), &[e.t.to_string()]), "text": fill(&self.t(e.key), &e.args),
-                       "fx": e.fx, "symbol": self.t(&format!("fx_{}", e.fx))})
+                       "fx": e.fx, "symbol": self.t(&format!("fx_{}", e.fx)),
+                       "node": l.nodes[e.node].name.clone(), "kind": log_kind(e.key, e.fx)})
             })
             .collect();
         let s = &rec.stats_at[(tick as usize).min(rec.stats_at.len() - 1)];
@@ -1214,19 +1253,44 @@ impl Game {
         let play = self.play.as_ref().ok_or_else(|| self.t("err_no_level"))?;
         let l = self.edited();
         let n = l.nodes.get(i).ok_or_else(|| self.t("err_bad_choice"))?;
-        let lines = match &play.record {
+        let owned;
+        let info = match &play.record {
             Some(rec) => {
                 let tick = (ms as i64 / ms_per_tick.max(1) as i64) as usize;
-                rec.tables[tick.min(rec.tables.len() - 1)][i].clone()
+                &rec.tables[tick.min(rec.tables.len() - 1)][i]
             }
             None => {
-                let rec = Sim::build(&l)?.run(0);
-                rec.tables[0][i].clone()
+                owned = Sim::build(&l)?.run(0);
+                &owned.tables[0][i]
             }
         };
+        let facts: Vec<Value> = info
+            .facts
+            .iter()
+            .map(|(k, v)| {
+                let val = match v {
+                    FactVal::Text(s) => s.clone(),
+                    FactVal::Copy(k) => self.t(k),
+                };
+                json!([self.t(k), val])
+            })
+            .collect();
+        let tables: Vec<Value> = info
+            .tables
+            .iter()
+            .map(|tbl| {
+                let cols: Vec<String> = tbl.cols.iter().map(|c| self.t(c)).collect();
+                json!({
+                    "title": self.t(tbl.title),
+                    "cols": cols,
+                    "rows": tbl.rows,
+                    "empty": tbl.empty.map(|e| self.t(e)),
+                })
+            })
+            .collect();
         Ok(
             json!({"name": n.name, "kind": n.kind, "kind_name": self.t(&format!("kind_{}", n.kind)),
-                  "blurb": self.t(&format!("about_{}", n.kind)), "lines": lines})
+                  "blurb": self.t(&format!("about_{}", n.kind)), "facts": facts, "tables": tables})
             .to_string(),
         )
     }

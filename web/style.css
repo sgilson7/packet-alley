@@ -107,7 +107,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ---- level ---- */
 .eyebrow { color: var(--oi-blue); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.8rem; font-weight: 700; margin: 0; }
-.level-grid { display: grid; grid-template-columns: 340px 1fr; gap: 20px; align-items: start; }
+.level-grid { display: grid; grid-template-columns: 360px 1fr; gap: 20px; align-items: start; }
 .brief { background: var(--panel); border: 3px solid var(--ink); border-radius: 14px; padding: 16px; box-shadow: 4px 4px 0 var(--line); }
 .brief h2 { margin: 2px 0 8px; }
 .brief h3 { margin: 16px 0 4px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); }
@@ -141,13 +141,16 @@ button.ghost.small { padding: 3px 9px; font-size: 0.8rem; border-width: 2px; }
 .opt-dev-text { display: flex; flex-direction: column; line-height: 1.15; }
 .opt-dev-name { font-weight: 700; }
 .opt-dev-sub { font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
-.run-row { margin-top: 18px; text-align: center; }
 
-/* The map stays pinned in view while the brief (which can be tall on the
-   advanced levels) scrolls, so the glowing evidence is always reachable. */
-.stage { min-width: 0; position: sticky; top: 16px; align-self: start; }
+/* The action area (prediction + commit) sits on the right beside the map, so
+   the commit button is always in view — no scrolling down a long brief. */
+.action { margin-top: 12px; }
+.action .predict { margin-top: 0; }
+.run-row { margin-top: 12px; text-align: center; }
+
+.stage { min-width: 0; }
 .map-hint { margin: 0 0 8px; padding: 8px 12px; background: var(--oi-blue); color: #fff; border-radius: 10px; font-size: 0.9rem; font-weight: 600; }
-.map-wrap { position: relative; border: 3px solid var(--ink); border-radius: 14px; overflow: auto; background: var(--cream); aspect-ratio: 5 / 3; max-height: calc(100vh - 200px); --zoom: 1; }
+.map-wrap { position: relative; border: 3px solid var(--ink); border-radius: 14px; overflow: auto; background: var(--cream); aspect-ratio: 5 / 3; --zoom: 1; }
 .map-inner { position: absolute; top: 0; left: 0; width: calc(100% * var(--zoom)); height: calc(100% * var(--zoom)); }
 .backdrop { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
 .map { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -223,24 +226,57 @@ button.ghost.small { padding: 3px 9px; font-size: 0.8rem; border-width: 2px; }
 .fx.learn text { fill: var(--oi-blue); }
 .fx.ignore text { fill: var(--muted); }
 
-.hud { margin-top: 10px; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.9rem; text-align: center; }
-.controls { margin-top: 8px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.hud { margin-top: 6px; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.9rem; text-align: center; }
+.controls { margin-top: 6px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 .ctl { border: 2px solid var(--ink); background: var(--cream); border-radius: 10px; padding: 8px 14px; font-weight: 600; }
 .ctl:hover, .ctl:focus-visible { background: var(--paper); }
 
-.legend-row { margin-top: 14px; }
-.legend-row h3, .log-wrap h3 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); margin: 10px 0 6px; }
+.legend-row { margin-top: 12px; }
+.legend-row h3 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); margin: 0 0 6px; }
 .legend { display: flex; flex-wrap: wrap; gap: 8px 14px; }
 .legend .item { display: inline-flex; align-items: center; gap: 7px; font-size: 0.85rem; }
 .chip-svg { width: 30px; height: 30px; flex: 0 0 auto; overflow: visible; vertical-align: middle; }
 .legend .chip-svg { margin: 0; }
 
-.log { max-height: 220px; overflow-y: auto; background: var(--panel); border: 2px solid var(--line); border-radius: 10px; padding: 8px 10px 8px 28px; font-size: 0.9rem; }
-.log li { margin: 2px 0; }
-.log li .sym { font-weight: 800; margin-right: 6px; }
-.log li.drop .sym, .log li.collision .sym { color: var(--bad); }
-.log li.deliver .sym { color: var(--good); }
-.log li.learn .sym { color: var(--oi-blue); }
+/* The step-by-step log: a panel with a search box, filter chips, a full-screen
+   toggle and a hide/show toggle. Rows read like game entries, not plain text. */
+.log-panel { margin-top: 14px; display: flex; flex-direction: column; min-height: 0; border: 2px solid var(--ink); border-radius: 12px; background: var(--panel); overflow: hidden; }
+.log-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px 6px 12px; background: var(--cream); border-bottom: 2px solid var(--line); }
+.log-head h3 { margin: 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); }
+.log-head-btns { display: flex; gap: 6px; }
+.log-tools { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-bottom: 2px solid var(--line); }
+.log-search { width: 100%; border: 2px solid var(--line); border-radius: 8px; padding: 7px 10px; font: inherit; font-size: 0.9rem; background: var(--paper); color: var(--ink); }
+.log-search:focus-visible { border-color: var(--ink); outline: none; }
+.log-filter-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.log-filter-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); font-weight: 700; flex: 0 0 auto; }
+.log-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.log-chip { display: inline-flex; align-items: center; gap: 5px; border: 2px solid var(--line); background: var(--paper); border-radius: 999px; padding: 3px 11px; font-size: 0.78rem; color: var(--ink); }
+.log-chip .chip-sym { font-weight: 800; }
+.log-chip[aria-pressed="false"] { opacity: 0.5; }
+.log-chip[aria-pressed="true"] { border-color: var(--ink); background: var(--cream); font-weight: 700; }
+.log-chip:hover, .log-chip:focus-visible { border-color: var(--ink); }
+
+.log-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+.log { max-height: none; list-style: none; padding: 0; margin: 0; }
+.log li { display: grid; grid-template-columns: auto auto auto 1fr; gap: 8px; align-items: baseline; margin: 0; padding: 5px 12px; border-top: 1px solid var(--line); font-size: 0.86rem; }
+.log li:first-child { border-top: none; }
+.log .l-t { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 0.76rem; }
+.log .l-tag { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); border-radius: 6px; padding: 0 6px; font-size: 0.7rem; font-weight: 700; white-space: nowrap; }
+.log .l-tag .chip-sym { font-weight: 800; }
+.log .l-machine { font-weight: 700; }
+.log .l-text { color: var(--ink); }
+.log .l-tag.deliver { color: var(--good); border-color: var(--good); }
+.log .l-tag.drop, .log .l-tag.collision { color: var(--bad); border-color: var(--bad); }
+.log .l-tag.forward, .log .l-tag.learn { color: var(--oi-blue); border-color: var(--oi-blue); }
+.log .l-tag.retry { color: var(--warn); border-color: var(--warn); }
+.log .l-tag.ignore, .log .l-tag.other { color: var(--muted); }
+.log-note { margin: 0; padding: 14px 12px; color: var(--muted); font-size: 0.85rem; }
+
+/* Full screen: the log fills the window over a dim backdrop; collapse hides
+   everything but the header bar. */
+.log-panel.full { position: fixed; inset: 3vh 3vw; z-index: 30; max-height: none; box-shadow: 0 0 0 100vmax rgba(40,25,45,0.55); }
+.log-panel.collapsed { flex: 0 0 auto; }
+.log-panel.collapsed .log-tools, .log-panel.collapsed .log-body { display: none; }
 
 /* ---- overlay ---- */
 .overlay { position: fixed; inset: 0; background: rgba(40,25,45,0.55); overflow-y: auto; padding: 4vh 18px; z-index: 20; }
@@ -260,6 +296,21 @@ button.ghost.small { padding: 3px 9px; font-size: 0.8rem; border-width: 2px; }
 .quiz-opt.wrong { border-color: var(--bad); background: #fbe9e0; }
 .sheet-actions { margin-top: 18px; display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
 
+/* device inspector: facts as a key/value grid, then titled tables (a switch's
+   MAC table, a router's interfaces and routes) drawn in the game's style. */
+.node-facts { width: 100%; border-collapse: collapse; margin: 6px 0 12px; font-size: 0.92rem; }
+.node-facts td { padding: 5px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+.node-facts tr:first-child td { border-top: none; }
+.node-facts td.k { color: var(--muted); width: 45%; }
+.node-facts td.v { font-variant-numeric: tabular-nums; }
+.node-table { border: 2px solid var(--line); border-radius: 10px; overflow: hidden; margin: 10px 0; }
+.node-table .nt-title { background: var(--cream); padding: 6px 10px; font-weight: 700; border-bottom: 2px solid var(--line); font-size: 0.9rem; }
+.node-table table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.node-table th { text-align: left; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; font-weight: 700; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+.node-table td { padding: 6px 10px; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.node-table tbody tr:first-child td { border-top: none; }
+.node-table .nt-empty { padding: 8px 10px; color: var(--muted); font-size: 0.85rem; }
+
 /* packet inspector */
 .layer { border: 2px solid var(--line); border-radius: 10px; margin: 8px 0; overflow: hidden; }
 .layer .lname { background: var(--cream); padding: 6px 10px; font-weight: 700; border-bottom: 2px solid var(--line); }
@@ -270,9 +321,23 @@ button.ghost.small { padding: 3px 9px; font-size: 0.8rem; border-width: 2px; }
 
 .message { text-align: center; color: var(--bad); font-weight: 600; min-height: 1.4em; }
 
+/* On a roomy screen the level is a fixed-height app shell: the whole level
+   fits the viewport, and only the brief and the log scroll (each within its
+   own panel). The map and the log share the stage's free height, so the
+   commit button and the controls never fall below the fold. */
+@media (min-width: 821px) {
+  #level.screen { max-width: min(1600px, 97vw); height: calc(100vh - 68px); display: flex; }
+  #level .level-grid { width: 100%; height: 100%; grid-template-columns: minmax(360px, 440px) 1fr; align-items: stretch; }
+  #brief { overflow-y: auto; max-height: 100%; }
+  #level .stage { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+  #level .map-wrap { aspect-ratio: auto; flex: 3 1 0; min-height: 170px; }
+  #level #log-panel { flex: 2 1 0; min-height: 120px; }
+}
+
 @media (max-width: 820px) {
   .level-grid { grid-template-columns: 1fr; }
   #brand { font-size: 1.1rem; }
+  .log-body { max-height: 50vh; }
 }
 
 @media (prefers-reduced-motion: reduce) {
