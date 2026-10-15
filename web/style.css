@@ -121,19 +121,30 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .bonus { font-size: 0.9rem; color: var(--warn); font-weight: 600; }
 .bonus.met { color: var(--good); }
 
+.edits-head { margin-top: 16px; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.edits-head h3 { margin: 0; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); }
+button.ghost.small { padding: 3px 9px; font-size: 0.8rem; border-width: 2px; }
+.edits-hint { margin: 4px 0 0; font-size: 0.82rem; color: var(--muted); }
 .edits { margin-top: 10px; display: flex; flex-direction: column; gap: 14px; }
 .edit { border: 2px dashed var(--line); border-radius: 10px; padding: 10px; }
 .edit .prompt { font-weight: 700; font-size: 0.92rem; margin: 0 0 8px; }
 .opts { display: flex; flex-direction: column; gap: 6px; }
+.opts-dev { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .opt {
   text-align: left; border: 2px solid var(--line); background: var(--paper);
   border-radius: 8px; padding: 8px 10px; font-size: 0.9rem;
 }
 .opt.chosen { border-color: var(--ink); background: var(--cream); box-shadow: inset 0 0 0 2px var(--oi-blue); font-weight: 600; }
 .opt:hover, .opt:focus-visible { border-color: var(--ink); }
+.opt-dev { display: flex; align-items: center; gap: 8px; }
+.opt-icon { width: 34px; height: 34px; flex: 0 0 auto; object-fit: contain; }
+.opt-dev-text { display: flex; flex-direction: column; line-height: 1.15; }
+.opt-dev-name { font-weight: 700; }
+.opt-dev-sub { font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .run-row { margin-top: 18px; text-align: center; }
 
-.stage { min-width: 0; }
+.stage { min-width: 0; position: relative; }
+.map-hint { margin: 0 0 8px; padding: 8px 12px; background: var(--oi-blue); color: #fff; border-radius: 10px; font-size: 0.9rem; font-weight: 600; }
 .map-wrap { position: relative; border: 3px solid var(--ink); border-radius: 14px; overflow: auto; background: var(--cream); aspect-ratio: 5 / 3; --zoom: 1; }
 .map-inner { position: absolute; top: 0; left: 0; width: calc(100% * var(--zoom)); height: calc(100% * var(--zoom)); }
 .backdrop { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
@@ -148,7 +159,25 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .node-hit { cursor: pointer; }
 .node-label { font-size: 22px; font-weight: 700; fill: var(--ink); text-anchor: middle; paint-order: stroke; stroke: var(--cream); stroke-width: 5px; }
 .node-addr { font-size: 18px; fill: var(--muted); text-anchor: middle; paint-order: stroke; stroke: var(--cream); stroke-width: 5px; }
-.cable { stroke: var(--ink); stroke-width: 6px; stroke-linecap: round; }
+/* A machine the student can point at to answer a destination edit: a blue
+   glow and a label say "pick me". */
+.node-hit.candidate { cursor: pointer; }
+.node-hit.candidate image { filter: drop-shadow(0 0 7px var(--oi-blue)) drop-shadow(0 0 4px var(--oi-blue)); }
+
+/* The edit badge (a ✎) that marks an editable spot, and the chooser popover. */
+.edit-badge { cursor: pointer; }
+.edit-badge:focus-visible { outline: none; }
+.edit-glyph { font-size: 22px; font-weight: 800; fill: #fff; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.chooser {
+  position: absolute; z-index: 10; transform: translate(-50%, 14px);
+  background: var(--panel); border: 3px solid var(--ink); border-radius: 12px;
+  box-shadow: 6px 6px 0 var(--line); padding: 12px; width: 260px; max-width: 86vw;
+  max-height: 70%; overflow: auto;
+}
+.chooser .edit { border: none; padding: 0; margin-bottom: 10px; }
+.chooser .edit:last-child { margin-bottom: 0; }
+.chooser-close { position: absolute; top: 6px; right: 6px; padding: 2px 8px; }
+.cable { fill: none; stroke: var(--ink); stroke-width: 6px; stroke-linecap: round; }
 .cable.down { stroke: var(--bad); stroke-dasharray: 2 14; }
 .cable.blocked { stroke: var(--muted); stroke-dasharray: 10 10; opacity: 0.6; }
 .cable.lossy { stroke-dasharray: 16 8; }

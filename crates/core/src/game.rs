@@ -23,6 +23,9 @@ const LINE_GAP: i32 = 18;
 /// How far a frame rides to the right of its cable, so the two directions of
 /// one cable do not overlap.
 const LANE: i64 = 11;
+/// How far a backup cable bows away from the cable it shares ends with, so two
+/// cables between the same pair of boxes read as two, not one.
+const BOW: i64 = 72;
 /// Playback time runs in thousandths of a tick.
 const MILLI: i64 = 1000;
 const SAVE_VERSION: u32 = 1;
@@ -174,6 +177,35 @@ fn isqrt(v: i64) -> i64 {
         y = (x + v / x) / 2;
     }
     x
+}
+
+/// The control point of a cable's curve. Cables that share the same pair of
+/// ends — the spare "backup" cables of the loop levels — would lie on top of
+/// one another, so each is bowed to its own side and the student can tell them
+/// apart. A lone cable's control point is its midpoint, which makes the
+/// quadratic a straight line, so every other level draws exactly as before.
+fn link_control(l: &Level, idx: usize) -> (i64, i64) {
+    let k = &l.links[idx];
+    let a = l.nodes.iter().find(|n| n.id == k.a).expect("validated");
+    let b = l.nodes.iter().find(|n| n.id == k.b).expect("validated");
+    let (ax, ay, bx, by) = (a.x as i64, a.y as i64, b.x as i64, b.y as i64);
+    let (mx, my) = ((ax + bx) / 2, (ay + by) / 2);
+    let same: Vec<usize> = l
+        .links
+        .iter()
+        .enumerate()
+        .filter(|(_, o)| (o.a == k.a && o.b == k.b) || (o.a == k.b && o.b == k.a))
+        .map(|(j, _)| j)
+        .collect();
+    let count = same.len() as i64;
+    if count <= 1 {
+        return (mx, my);
+    }
+    let pos = same.iter().position(|&j| j == idx).expect("self is in the group") as i64;
+    let bow = BOW * (2 * pos - (count - 1));
+    let (dx, dy) = (bx - ax, by - ay);
+    let len = isqrt(dx * dx + dy * dy).max(1);
+    (mx - dy * bow / len, my + dx * bow / len)
 }
 
 /// Every level must build at its starting options, and with each option of
@@ -490,11 +522,14 @@ impl Game {
         let links: Vec<Value> = l
             .links
             .iter()
-            .map(|k| {
+            .enumerate()
+            .map(|(li, k)| {
                 let a = l.nodes.iter().find(|n| n.id == k.a).expect("validated");
                 let b = l.nodes.iter().find(|n| n.id == k.b).expect("validated");
                 let blocked = l.nodes.iter().any(|n| n.block == k.id);
+                let (cpx, cpy) = link_control(&l, li);
                 json!({"id": k.id, "x1": a.x, "y1": a.y, "x2": b.x, "y2": b.y,
+                       "cpx": cpx, "cpy": cpy,
                        "down": k.down, "lossy": k.lose_every > 0, "blocked": blocked,
                        "mx": (a.x + b.x) / 2, "my": (a.y + b.y) / 2})
             })
@@ -504,13 +539,82 @@ impl Game {
             .iter()
             .enumerate()
             .map(|(ei, e)| {
+                // Which on-map control the edit becomes: a device palette, a
+                // "point at a machine" pick, a number, a handshake flag, or a
+                // cable/port. The page draws the right chooser from this.
+                let field = e.target.field.as_str();
+                let ui = match field {
+                    "kind" => "palette",
+                    "to" | "gateway" | "route" => "device",
+                    "ttl" | "window" | "rto" => "number",
+                    "first_flags" | "third_ack" => "flag",
+                    "block" | "down" => "port",
+                    _ => "menu",
+                };
+                // Where the control sits on the map: the device for a node
+                // edit, the sender for a packet edit, the cable's middle for a
+                // cable edit.
+                let (ax, ay) = if !e.target.app.is_empty() {
+                    l.apps
+                        .iter()
+                        .find(|a| a.id == e.target.app)
+                        .and_then(|a| l.nodes.iter().find(|n| n.id == a.from))
+                        .map(|n| (n.x, n.y))
+                        .unwrap_or((0, 0))
+                } else if !e.target.link.is_empty() {
+                    l.links
+                        .iter()
+                        .find(|k| k.id == e.target.link)
+                        .and_then(|k| {
+                            let a = l.nodes.iter().find(|n| n.id == k.a)?;
+                            let b = l.nodes.iter().find(|n| n.id == k.b)?;
+                            Some(((a.x + b.x) / 2, (a.y + b.y) / 2))
+                        })
+                        .unwrap_or((0, 0))
+                } else {
+                    l.nodes
+                        .iter()
+                        .find(|n| n.id == e.target.node)
+                        .map(|n| (n.x, n.y))
+                        .unwrap_or((0, 0))
+                };
                 let opts: Vec<Value> = e
                     .options
                     .iter()
                     .enumerate()
-                    .map(|(oi, o)| json!({"label": o.label, "chosen": play.choice[ei] == oi}))
+                    .map(|(oi, o)| {
+                        let mut m = json!({"label": o.label, "chosen": play.choice[ei] == oi});
+                        let obj = m.as_object_mut().expect("object");
+                        match ui {
+                            // A device kind for the palette icons.
+                            "palette" => {
+                                obj.insert("nkind".into(), json!(o.value));
+                            }
+                            // The machine (or next-hop router) this address
+                            // points at, so the student picks it by pointing.
+                            "device" => {
+                                let ip = o.value.split('/').next().unwrap_or(&o.value);
+                                if !o.value.is_empty() {
+                                    if let Some(n) = l.nodes.iter().find(|n| {
+                                        n.ip.split('/').next() == Some(ip)
+                                            || n.ifaces.iter().any(|f| f.ip.split('/').next() == Some(ip))
+                                    }) {
+                                        obj.insert("node".into(), json!(n.id));
+                                        obj.insert("nkind".into(), json!(n.kind));
+                                        obj.insert("nname".into(), json!(n.name));
+                                    }
+                                }
+                            }
+                            // Which cable the port edit blocks.
+                            "port" => {
+                                obj.insert("link".into(), json!(o.value));
+                            }
+                            _ => {}
+                        }
+                        m
+                    })
                     .collect();
-                json!({"prompt": e.prompt, "options": opts})
+                json!({"prompt": e.prompt, "ui": ui, "field": field, "ax": ax, "ay": ay, "options": opts})
             })
             .collect();
         let goals: Vec<String> = base.goal.iter().map(|g| g.text.clone()).collect();
@@ -661,8 +765,15 @@ impl Game {
             let (bx, by) = pos(x.to);
             let (dx, dy) = (bx - ax, by - ay);
             let len = isqrt(dx * dx + dy * dy).max(1);
-            let px = ax + dx * k / MILLI - dy * LANE / len;
-            let py = ay + dy * k / MILLI + dx * LANE / len;
+            // Ride the cable's curve (a quadratic through its control point),
+            // then step one lane to the right so the two directions do not sit
+            // on top of each other. A straight cable's control point is its
+            // midpoint, which makes the quadratic linear — the old path exactly.
+            let (cx, cy) = link_control(&l, x.link);
+            let (u, w) = (k, MILLI - k);
+            let q = MILLI * MILLI;
+            let px = (w * w * ax + 2 * w * u * cx + u * u * bx) / q - dy * LANE / len;
+            let py = (w * w * ay + 2 * w * u * cy + u * u * by) / q + dx * LANE / len;
             let cls = x.frame.class();
             packets.push(
                 json!({"id": i, "x": px, "y": py, "cls": cls, "letter": self.t(&format!("pkt_{cls}"))}),

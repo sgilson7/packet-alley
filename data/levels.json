@@ -238,7 +238,8 @@
           "target": {"node": "box1", "field": "kind"},
           "options": [
             {"label": "A hub (one shared wire)", "value": "hub"},
-            {"label": "A switch (a private line each)", "value": "switch"}
+            {"label": "A switch (a private line each)", "value": "switch"},
+            {"label": "A router (joins separate networks)", "value": "router"}
           ],
           "start": 0
         },
@@ -248,7 +249,8 @@
           "target": {"node": "box2", "field": "kind"},
           "options": [
             {"label": "A hub (one shared wire)", "value": "hub"},
-            {"label": "A switch (a private line each)", "value": "switch"}
+            {"label": "A switch (a private line each)", "value": "switch"},
+            {"label": "A router (joins separate networks)", "value": "router"}
           ],
           "start": 0
         }
@@ -382,7 +384,8 @@
           "target": {"node": "b1", "field": "kind"},
           "options": [
             {"label": "A hub", "value": "hub"},
-            {"label": "A switch", "value": "switch"}
+            {"label": "A switch", "value": "switch"},
+            {"label": "A router", "value": "router"}
           ],
           "start": 0
         },
@@ -392,7 +395,8 @@
           "target": {"node": "b2", "field": "kind"},
           "options": [
             {"label": "A hub", "value": "hub"},
-            {"label": "A switch", "value": "switch"}
+            {"label": "A switch", "value": "switch"},
+            {"label": "A router", "value": "router"}
           ],
           "start": 0
         },

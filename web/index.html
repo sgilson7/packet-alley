@@ -77,6 +77,14 @@
         <text class="pkt-letter pkt-letter--light" x="0" y="1">X</text>
       </g>
 
+      <!-- The badge that marks an editable spot on the map (a device, a
+           waiting packet, a cable). All its geometry lives here, so app.js
+           only places it at a point the core returns. -->
+      <g id="edit-mark">
+        <circle cx="34" cy="-34" r="19" fill="#d55e00" stroke="#2a1830" stroke-width="3"></circle>
+        <text class="edit-glyph" x="34" y="-33">&#9998;</text>
+      </g>
+
       <!-- the same glyphs wrapped with a viewBox, for the legend chips -->
       <symbol id="pkt-sym-data" viewBox="-23 -23 46 46"><use href="#pkt-data"></use></symbol>
       <symbol id="pkt-sym-ping" viewBox="-23 -23 46 46"><use href="#pkt-ping"></use></symbol>
@@ -124,6 +132,11 @@
           <h3 id="goals-h"></h3>
           <ul id="l-goals" class="goals"></ul>
           <p id="l-bonus" class="bonus"></p>
+          <div class="edits-head">
+            <h3 id="edits-h"></h3>
+            <button id="panel-toggle" class="ghost small" type="button" aria-expanded="true"></button>
+          </div>
+          <p id="edits-hint" class="edits-hint"></p>
           <div id="l-edits" class="edits"></div>
           <div class="run-row">
             <button id="run-btn" class="primary" type="button"></button>
@@ -131,11 +144,21 @@
         </aside>
 
         <div class="stage">
+          <!-- Shown when the student is picking a destination by pointing at a
+               machine on the map; it never covers the map itself. -->
+          <p id="map-hint" class="map-hint" hidden></p>
           <div id="map-wrap" class="map-wrap">
             <div id="map-inner" class="map-inner">
               <img id="backdrop" class="backdrop" alt="" aria-hidden="true">
               <svg id="map" class="map" role="img" aria-label="network map"></svg>
             </div>
+          </div>
+          <!-- The on-map chooser: click an edit badge (or a highlighted
+               machine) and this popover offers the choices for that spot. It
+               is the same choices the side panel holds, on the map. -->
+          <div id="chooser" class="chooser" role="dialog" aria-label="Choices" hidden>
+            <button id="chooser-close" class="chooser-close ghost" type="button" aria-label="Close">&#10005;</button>
+            <div id="chooser-body"></div>
           </div>
           <!-- Map zoom for accessibility. The slider drives a CSS variable
                (--zoom) that scales the map and its backdrop together; the

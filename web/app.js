@@ -12,6 +12,11 @@ let game = null;
 let copy = {};
 let display = { speeds: [], default_speed: 0 };
 let rafId = 0;
+// The open on-map chooser's pointing state: the edit it is for and, for a
+// "point at a machine" edit, which option each candidate device picks. The
+// node elements are kept by id so candidates can be highlighted.
+let pointing = null;
+const nodeEls = {};
 const cur = { view: null, result: null, playing: false, ms: 0, last: 0, speedIdx: 0, logCount: 0, ran: false };
 
 function t(key) {
@@ -169,7 +174,12 @@ function renderLevel() {
     gl.appendChild(tag("li", null, g));
   }
   el("l-bonus").textContent = "★ " + v.bonus;
+  el("edits-h").textContent = t("panel_edits");
+  el("edits-hint").textContent = t("panel_edits_hint");
   renderEdits(v);
+  el("l-edits").hidden = false;
+  el("panel-toggle").textContent = t("panel_hide");
+  el("panel-toggle").setAttribute("aria-expanded", "true");
   el("run-btn").textContent = t(cur.ran ? "btn_rerun" : "btn_run");
 
   el("backdrop").src = "art/backdrops/" + v.backdrop + ".png";
@@ -183,23 +193,149 @@ function renderLevel() {
   clear(el("log"));
 }
 
+// One option button, shown the same way in the side panel and in the on-map
+// chooser: a device palette shows the device's icon, a "point at a machine"
+// pick shows the target machine's icon and name, everything else shows words.
+function optionButton(e, ei, o, oi) {
+  const b = tag("button", "opt" + (o.chosen ? " chosen" : ""));
+  b.type = "button";
+  b.setAttribute("aria-pressed", o.chosen ? "true" : "false");
+  if (e.ui === "palette" && o.nkind) {
+    b.classList.add("opt-dev");
+    const img = document.createElement("img");
+    img.className = "opt-icon";
+    img.src = "art/icons/" + o.nkind + ".png";
+    img.alt = "";
+    b.appendChild(img);
+    b.appendChild(tag("span", null, o.label));
+  } else if (e.ui === "device" && o.node) {
+    b.classList.add("opt-dev");
+    const img = document.createElement("img");
+    img.className = "opt-icon";
+    img.src = "art/icons/" + o.nkind + ".png";
+    img.alt = "";
+    b.appendChild(img);
+    const text = tag("span", "opt-dev-text");
+    text.appendChild(tag("span", "opt-dev-name", o.nname));
+    text.appendChild(tag("span", "opt-dev-sub", o.label));
+    b.appendChild(text);
+  } else {
+    b.textContent = o.label;
+  }
+  b.addEventListener("click", () => choose(ei, oi));
+  return b;
+}
+
+function editSection(e, ei) {
+  const wrap = tag("div", "edit");
+  wrap.appendChild(tag("p", "prompt", e.prompt));
+  const opts = tag("div", "opts" + (e.ui === "palette" || e.ui === "device" ? " opts-dev" : ""));
+  e.options.forEach((o, oi) => opts.appendChild(optionButton(e, ei, o, oi)));
+  wrap.appendChild(opts);
+  return wrap;
+}
+
 function renderEdits(v) {
   const box = el("l-edits");
   clear(box);
-  v.edits.forEach((e, ei) => {
-    const wrap = tag("div", "edit");
-    wrap.appendChild(tag("p", "prompt", e.prompt));
-    const opts = tag("div", "opts");
-    e.options.forEach((o, oi) => {
-      const b = tag("button", "opt" + (o.chosen ? " chosen" : ""), o.label);
-      b.type = "button";
-      b.setAttribute("aria-pressed", o.chosen ? "true" : "false");
-      b.addEventListener("click", () => choose(ei, oi));
-      opts.appendChild(b);
-    });
-    wrap.appendChild(opts);
-    box.appendChild(wrap);
+  v.edits.forEach((e, ei) => box.appendChild(editSection(e, ei)));
+}
+
+// The on-map chooser for one badge's group of edits. For a "point at a
+// machine" edit it also lights up the candidate machines so the student can
+// pick one straight off the map.
+function openChooser(group) {
+  const v = cur.view;
+  closeChooser();
+  // A "point at a machine" edit is answered on the map, not in a popover that
+  // would cover the machines; everything else gets the popover.
+  const body = el("chooser-body");
+  const other = [];
+  group.forEach((ei) => {
+    const e = v.edits[ei];
+    if (!pointing && e.ui === "device") {
+      const byNode = {};
+      e.options.forEach((o, oi) => {
+        if (o.node) {
+          byNode[o.node] = oi;
+        }
+      });
+      pointing = { ei: ei, byNode: byNode, prompt: e.prompt };
+    } else {
+      other.push(ei);
+    }
   });
+  if (pointing) {
+    for (const id in pointing.byNode) {
+      if (nodeEls[id]) {
+        nodeEls[id].classList.add("candidate");
+      }
+    }
+    el("map-hint").textContent = pointing.prompt + " " + t("point_hint");
+    el("map-hint").hidden = false;
+  }
+  if (other.length) {
+    other.forEach((ei) => body.appendChild(editSection(v.edits[ei], ei)));
+    const ch = el("chooser");
+    ch.hidden = false;
+    positionChooser(v.edits[other[0]]);
+  }
+}
+
+function positionChooser(e) {
+  const svgEl = el("map");
+  const pt = svgEl.createSVGPoint();
+  pt.x = e.ax;
+  pt.y = e.ay;
+  const sp = pt.matrixTransform(svgEl.getScreenCTM());
+  const ch = el("chooser");
+  const base = (ch.offsetParent || ch.parentElement).getBoundingClientRect();
+  ch.style.setProperty("left", sp.x - base.left + "px");
+  ch.style.setProperty("top", sp.y - base.top + "px");
+}
+
+function clearPointing() {
+  for (const id in nodeEls) {
+    nodeEls[id].classList.remove("candidate");
+  }
+}
+
+function closeChooser() {
+  el("chooser").hidden = true;
+  el("chooser-body").replaceChildren();
+  el("map-hint").hidden = true;
+  clearPointing();
+  pointing = null;
+}
+
+function onNodeClick(i, id) {
+  if (pointing && pointing.byNode[id] !== undefined) {
+    choose(pointing.ei, pointing.byNode[id]);
+    return;
+  }
+  inspectNode(i);
+}
+
+// The edit layer is an SVG group, where the `hidden` IDL property does not
+// reflect to the attribute, so toggle the attribute the [hidden] rule matches.
+function badges(on) {
+  const g = el("edit-layer");
+  if (!g) {
+    return;
+  }
+  if (on) {
+    g.removeAttribute("hidden");
+  } else {
+    g.setAttribute("hidden", "hidden");
+  }
+}
+
+function togglePanel() {
+  const box = el("l-edits");
+  box.hidden = !box.hidden;
+  const shown = !box.hidden;
+  el("panel-toggle").setAttribute("aria-expanded", shown ? "true" : "false");
+  el("panel-toggle").textContent = shown ? t("panel_hide") : t("panel_show");
 }
 
 function choose(edit, option) {
@@ -207,6 +343,7 @@ function choose(edit, option) {
   if (!view) {
     return;
   }
+  closeChooser();
   cur.view = view;
   cur.ran = false;
   cur.result = null;
@@ -217,6 +354,12 @@ function renderMap(v) {
   const map = el("map");
   map.setAttribute("viewBox", v.viewbox);
   clear(map);
+  for (const id in nodeEls) {
+    delete nodeEls[id];
+  }
+  // Cables are drawn as a quadratic curve through the control point the core
+  // returns. A lone cable's control point is its midpoint, so the curve is a
+  // straight line; backup cables that share two ends bow to opposite sides.
   const cables = svg("g", {});
   for (const k of v.links) {
     let cls = "cable";
@@ -229,7 +372,8 @@ function renderMap(v) {
     if (k.lossy) {
       cls += " lossy";
     }
-    cables.appendChild(svg("line", { class: cls, x1: k.x1, y1: k.y1, x2: k.x2, y2: k.y2 }));
+    const d = "M " + k.x1 + " " + k.y1 + " Q " + k.cpx + " " + k.cpy + " " + k.x2 + " " + k.y2;
+    cables.appendChild(svg("path", { class: cls, d: d }));
   }
   map.appendChild(cables);
 
@@ -245,13 +389,42 @@ function renderMap(v) {
       g.appendChild(svg("text", { class: "node-addr", x: n.cx, y: n.ly2 }));
       g.lastChild.textContent = n.addr;
     }
-    g.addEventListener("click", () => inspectNode(n.i));
+    g.addEventListener("click", () => onNodeClick(n.i, n.id));
+    nodeEls[n.id] = g;
     nodes.appendChild(g);
   }
   map.appendChild(nodes);
 
   map.appendChild(svg("g", { id: "packets" }));
   map.appendChild(svg("g", { id: "effects" }));
+
+  // One edit badge per spot on the map. Edits that share a spot (the two sides
+  // of a handshake, a transfer's window and timeout) group under one badge.
+  const editLayer = svg("g", { id: "edit-layer" });
+  const seen = {};
+  v.edits.forEach((e, ei) => {
+    const key = e.ax + "," + e.ay;
+    if (seen[key]) {
+      seen[key].push(ei);
+      return;
+    }
+    const group = [ei];
+    seen[key] = group;
+    const g = svg("g", { class: "edit-badge" });
+    g.setAttribute("tabindex", "0");
+    g.setAttribute("role", "button");
+    g.setAttribute("aria-label", t("edit_here"));
+    g.appendChild(svg("use", { href: "#edit-mark", x: e.ax, y: e.ay }));
+    g.addEventListener("click", () => openChooser(group));
+    g.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter" || ev.key === " ") {
+        ev.preventDefault();
+        openChooser(group);
+      }
+    });
+    editLayer.appendChild(g);
+  });
+  map.appendChild(editLayer);
 }
 
 function renderLegend(v) {
@@ -299,7 +472,9 @@ function setPlay(on) {
   cur.playing = on;
   el("play-btn").textContent = t(on ? "btn_pause" : "btn_play");
   stopLoop();
+  badges(!on);
   if (on) {
+    closeChooser();
     cur.last = performance.now();
     rafId = requestAnimationFrame(loop);
   }
@@ -341,6 +516,7 @@ function drawFrame() {
   if (f.done) {
     cur.playing = false;
     el("play-btn").textContent = t("btn_play");
+    badges(true);
     showResults();
   } else if (cur.playing) {
     rafId = requestAnimationFrame(loop);
@@ -386,6 +562,7 @@ function skip() {
   stopLoop();
   cur.ms = (cur.result.ticks + 1) * mpt();
   cur.playing = false;
+  badges(true);
   drawFrame();
 }
 
@@ -599,6 +776,22 @@ function wire() {
     }
   });
   el("run-btn").addEventListener("click", runLevel);
+  el("panel-toggle").addEventListener("click", togglePanel);
+  el("chooser-close").addEventListener("click", closeChooser);
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape") {
+      closeChooser();
+    }
+  });
+  document.addEventListener("click", (ev) => {
+    if (el("chooser").hidden && !pointing) {
+      return;
+    }
+    if (ev.target.closest("#chooser") || ev.target.closest(".edit-badge") || ev.target.closest(".node-hit")) {
+      return;
+    }
+    closeChooser();
+  });
   el("play-btn").addEventListener("click", () => setPlay(!cur.playing));
   el("skip-btn").addEventListener("click", skip);
   el("replay-btn").addEventListener("click", replay);

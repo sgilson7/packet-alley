@@ -11,6 +11,7 @@ level has a switch and a printer), not read from the game's own output.
 """
 import json
 import pathlib
+import re
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 COPY = json.loads((ROOT / "data" / "copy.json").read_text())
@@ -53,9 +54,14 @@ def run(page, check, engine):
     page.click("#overlay-close")
     page.wait_for_selector("#overlay[hidden]", state="attached", timeout=5000)
 
-    # pick the printer's address (the second option) and run
-    page.locator("#l-edits .opt").nth(1).click()
-    check("chosen" in (page.locator("#l-edits .opt").nth(1).get_attribute("class") or ""), "the choice is marked")
+    # set the destination on the map: open the edit badge, which lights up the
+    # machines you can send to, then point at the printer.
+    check(page.locator("#edit-layer .edit-badge").count() == 1, "the map shows an edit badge")
+    page.locator("#edit-layer .edit-badge").first.click()
+    page.wait_for_selector("#map-hint:not([hidden])", timeout=5000)
+    check(page.locator("#map .node-hit.candidate").count() >= 2, "the machines you can send to light up")
+    page.locator("#map .node-hit.candidate").filter(has_text=re.compile("printer", re.I)).first.click()
+    check("chosen" in (page.locator("#l-edits .opt").nth(1).get_attribute("class") or ""), "pointing at the printer sets the address")
     page.click("#run-btn")
     check(page.locator("#controls").is_visible(), "the playback controls appear")
     # The run plays itself; skip to the end if the controls are still up, then
