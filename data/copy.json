@@ -35,6 +35,8 @@
   "btn_practice": "Practice a different case",
   "predict_right": "Your prediction matched the run.",
   "predict_wrong": "Your prediction did not match the run. Inspect the trace and try a practice case.",
+  "scene_tag": "Demonstration",
+  "btn_continue": "Continue",
   "panel_legend": "Packets",
   "panel_log": "What happened",
   "panel_node": "Device",

@@ -42,6 +42,11 @@ pub struct Level {
     pub bonus: Cond,
     pub quiz: Quiz,
     pub debrief: String,
+    /// A chapter's demonstration scene (Phase 2): a watch-only lesson on
+    /// TEST-NET addresses, shown before the chapter's levels. Not a scored
+    /// level — kept out of the level cards, the progression and the star total.
+    #[serde(default)]
+    pub scene: bool,
     /// Evidence-first (Phase 2). Node and cable ids worth inspecting before a
     /// run; the student must open at least one before committing. Empty on a
     /// level that has not been migrated — such a level keeps the old flow.
@@ -83,6 +88,8 @@ pub enum Claim {
     Delivered { app: String },
     /// The program's traffic does not reach its destination.
     NotDelivered { app: String },
+    /// A TCP connection opens and the server answers the request.
+    Served { app: String },
     /// This specific device is the one that receives the delivery.
     DeliveredTo { node: String },
     /// A frame is dropped or collides at this device.

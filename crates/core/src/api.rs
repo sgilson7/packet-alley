@@ -54,6 +54,12 @@ impl Api {
     pub fn choose(&mut self, edit: u32, option: u32) -> String {
         self.with(|g| g.choose(edit as usize, option as usize))
     }
+    pub fn scene(&mut self, chapter: &str) -> String {
+        self.with(|g| g.scene(chapter))
+    }
+    pub fn scene_done(&mut self, chapter: &str) -> String {
+        self.with(|g| Ok(g.scene_done(chapter)))
+    }
     pub fn inspect(&mut self, id: &str) -> String {
         self.with(|g| g.inspect(id))
     }

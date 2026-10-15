@@ -36,6 +36,9 @@ pub struct Progress {
     /// Per level: passed, the quiz answered right, the bonus met.
     pub stars: BTreeMap<String, [bool; 3]>,
     pub teacher: bool,
+    /// Which chapters' demonstration scenes have been watched (Phase 2).
+    #[serde(default)]
+    pub scenes_seen: BTreeMap<String, bool>,
 }
 
 struct Play {
@@ -328,7 +331,7 @@ fn check_claim(l: &Level, claim: &Claim) -> Result<(), String> {
         }
     };
     match claim {
-        Claim::Delivered { app: a } | Claim::NotDelivered { app: a } => app(a),
+        Claim::Delivered { app: a } | Claim::NotDelivered { app: a } | Claim::Served { app: a } => app(a),
         Claim::DeliveredTo { node: n }
         | Claim::FailsAt { node: n }
         | Claim::ExpiresAt { node: n }
@@ -417,6 +420,7 @@ pub fn graded(l: &Level, claim: &Claim, rec: &Record) -> bool {
     match claim {
         Claim::Delivered { app } => s.delivered[app_index(l, app)] >= 1,
         Claim::NotDelivered { app } => s.delivered[app_index(l, app)] == 0,
+        Claim::Served { app } => s.served[app_index(l, app)],
         Claim::DeliveredTo { node } => at(node, &|e| e.key == "ev_delivered"),
         Claim::FailsAt { node } => at(node, &|e| e.fx == "drop" || e.fx == "collision"),
         Claim::ExpiresAt { node } => at(node, &|e| e.key == "ev_ttl"),
@@ -504,7 +508,7 @@ impl Game {
                     .levels
                     .iter()
                     .enumerate()
-                    .filter(|(_, l)| l.chapter == c.id)
+                    .filter(|(_, l)| l.chapter == c.id && !l.scene)
                     .map(|(i, l)| {
                         let s = self.stars_of(&l.id);
                         total += s.iter().filter(|b| **b).count();
@@ -519,11 +523,18 @@ impl Game {
                         })
                     })
                     .collect();
+                // The chapter's demonstration scene, if any, and whether it has
+                // been watched (Phase 2).
+                let scene = self.file.levels.iter().find(|l| l.scene && l.chapter == c.id);
+                let scene_info = json!({
+                    "id": scene.map(|l| l.id.clone()),
+                    "seen": self.progress.scenes_seen.get(&c.id).copied().unwrap_or(false),
+                });
                 json!({"id": c.id, "title": c.title, "layer": c.layer, "blurb": c.blurb,
-                       "backdrop": c.backdrop, "levels": levels})
+                       "backdrop": c.backdrop, "levels": levels, "scene": scene_info})
             })
             .collect();
-        let max = self.file.levels.len() * 3;
+        let max = self.file.levels.iter().filter(|l| !l.scene).count() * 3;
         json!({
             "chapters": chapters,
             "stars": fill(&self.t("total_stars"), &[total.to_string(), max.to_string()]),
@@ -568,6 +579,34 @@ impl Game {
             variant: None,
         });
         Ok(self.view())
+    }
+
+    /// Opens a chapter's demonstration scene (watch-only, not scored). The
+    /// scene is a level flagged `scene`; it bypasses the level lock.
+    pub fn scene(&mut self, chapter: &str) -> Result<String, String> {
+        let i = self
+            .file
+            .levels
+            .iter()
+            .position(|l| l.scene && l.chapter == chapter)
+            .ok_or_else(|| self.t("err_no_level"))?;
+        let choice = self.file.levels[i].edits.iter().map(|e| e.start).collect();
+        self.play = Some(Play {
+            level: i,
+            choice,
+            record: None,
+            passed: false,
+            evidence_seen: Vec::new(),
+            prediction: None,
+            variant: None,
+        });
+        Ok(self.view())
+    }
+
+    /// Marks a chapter's scene as watched, so it is not shown again.
+    pub fn scene_done(&mut self, chapter: &str) -> String {
+        self.progress.scenes_seen.insert(chapter.to_string(), true);
+        self.home()
     }
 
     /// Picks option `option` for edit `edit`. The last run is forgotten.
@@ -836,6 +875,7 @@ impl Game {
             "evidence": base.evidence,
             "evidence_seen": play.evidence_seen,
             "variant": play.variant,
+            "scene": base.scene,
         })
         .to_string()
     }
@@ -878,8 +918,9 @@ impl Game {
             .map(|o| graded(&l, &o.claim, &rec))
             .unwrap_or(false);
         let on_variant = self.play.as_ref().map(|p| p.variant.is_some()).unwrap_or(false);
-        if on_variant {
-            // A practice case teaches; it awards nothing.
+        let is_scene = self.file.levels[i].scene;
+        if on_variant || is_scene {
+            // A practice case or a demonstration scene teaches; it awards nothing.
         } else {
             let entry = self.progress.stars.entry(l.id.clone()).or_insert([false; 3]);
             entry[0] |= passed;

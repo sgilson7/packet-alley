@@ -1324,6 +1324,118 @@
         "why": "No address is wrong and nothing is broken. The server's one link has a fixed capacity; five senders at once exceed it, the switch's queue for that cable fills, and every frame past the limit is dropped. More senders would only drop more — which is exactly how a flood denies service."
       },
       "debrief": "The rush is over. Some requests were served, and some were lost. The log shows where capacity ran out."
+    },
+    {
+      "id": "demo_block", "chapter": "block", "scene": true,
+      "title": "Watch: a frame on the block",
+      "story": "Before the shop's own network, a demonstration on a separate test network. Follow one frame across a switch.",
+      "concept": ["A device has an IP address; its network card has a MAC address.", "A switch learns which port a device is on from the frames it sends."],
+      "task": "A demonstration switch connects two sample computers and a test printer on TEST-NET. Inspect the printer's address and the switch's table, predict who receives the frame, then run it.",
+      "ticks": 20,
+      "nodes": [
+        {"id": "pc", "kind": "host", "name": "Test computer A", "x": 170, "y": 180, "ip": "192.0.2.11/24"},
+        {"id": "pcb", "kind": "host", "name": "Test computer B", "x": 170, "y": 420, "ip": "192.0.2.12/24"},
+        {"id": "sw", "kind": "switch", "name": "Demo switch", "x": 500, "y": 300},
+        {"id": "prn", "kind": "printer", "name": "Test printer", "x": 840, "y": 300, "ip": "192.0.2.20/24"}
+      ],
+      "links": [
+        {"id": "a", "a": "pc", "b": "sw"},
+        {"id": "bb", "a": "pcb", "b": "sw"},
+        {"id": "c", "a": "sw", "b": "prn"}
+      ],
+      "apps": [{"id": "demo", "kind": "udp", "from": "pc", "to": "192.0.2.20", "at": 1, "count": 2, "every": 3, "label": "a sample frame"}],
+      "edits": [],
+      "goal": [{"kind": "observe", "text": "Watch the frame cross the switch."}],
+      "bonus": {"kind": "observe", "text": "—"},
+      "quiz": {"question": "—", "options": ["ok"], "answer": 0, "why": ""},
+      "debrief": "That is one frame on one block. Now the shop's own network.",
+      "evidence": ["sw", "prn"],
+      "predict": {"prompt": "On this demo network, who receives the sample frame?", "options": [
+        {"label": "The test printer", "claim": {"kind": "delivered_to", "node": "prn"}},
+        {"label": "Test computer B", "claim": {"kind": "delivered_to", "node": "pcb"}},
+        {"label": "No one — it is lost", "claim": {"kind": "not_delivered", "app": "demo"}}
+      ]}
+    },
+    {
+      "id": "demo_town", "chapter": "town", "scene": true,
+      "title": "Watch: across a router",
+      "story": "A demonstration on a test network. A computer sends to a server on another block, through one router.",
+      "concept": ["A router joins two networks and forwards between them.", "Each hop lowers the packet's hop limit (TTL) by one."],
+      "task": "A demonstration host on 192.0.2.10/24 sends to 198.51.100.20 through a sample router. Inspect the router and the server, predict where the packet ends up, then watch its hop limit fall.",
+      "ticks": 30,
+      "nodes": [
+        {"id": "pc", "kind": "host", "name": "Test computer", "x": 160, "y": 300, "ip": "192.0.2.10/24", "gateway": "192.0.2.1"},
+        {"id": "r", "kind": "router", "name": "Demo router", "x": 500, "y": 300, "ifaces": [{"link": "near", "ip": "192.0.2.1/24"}, {"link": "far", "ip": "198.51.100.1/24"}]},
+        {"id": "srv", "kind": "server", "name": "Test server", "x": 840, "y": 300, "ip": "198.51.100.20/24", "gateway": "198.51.100.1"}
+      ],
+      "links": [{"id": "near", "a": "pc", "b": "r"}, {"id": "far", "a": "r", "b": "srv"}],
+      "apps": [{"id": "demo", "kind": "udp", "from": "pc", "to": "198.51.100.20", "at": 1, "count": 2, "every": 3, "label": "a sample packet"}],
+      "edits": [],
+      "goal": [{"kind": "observe", "text": "Watch the packet cross the router."}],
+      "bonus": {"kind": "observe", "text": "—"},
+      "quiz": {"question": "—", "options": ["ok"], "answer": 0, "why": ""},
+      "debrief": "The router forwarded it to the other block. Now the town's own routes.",
+      "evidence": ["r", "srv"],
+      "predict": {"prompt": "Where does the sample packet end up?", "options": [
+        {"label": "The server on the far block", "claim": {"kind": "delivered_to", "node": "srv"}},
+        {"label": "Dropped at the router", "claim": {"kind": "fails_at", "node": "r"}}
+      ]}
+    },
+    {
+      "id": "demo_wires", "chapter": "wires", "scene": true,
+      "title": "Watch: the three-way handshake",
+      "story": "A demonstration on a test network. A client opens a connection to a server the TCP way, in three steps.",
+      "concept": ["TCP opens a connection with SYN, then SYN-ACK, then ACK.", "The acknowledgement number is the other side's number, plus one."],
+      "task": "On a demonstration network, a client at 203.0.113.10 and a server at 203.0.113.20 exchange a SYN, a SYN-ACK and an ACK. Inspect both endpoints, predict whether the connection opens, then watch the exchange.",
+      "ticks": 40,
+      "nodes": [
+        {"id": "cl", "kind": "host", "name": "Test client", "x": 180, "y": 300, "ip": "203.0.113.10/24"},
+        {"id": "sw", "kind": "switch", "name": "Demo switch", "x": 500, "y": 300},
+        {"id": "srv", "kind": "server", "name": "Test server", "x": 820, "y": 300, "ip": "203.0.113.20/24"}
+      ],
+      "links": [{"id": "a", "a": "cl", "b": "sw"}, {"id": "b", "a": "sw", "b": "srv"}],
+      "apps": [{"id": "conn", "kind": "tcp", "from": "cl", "to": "203.0.113.20", "at": 1, "first_flags": "SYN", "third_ack": "y+1", "retry": 6, "tries": 3, "label": "the page"}],
+      "edits": [],
+      "goal": [{"kind": "observe", "text": "Watch the handshake."}],
+      "bonus": {"kind": "observe", "text": "—"},
+      "quiz": {"question": "—", "options": ["ok"], "answer": 0, "why": ""},
+      "debrief": "The connection opened and the page came back. Now the shop's own transport.",
+      "evidence": ["cl", "srv"],
+      "predict": {"prompt": "With these three steps, does the connection open?", "options": [
+        {"label": "Yes — the server answers and the page returns", "claim": {"kind": "served", "app": "conn"}},
+        {"label": "No — the server resets it", "claim": {"kind": "not_delivered", "app": "conn"}}
+      ]}
+    },
+    {
+      "id": "demo_storm", "chapter": "storm", "scene": true,
+      "title": "Watch: a shared link fills",
+      "story": "A demonstration on a test network. Three senders share one link to a server; watch what the shared cable can and cannot carry.",
+      "concept": ["A link carries only so much at once.", "When more arrives than a link can send, the extra waits in a queue, and a full queue drops the rest."],
+      "task": "A sample queue receives more requests each step than its link can send. Inspect the switch and the server, predict what happens at the server's link, then run it to the limit.",
+      "ticks": 16,
+      "nodes": [
+        {"id": "h1", "kind": "host", "name": "Test host 1", "x": 170, "y": 160, "ip": "198.51.100.11/24"},
+        {"id": "h2", "kind": "host", "name": "Test host 2", "x": 170, "y": 300, "ip": "198.51.100.12/24"},
+        {"id": "h3", "kind": "host", "name": "Test host 3", "x": 170, "y": 440, "ip": "198.51.100.13/24"},
+        {"id": "sw", "kind": "switch", "name": "Demo switch", "x": 500, "y": 300},
+        {"id": "srv", "kind": "server", "name": "Test server", "x": 840, "y": 300, "ip": "198.51.100.80/24"}
+      ],
+      "links": [{"id": "l1", "a": "h1", "b": "sw"}, {"id": "l2", "a": "h2", "b": "sw"}, {"id": "l3", "a": "h3", "b": "sw"}, {"id": "up", "a": "sw", "b": "srv"}],
+      "apps": [
+        {"id": "r1", "kind": "udp", "from": "h1", "to": "198.51.100.80", "at": 1, "count": 4, "every": 1, "label": "a request"},
+        {"id": "r2", "kind": "udp", "from": "h2", "to": "198.51.100.80", "at": 1, "count": 4, "every": 1, "label": "a request"},
+        {"id": "r3", "kind": "udp", "from": "h3", "to": "198.51.100.80", "at": 1, "count": 4, "every": 1, "label": "a request"}
+      ],
+      "edits": [],
+      "goal": [{"kind": "observe", "text": "Watch the shared link."}],
+      "bonus": {"kind": "observe", "text": "—"},
+      "quiz": {"question": "—", "options": ["ok"], "answer": 0, "why": ""},
+      "debrief": "The link filled and shed the extra. That is congestion — and why no one machine can answer an unlimited crowd.",
+      "evidence": ["sw", "srv"],
+      "predict": {"prompt": "What happens at the server's link?", "options": [
+        {"label": "It fills and sheds the extra requests", "claim": {"kind": "queue_full", "node": "sw"}},
+        {"label": "Every request is served", "claim": {"kind": "no_loss"}}
+      ]}
     }
   ]
 }

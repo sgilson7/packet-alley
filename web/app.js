@@ -16,6 +16,9 @@ let rafId = 0;
 // "point at a machine" edit, which option each candidate device picks. The
 // node elements are kept by id so candidates can be highlighted.
 let pointing = null;
+// When a chapter's demonstration scene is shown before a level, the level to
+// open once the scene is done.
+let pendingLevel = null;
 const nodeEls = {};
 const cur = { view: null, result: null, playing: false, ms: 0, last: 0, speedIdx: 0, logCount: 0, ran: false };
 
@@ -128,7 +131,7 @@ function renderMenu() {
         card.appendChild(tag("span", "lock-note", t("err_locked")));
         card.disabled = true;
       } else {
-        card.addEventListener("click", () => openLevel(lv.id));
+        card.addEventListener("click", () => enterLevel(lv.id, ch.id, ch.scene, home.teacher));
       }
       grid.appendChild(card);
     }
@@ -139,6 +142,32 @@ function renderMenu() {
 }
 
 // ---------- level ----------
+
+// Entering a chapter: if its demonstration scene has not been watched (and the
+// player is not in teacher mode), show the scene first, then the level.
+function enterLevel(levelId, chapterId, scene, teacher) {
+  if (scene && scene.id && !scene.seen && !teacher) {
+    pendingLevel = levelId;
+    openScene(chapterId);
+  } else {
+    openLevel(levelId);
+  }
+}
+
+function openScene(chapterId) {
+  const view = call("scene", chapterId);
+  if (!view) {
+    return;
+  }
+  cur.view = view;
+  cur.ran = false;
+  cur.result = null;
+  cur.playing = false;
+  cur.sceneChapter = chapterId;
+  renderLevel();
+  setMode("level");
+  window.scrollTo(0, 0);
+}
 
 function openLevel(id) {
   const view = call("open", id);
@@ -156,8 +185,9 @@ function openLevel(id) {
 
 function renderLevel() {
   const v = cur.view;
-  el("l-chapter").textContent = v.chapter + " · " + v.layer;
-  el("l-title").textContent = v.number + ": " + v.title;
+  const sc = !!v.scene;
+  el("l-chapter").textContent = (sc ? t("scene_tag") + " · " : "") + v.chapter + " · " + v.layer;
+  el("l-title").textContent = sc ? v.title : v.number + ": " + v.title;
   el("l-story").textContent = v.story;
   el("task-h").textContent = t("panel_task");
   el("l-task").textContent = v.task;
@@ -167,19 +197,29 @@ function renderLevel() {
   for (const c of v.concept) {
     cl.appendChild(tag("li", null, c));
   }
-  el("goals-h").textContent = t("panel_goals");
-  const gl = el("l-goals");
-  clear(gl);
-  for (const g of v.goals) {
-    gl.appendChild(tag("li", null, g));
+  // A demonstration scene has no goals, bonus or edits — just inspect, predict
+  // and watch. A scored level shows them as before.
+  el("goals-h").hidden = sc;
+  el("l-goals").hidden = sc;
+  el("l-bonus").hidden = sc;
+  const editsHead = el("edits-h").parentElement;
+  editsHead.hidden = sc;
+  el("edits-hint").hidden = sc;
+  el("l-edits").hidden = sc;
+  if (!sc) {
+    el("goals-h").textContent = t("panel_goals");
+    const gl = el("l-goals");
+    clear(gl);
+    for (const g of v.goals) {
+      gl.appendChild(tag("li", null, g));
+    }
+    el("l-bonus").textContent = "★ " + v.bonus;
+    el("edits-h").textContent = t("panel_edits");
+    el("edits-hint").textContent = t("panel_edits_hint");
+    renderEdits(v);
+    el("panel-toggle").textContent = t("panel_hide");
+    el("panel-toggle").setAttribute("aria-expanded", "true");
   }
-  el("l-bonus").textContent = "★ " + v.bonus;
-  el("edits-h").textContent = t("panel_edits");
-  el("edits-hint").textContent = t("panel_edits_hint");
-  renderEdits(v);
-  el("l-edits").hidden = false;
-  el("panel-toggle").textContent = t("panel_hide");
-  el("panel-toggle").setAttribute("aria-expanded", "true");
   renderPredict(v);
   updateCommit(v);
 
@@ -691,11 +731,51 @@ function starsRow(stars) {
   return row;
 }
 
+// A demonstration scene's result: no stars, the prediction outcome and a
+// Continue button that marks the scene watched and goes on to the level.
+function showSceneResult(r, body) {
+  body.appendChild(tag("h2", null, cur.view.title));
+  if (r.predict) {
+    body.appendChild(
+      tag("p", r.predict.right ? "met" : "unmet", t(r.predict.right ? "predict_right" : "predict_wrong")),
+    );
+  }
+  if (r.debrief) {
+    body.appendChild(tag("p", "debrief", r.debrief));
+  }
+  const actions = tag("div", "sheet-actions");
+  const cont = tag("button", "primary", t("btn_continue"));
+  cont.type = "button";
+  cont.addEventListener("click", () => {
+    call("scene_done", cur.sceneChapter);
+    store();
+    closeOverlay();
+    if (pendingLevel) {
+      const lv = pendingLevel;
+      pendingLevel = null;
+      openLevel(lv);
+    } else {
+      renderMenu();
+    }
+  });
+  actions.appendChild(cont);
+  const again = tag("button", "ghost", t("btn_restart"));
+  again.type = "button";
+  again.addEventListener("click", closeOverlay);
+  actions.appendChild(again);
+  body.appendChild(actions);
+  openOverlay();
+}
+
 function showResults() {
   store();
   const r = cur.result;
   const body = el("overlay-body");
   clear(body);
+  if (cur.view.scene) {
+    showSceneResult(r, body);
+    return;
+  }
   body.appendChild(tag("h2", null, r.headline));
   body.appendChild(starsRow(r.stars));
   body.appendChild(tag("p", null, r.stars_text));

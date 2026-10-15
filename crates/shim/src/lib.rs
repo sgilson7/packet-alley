@@ -38,6 +38,12 @@ impl Game {
     pub fn choose(&mut self, edit: u32, option: u32) -> String {
         self.inner.choose(edit, option)
     }
+    pub fn scene(&mut self, chapter: &str) -> String {
+        self.inner.scene(chapter)
+    }
+    pub fn scene_done(&mut self, chapter: &str) -> String {
+        self.inner.scene_done(chapter)
+    }
     pub fn inspect(&mut self, id: &str) -> String {
         self.inner.inspect(id)
     }

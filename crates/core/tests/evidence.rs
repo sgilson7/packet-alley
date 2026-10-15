@@ -180,3 +180,45 @@ fn an_unmigrated_level_keeps_its_quiz_and_bonus_layout() {
     );
     assert!(has(&out, "\"predict\":null"), "and has no prediction");
 }
+
+#[test]
+fn each_chapter_scene_watches_and_its_prediction_grades() {
+    // Every chapter's demonstration scene: it passes by being watched (observe
+    // goal), its intended prediction (option 0) is graded right against the
+    // run, and it awards no stars.
+    let shipped = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data/levels.json");
+    let levels = fs::read_to_string(&shipped).unwrap();
+    let mut g = Game::new(&levels, &copy(), "").expect("shipped data loads");
+    for (chapter, ev) in [("block", "sw"), ("town", "r"), ("wires", "cl"), ("storm", "sw")] {
+        g.scene(chapter)
+            .unwrap_or_else(|e| panic!("scene {chapter}: {e}"));
+        g.inspect(ev)
+            .unwrap_or_else(|e| panic!("inspect scene {chapter}: {e}"));
+        g.predict(0)
+            .unwrap_or_else(|e| panic!("predict scene {chapter}: {e}"));
+        let out = g.run().unwrap_or_else(|e| panic!("run scene {chapter}: {e}"));
+        assert!(
+            has(&out, "\"passed\":true"),
+            "scene {chapter} passes by watching: {out}"
+        );
+        assert!(
+            has(&out, "\"right\":true"),
+            "scene {chapter} option 0 is the right prediction: {out}"
+        );
+        assert!(
+            has(&out, "\"on_variant\":false"),
+            "a scene is not a variant: {out}"
+        );
+        assert!(
+            has(&out, "\"stars\":[false,false,false]"),
+            "a scene awards no stars: {out}"
+        );
+    }
+    // Scenes are not level cards, not in the progression, and not in the star
+    // total: the home still shows nineteen levels across fifty-seven stars.
+    let home = g.home();
+    assert!(
+        home.contains("\"57 of 57 stars\"") || home.contains(" of 57 "),
+        "scenes stay out of the star total: {home}"
+    );
+}

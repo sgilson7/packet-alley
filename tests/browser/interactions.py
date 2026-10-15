@@ -1,13 +1,14 @@
 """Packet Alley's own interactions for tests/browser/check.py.
 
-A new player's first minutes: the menu, the first level open on the map,
-picking the right address, running it, skipping to the result, passing, and
-answering the quiz; then a reload that keeps the star. Selectors and waits
-only — Firefox's CSP blocks Playwright's string-form wait_for_function.
+A new player's first minutes: the menu; the first chapter's demonstration
+scene (watch-first — inspect, predict, run, continue); then the first level on
+the map, inspecting a device, committing a prediction, pointing at the printer,
+running, passing; and a reload that keeps the star. Selectors and waits only —
+Firefox's CSP blocks Playwright's string-form wait_for_function.
 
-Expected values are worked out from the briefs by hand (a new player sees
-four chapters, the first level unlocked and the rest locked, the first
-level has a switch and a printer), not read from the game's own output.
+Expected values are worked out from the briefs by hand (a new player sees four
+chapters, the first level unlocked and the rest locked), not read from the
+game's own output.
 """
 import json
 import pathlib
@@ -31,6 +32,22 @@ def images_loaded(page, scope):
     return False
 
 
+def watch_and_run(page):
+    """Inspect a glowing device, commit a prediction, run, skip to the result."""
+    page.locator("#map .node-hit.evidence").first.click()
+    page.wait_for_selector("#overlay:not([hidden])", timeout=5000)
+    page.click("#overlay-close")
+    page.wait_for_selector("#overlay[hidden]", state="attached", timeout=5000)
+    page.locator("#predict-opts .opt").first.click()
+    page.click("#run-btn")
+    # best-effort skip; a short run can open the result overlay first
+    try:
+        page.click("#skip-btn", timeout=1500)
+    except Exception:
+        pass
+    page.wait_for_selector("#overlay:not([hidden])", timeout=20000)
+
+
 def run(page, check, engine):
     page.wait_for_selector("body[data-mode='menu']", state="attached", timeout=10000)
     check(page.inner_text("#brand") == COPY["title"], "the title is drawn")
@@ -39,13 +56,22 @@ def run(page, check, engine):
     check(page.locator(".level-card.locked").count() == 18, "all but the first level start locked")
     check(images_loaded(page, "#menu"), "the menu art loaded")
 
-    # open the first level
+    # Opening the first level shows the chapter's demonstration scene first.
     page.locator(".level-card:not(.locked)").first.click()
     page.wait_for_selector("body[data-mode='level']", state="attached", timeout=5000)
+    # the eyebrow is CSS-uppercased, so compare case-insensitively
+    check(COPY["scene_tag"].lower() in page.inner_text("#l-chapter").lower(), "the chapter's demo scene appears first")
+    check(images_loaded(page, "#map-wrap"), "the backdrop and device icons loaded")
+    check(page.locator("#l-edits").is_hidden(), "a scene offers no edits")
+    # watch the scene: inspect, predict, run, then continue to the chapter
+    watch_and_run(page)
+    page.locator(".sheet-actions .primary").first.click()
+    page.wait_for_selector("#overlay[hidden]", state="attached", timeout=5000)
+
+    # now the chapter's first scored level
     check(page.locator("#map image").count() == 3, "the first level's map has three devices")
     check(page.locator("#l-edits .edit").count() == 1, "it offers one change")
     check(page.locator("#legend .item").count() >= 1, "the packet legend is shown")
-    check(images_loaded(page, "#map-wrap"), "the backdrop and device icons loaded")
 
     # inspect a device — on this evidence-first level, opening a glowing device
     # also records it as evidence for the prediction.
@@ -73,9 +99,6 @@ def run(page, check, engine):
     check(page.locator("#run-btn:not([disabled])").count() == 1, "commit is enabled once evidence and a prediction are in")
     page.click("#run-btn")
     check(page.locator("#controls").is_visible(), "the playback controls appear")
-    # The run plays itself; skip to the end if the controls are still up, then
-    # wait for the result. (Clicking skip is racy — a short run can finish and
-    # open the result overlay first — so the skip is best-effort.)
     try:
         page.click("#skip-btn", timeout=1500)
     except Exception:
