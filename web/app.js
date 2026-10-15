@@ -944,6 +944,21 @@ function openMachineEditor(m) {
   clear(body);
   body.appendChild(tag("h3", "chooser-title", m.name));
 
+  // Every machine shows its MAC (and its address, once it has one), so the
+  // student can read what the switch table is really matching on.
+  const facts = tag("table", "node-facts");
+  const factRow = (k, val) => {
+    const tr = tag("tr");
+    tr.appendChild(tag("td", "k", k));
+    tr.appendChild(tag("td", "v", val));
+    facts.appendChild(tr);
+  };
+  factRow(t("tbl_mac"), m.mac);
+  if (m.addr) {
+    factRow(t("tbl_ip"), m.addr);
+  }
+  body.appendChild(facts);
+
   if (m.needs_addr) {
     const wrap = tag("div", "chooser-field");
     wrap.appendChild(tag("p", "chooser-label", t("build_pick_addr")));

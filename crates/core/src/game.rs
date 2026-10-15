@@ -1174,10 +1174,19 @@ impl Game {
             .collect();
         // A machine ready to draw: its centre is its map point; the icon and
         // the labels hang off it by the same constants the ordinary map uses.
-        let machine = |id: &str, kind: &str, name: &str, x: i32, y: i32, fixed: bool| {
+        // `idx` is its position once assembled (fixed first, then placed), which
+        // is what fixes its MAC — so the student can see every machine's MAC,
+        // even before a run.
+        let machine = |idx: usize, id: &str, kind: &str, name: &str, x: i32, y: i32, fixed: bool| {
             json!({"id": id, "kind": kind, "name": name, "fixed": fixed,
+                   "mac": show_mac(idx as u32 + 0x10),
                    "cost": self.cost_of_kind(&def, kind),
-                   "addr": st.addrs.get(id),
+                   "addr": st.addrs.get(id).cloned().or_else(|| {
+                       base.nodes
+                           .iter()
+                           .find(|n| n.id == id && !n.ip.is_empty())
+                           .map(|n| n.ip.clone())
+                   }),
                    "needs_addr": def.needs_addr.iter().any(|n| n == id),
                    "x": x - ICON / 2, "y": y - ICON / 2, "size": ICON,
                    "cx": x, "cy": y,
@@ -1187,12 +1196,14 @@ impl Game {
         let fixed: Vec<Value> = base
             .nodes
             .iter()
-            .map(|n| machine(&n.id, &n.kind, &n.name, n.x, n.y, true))
+            .enumerate()
+            .map(|(i, n)| machine(i, &n.id, &n.kind, &n.name, n.x, n.y, true))
             .collect();
         let placed: Vec<Value> = st
             .placed
             .iter()
-            .map(|p| machine(&p.id, &p.kind, &p.name, p.x, p.y, false))
+            .enumerate()
+            .map(|(j, p)| machine(base.nodes.len() + j, &p.id, &p.kind, &p.name, p.x, p.y, false))
             .collect();
         let nodes = self.build_nodes();
         let center = |id: &str| nodes.iter().find(|n| n.0 == id).map(|n| (n.3, n.4));
