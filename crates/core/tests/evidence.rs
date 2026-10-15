@@ -59,15 +59,18 @@ fn has(json: &str, needle: &str) -> bool {
 }
 
 #[test]
-fn a_run_waits_for_evidence_then_a_prediction() {
+fn a_run_waits_for_a_prediction() {
+    // A scored run asks only for a committed prediction (inspecting the glowing
+    // evidence is encouraged by the prompt, but never a hard blocker — a greyed
+    // commit button that silently blocks confused players).
     let mut g = game();
-    // Nothing inspected, nothing predicted.
-    assert!(g.run().is_err(), "a run must wait for the evidence");
+    assert!(g.run().is_err(), "a run waits for a prediction");
+    // Inspecting alone does not unlock it...
     g.inspect("pc").unwrap();
-    // Evidence seen, but still no prediction.
-    assert!(g.run().is_err(), "a run must wait for a prediction");
+    assert!(g.run().is_err(), "inspecting is not what gates the run");
+    // ...a committed prediction does.
     g.predict(0).unwrap();
-    assert!(g.run().is_ok(), "with evidence and a prediction the run proceeds");
+    assert!(g.run().is_ok(), "with a prediction the run proceeds");
 }
 
 #[test]

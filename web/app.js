@@ -316,9 +316,8 @@ function renderPredict(v) {
     return;
   }
   box.hidden = false;
-  const seen = v.evidence.length === 0 || v.evidence_seen.length > 0;
   el("predict-h").textContent = t("panel_predict");
-  el("predict-hint").textContent = t(seen ? "predict_hint" : "evidence_hint");
+  el("predict-hint").textContent = t("predict_hint");
   el("predict-prompt").textContent = v.predict.prompt;
   const opts = el("predict-opts");
   clear(opts);
@@ -343,18 +342,17 @@ function predict(i) {
   updateCommit(cur.view);
 }
 
-// The run button's label and whether it is ready: a migrated level will not
-// commit until the evidence has been inspected and a prediction made.
+// The run button is never disabled — a greyed-out button that silently blocks
+// is confusing. It always does something: it runs, or (on a level that still
+// wants a prediction) a hint says so and clicking explains.
 function updateCommit(v) {
   const label = v.predict ? "btn_commit" : cur.ran ? "btn_rerun" : "btn_run";
   el("run-btn").textContent = t(label);
-  let ready = true;
-  if (v.predict) {
-    const seen = v.evidence.length === 0 || v.evidence_seen.length > 0;
-    const picked = v.predict.chosen !== null && v.predict.chosen !== undefined;
-    ready = seen && picked;
+  const needPredict = !!v.predict && (v.predict.chosen === null || v.predict.chosen === undefined);
+  el("commit-hint").hidden = !needPredict;
+  if (needPredict) {
+    el("commit-hint").textContent = t("commit_hint");
   }
-  el("run-btn").disabled = !ready;
 }
 
 // Glow the devices still to be inspected for evidence; a device already looked

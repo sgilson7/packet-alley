@@ -182,6 +182,7 @@ button.ghost.small { padding: 3px 9px; font-size: 0.8rem; border-width: 2px; }
 .predict h3 { margin: 0; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); }
 .predict .prompt { font-weight: 700; font-size: 0.92rem; margin: 8px 0; }
 .run-row button[disabled] { opacity: 0.5; cursor: not-allowed; }
+.commit-hint { margin: 8px 0 0; font-size: 0.82rem; color: var(--muted); text-align: center; }
 
 /* The edit badge (a ✎) that marks an editable spot, and the chooser popover. */
 .edit-badge { cursor: pointer; }

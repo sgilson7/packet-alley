@@ -893,17 +893,14 @@ impl Game {
     /// record for playback.
     pub fn run(&mut self) -> Result<String, String> {
         let i = self.play.as_ref().ok_or_else(|| self.t("err_no_level"))?.level;
-        // Evidence-first levels will not run until the student has looked at the
-        // evidence and committed a prediction (Phase 2, PA5). A level without a
-        // `predict` block has neither gate and runs on demand as before.
-        if self.file.levels[i].predict.is_some() {
-            let play = self.play.as_ref().expect("level open");
-            if !self.file.levels[i].evidence.is_empty() && play.evidence_seen.is_empty() {
-                return Err(self.t("err_inspect_first"));
-            }
-            if play.prediction.is_none() {
-                return Err(self.t("err_predict_first"));
-            }
+        // An evidence-first level asks for a committed prediction before a
+        // scored run (inspecting the glowing evidence is encouraged by the
+        // prompt, but never a hard blocker). A level without a `predict` block
+        // runs on demand as before.
+        if self.file.levels[i].predict.is_some()
+            && self.play.as_ref().expect("level open").prediction.is_none()
+        {
+            return Err(self.t("err_predict_first"));
         }
         let l = self.edited();
         let rec = Sim::build(&l)?.run(l.ticks);

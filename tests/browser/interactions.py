@@ -97,8 +97,8 @@ def run(page, check, engine):
     page.locator("#map .node-hit.candidate").filter(has_text=re.compile("printer", re.I)).first.click()
     check("chosen" in (page.locator("#l-edits .opt").nth(1).get_attribute("class") or ""), "pointing at the printer sets the address")
 
-    # commit and run — the button was disabled until evidence and a prediction
-    check(page.locator("#run-btn:not([disabled])").count() == 1, "commit is enabled once evidence and a prediction are in")
+    # commit and run — the button is never greyed out (it always does something)
+    check(page.locator("#run-btn[disabled]").count() == 0, "the commit button is never disabled")
     page.click("#run-btn")
     check(page.locator("#controls").is_visible(), "the playback controls appear")
     try:
