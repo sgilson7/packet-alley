@@ -38,6 +38,15 @@ impl Game {
     pub fn choose(&mut self, edit: u32, option: u32) -> String {
         self.inner.choose(edit, option)
     }
+    pub fn inspect(&mut self, id: &str) -> String {
+        self.inner.inspect(id)
+    }
+    pub fn predict(&mut self, option: u32) -> String {
+        self.inner.predict(option)
+    }
+    pub fn practice(&mut self) -> String {
+        self.inner.practice()
+    }
     pub fn run(&mut self) -> String {
         self.inner.run()
     }

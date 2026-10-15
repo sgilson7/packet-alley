@@ -163,6 +163,15 @@ button.ghost.small { padding: 3px 9px; font-size: 0.8rem; border-width: 2px; }
    glow and a label say "pick me". */
 .node-hit.candidate { cursor: pointer; }
 .node-hit.candidate image { filter: drop-shadow(0 0 7px var(--oi-blue)) drop-shadow(0 0 4px var(--oi-blue)); }
+/* A device still to be inspected for evidence before a prediction: an orange
+   glow, distinct from the blue "point at me" of a destination pick. */
+.node-hit.evidence image { filter: drop-shadow(0 0 7px var(--oi-orange)) drop-shadow(0 0 4px var(--oi-orange)); }
+
+/* The prediction step (Phase 2). */
+.predict { margin-top: 16px; border: 2px solid var(--oi-blue); border-radius: 10px; padding: 10px; }
+.predict h3 { margin: 0; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); }
+.predict .prompt { font-weight: 700; font-size: 0.92rem; margin: 8px 0; }
+.run-row button[disabled] { opacity: 0.5; cursor: not-allowed; }
 
 /* The edit badge (a ✎) that marks an editable spot, and the chooser popover. */
 .edit-badge { cursor: pointer; }

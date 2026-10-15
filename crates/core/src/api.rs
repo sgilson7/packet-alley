@@ -54,6 +54,15 @@ impl Api {
     pub fn choose(&mut self, edit: u32, option: u32) -> String {
         self.with(|g| g.choose(edit as usize, option as usize))
     }
+    pub fn inspect(&mut self, id: &str) -> String {
+        self.with(|g| g.inspect(id))
+    }
+    pub fn predict(&mut self, option: u32) -> String {
+        self.with(|g| g.predict(option as usize))
+    }
+    pub fn practice(&mut self) -> String {
+        self.with(|g| g.practice())
+    }
     pub fn run(&mut self) -> String {
         self.with(|g| g.run())
     }

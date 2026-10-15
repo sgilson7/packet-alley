@@ -53,6 +53,16 @@ fn correct() -> Vec<(&'static str, Vec<usize>)> {
     ]
 }
 
+/// Levels migrated to the evidence-first flow (Phase 2): the id, an evidence
+/// id to inspect, and the prediction option that is correct once the intended
+/// choices are made. A level not listed here plays the old way.
+fn predict_of(id: &str) -> Option<(&'static str, usize)> {
+    match id {
+        "address" => Some(("prn", 0)),
+        _ => None,
+    }
+}
+
 #[test]
 fn every_level_passes_with_its_intended_choices() {
     let mut g = game();
@@ -63,12 +73,22 @@ fn every_level_passes_with_its_intended_choices() {
             g.choose(edit, opt)
                 .unwrap_or_else(|e| panic!("choose {id} {edit}={opt}: {e}"));
         }
+        if let Some((ev, opt)) = predict_of(id) {
+            g.inspect(ev).unwrap_or_else(|e| panic!("inspect {id}: {e}"));
+            g.predict(opt).unwrap_or_else(|e| panic!("predict {id}: {e}"));
+        }
         let out = g.run().unwrap_or_else(|e| panic!("run {id}: {e}"));
         println!("{id}: {}", if passed(&out) { "PASS" } else { "FAIL" });
         assert!(
             passed(&out),
             "level {id} did not pass with its intended choices: {out}"
         );
+        if predict_of(id).is_some() {
+            assert!(
+                out.contains("\"right\":true"),
+                "level {id} prediction should be graded right: {out}"
+            );
+        }
     }
 }
 
@@ -80,6 +100,13 @@ fn the_starting_choices_do_not_already_pass() {
     g.set_teacher(true);
     for (id, _) in correct() {
         g.open(id).unwrap();
+        // A migrated level still needs its evidence and a prediction before it
+        // will run; give the correct prediction so only the start config (not a
+        // missing prediction) is what keeps it from passing.
+        if let Some((ev, opt)) = predict_of(id) {
+            g.inspect(ev).unwrap();
+            g.predict(opt).unwrap();
+        }
         let out = g.run().unwrap();
         assert!(!passed(&out), "level {id} passes before any change is made");
     }
@@ -122,17 +149,23 @@ fn a_fresh_player_sees_only_the_first_level_unlocked() {
 }
 
 #[test]
-fn passing_the_quiz_right_adds_the_second_star() {
+fn predicting_right_adds_the_final_star_for_address() {
+    // "address" is migrated to the evidence-first flow: its final star comes
+    // from a correct prediction graded against the run, not a quiz.
     let mut g = game();
     g.set_teacher(true);
     g.open("address").unwrap();
     g.choose(0, 1).unwrap();
-    g.run().unwrap();
-    // The quiz answer for "address" is option 0.
-    let wrong = g.answer(1).unwrap();
-    assert!(wrong.contains("\"correct\":false"));
-    let right = g.answer(0).unwrap();
-    assert!(right.contains("\"correct\":true"));
-    // The star shows in the saved progress.
+    g.inspect("prn").unwrap();
+    // Predict the computer: passes, but the prediction is wrong — no final star.
+    g.predict(1).unwrap();
+    let wrong = g.run().unwrap();
+    assert!(wrong.contains("\"passed\":true"));
+    assert!(wrong.contains("\"right\":false"));
+    // Predict the printer: the run delivers there, so the final star is earned.
+    g.predict(0).unwrap();
+    let right = g.run().unwrap();
+    assert!(right.contains("\"right\":true"));
+    assert!(right.contains("\"stars\":[true,true,true]"));
     assert!(g.save().contains("address"));
 }

@@ -180,11 +180,13 @@ function renderLevel() {
   el("l-edits").hidden = false;
   el("panel-toggle").textContent = t("panel_hide");
   el("panel-toggle").setAttribute("aria-expanded", "true");
-  el("run-btn").textContent = t(cur.ran ? "btn_rerun" : "btn_run");
+  renderPredict(v);
+  updateCommit(v);
 
   el("backdrop").src = "art/backdrops/" + v.backdrop + ".png";
   renderMap(v);
   renderLegend(v);
+  markEvidence(v);
 
   el("legend-h").textContent = t("panel_legend");
   el("log-h").textContent = t("panel_log");
@@ -239,6 +241,91 @@ function renderEdits(v) {
   const box = el("l-edits");
   clear(box);
   v.edits.forEach((e, ei) => box.appendChild(editSection(e, ei)));
+}
+
+// ---------- evidence-first prediction (Phase 2) ----------
+
+// The prediction step, shown only for a migrated level (one that carries a
+// `predict` block). The student commits an outcome before the run; the core
+// grades it against the run, so no option is marked correct here.
+function renderPredict(v) {
+  const box = el("l-predict");
+  if (!v.predict) {
+    box.hidden = true;
+    return;
+  }
+  box.hidden = false;
+  const seen = v.evidence.length === 0 || v.evidence_seen.length > 0;
+  el("predict-h").textContent = t("panel_predict");
+  el("predict-hint").textContent = t(seen ? "predict_hint" : "evidence_hint");
+  el("predict-prompt").textContent = v.predict.prompt;
+  const opts = el("predict-opts");
+  clear(opts);
+  v.predict.options.forEach((o, i) => {
+    const picked = v.predict.chosen === i;
+    const b = tag("button", "opt" + (picked ? " chosen" : ""));
+    b.type = "button";
+    b.setAttribute("aria-pressed", picked ? "true" : "false");
+    b.textContent = o.label;
+    b.addEventListener("click", () => predict(i));
+    opts.appendChild(b);
+  });
+}
+
+function predict(i) {
+  const view = call("predict", i);
+  if (!view) {
+    return;
+  }
+  cur.view = view;
+  renderPredict(cur.view);
+  updateCommit(cur.view);
+}
+
+// The run button's label and whether it is ready: a migrated level will not
+// commit until the evidence has been inspected and a prediction made.
+function updateCommit(v) {
+  const label = v.predict ? "btn_commit" : cur.ran ? "btn_rerun" : "btn_run";
+  el("run-btn").textContent = t(label);
+  let ready = true;
+  if (v.predict) {
+    const seen = v.evidence.length === 0 || v.evidence_seen.length > 0;
+    const picked = v.predict.chosen !== null && v.predict.chosen !== undefined;
+    ready = seen && picked;
+  }
+  el("run-btn").disabled = !ready;
+}
+
+// Glow the devices still to be inspected for evidence; a device already looked
+// at loses the glow.
+function markEvidence(v) {
+  for (const id in nodeEls) {
+    nodeEls[id].classList.remove("evidence");
+  }
+  if (!v.predict) {
+    return;
+  }
+  for (const id of v.evidence) {
+    if (!v.evidence_seen.includes(id) && nodeEls[id]) {
+      nodeEls[id].classList.add("evidence");
+    }
+  }
+}
+
+// Records that a device was inspected, when the open level asks for evidence.
+function recordInspect(id) {
+  const v = cur.view;
+  if (!v.predict || !v.evidence.includes(id) || v.evidence_seen.includes(id)) {
+    return;
+  }
+  const view = call("inspect", id);
+  if (!view) {
+    return;
+  }
+  cur.view = view;
+  renderPredict(cur.view);
+  markEvidence(cur.view);
+  updateCommit(cur.view);
 }
 
 // The on-map chooser for one badge's group of edits. For a "point at a
@@ -313,6 +400,7 @@ function onNodeClick(i, id) {
     choose(pointing.ei, pointing.byNode[id]);
     return;
   }
+  recordInspect(id);
   inspectNode(i);
 }
 
@@ -455,7 +543,7 @@ function runLevel() {
   clear(el("log"));
   el("hud").hidden = false;
   el("controls").hidden = false;
-  el("run-btn").textContent = t("btn_rerun");
+  el("run-btn").textContent = t(cur.view.predict ? "btn_commit" : "btn_rerun");
   setPlay(true);
 }
 
@@ -634,11 +722,34 @@ function showResults() {
     body.appendChild(d);
   }
 
+  // Evidence-first result: whether the committed prediction matched the run.
+  if (r.predict) {
+    body.appendChild(
+      tag("p", r.predict.right ? "met" : "unmet", t(r.predict.right ? "predict_right" : "predict_wrong")),
+    );
+  }
+
   if (r.passed && r.debrief) {
     body.appendChild(tag("p", "debrief", r.debrief));
   }
 
   const actions = tag("div", "sheet-actions");
+  if (r.can_practice) {
+    const pb = tag("button", "ghost", t("btn_practice"));
+    pb.type = "button";
+    pb.addEventListener("click", () => {
+      const view = call("practice");
+      if (!view) {
+        return;
+      }
+      closeOverlay();
+      cur.view = view;
+      cur.ran = false;
+      cur.result = null;
+      renderLevel();
+    });
+    actions.appendChild(pb);
+  }
   if (r.passed && r.quiz) {
     const qb = tag("button", "primary", t("quiz_q"));
     qb.type = "button";

@@ -169,7 +169,8 @@ fn an_unmigrated_level_keeps_its_quiz_and_bonus_layout() {
     let levels = fs::read_to_string(&shipped).unwrap();
     let mut g = Game::new(&levels, &copy(), "").expect("shipped data loads");
     g.set_teacher(true);
-    g.open("address").unwrap();
+    // "hub" is not migrated to the evidence-first flow yet.
+    g.open("hub").unwrap();
     g.choose(0, 1).unwrap();
     let out = g.run().unwrap();
     assert!(has(&out, "\"passed\":true"));

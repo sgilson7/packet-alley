@@ -273,11 +273,40 @@ pub fn validate(file: &LevelFile) -> Result<(), String> {
                 level::apply(&mut vl, &o.target, &o.value)
                     .map_err(|m| format!("{}: a variant: {m}", l.id))?;
             }
-            for e in &l.edits {
-                level::apply(&mut vl, &e.target, &e.options[e.start].value)
+            // the edits as the variant presents them, with its option overrides
+            let mut edits = l.edits.clone();
+            for ov in &v.edits {
+                let e = edits
+                    .iter_mut()
+                    .find(|e| e.id == ov.edit)
+                    .ok_or_else(|| format!("{}: a variant names no edit {}", l.id, ov.edit))?;
+                if ov.options.len() != e.options.len() {
+                    return Err(format!(
+                        "{}: a variant gives edit {} {} options, not {}",
+                        l.id,
+                        ov.edit,
+                        ov.options.len(),
+                        e.options.len()
+                    ));
+                }
+                e.options = ov.options.clone();
+            }
+            let mut start = vl.clone();
+            for e in &edits {
+                level::apply(&mut start, &e.target, &e.options[e.start].value)
                     .map_err(|m| format!("{}: a variant: {m}", l.id))?;
             }
-            Sim::build(&vl).map_err(|m| format!("{}: a variant: {m}", l.id))?;
+            Sim::build(&start).map_err(|m| format!("{}: a variant: {m}", l.id))?;
+            // every option of a variant edit must build too
+            for e in &edits {
+                for o in &e.options {
+                    let mut one = start.clone();
+                    level::apply(&mut one, &e.target, &o.value)
+                        .map_err(|m| format!("{}: a variant: {m}", l.id))?;
+                    Sim::build(&one)
+                        .map_err(|m| format!("{}: a variant {} = {}: {m}", l.id, e.id, o.value))?;
+                }
+            }
         }
     }
     Ok(())
@@ -559,19 +588,37 @@ impl Game {
         Ok(self.view())
     }
 
+    /// The edits as the active practice variant presents them: the base edits,
+    /// with any option list the variant replaces (so labels and values match
+    /// the variant's addresses). On the scored case this is just the base edits.
+    fn effective_edits(&self) -> Vec<level::EditDef> {
+        let play = self.play.as_ref().expect("a level is open");
+        let base = &self.file.levels[play.level];
+        let mut edits = base.edits.clone();
+        if let Some(v) = play.variant.and_then(|vi| base.variants.get(vi)) {
+            for ov in &v.edits {
+                if let Some(e) = edits.iter_mut().find(|e| e.id == ov.edit) {
+                    e.options = ov.options.clone();
+                }
+            }
+        }
+        edits
+    }
+
     fn edited(&self) -> Level {
         let play = self.play.as_ref().expect("a level is open");
         let base = &self.file.levels[play.level];
         let mut l = base.clone();
         // A fixed practice variant changes the numbers before the student
-        // configures: its overrides go on first, then its seed, then the edits.
+        // configures: its field overrides go on first, then its seed, then the
+        // chosen edits (whose option values the variant may also have replaced).
         if let Some(v) = play.variant.and_then(|vi| base.variants.get(vi)) {
             l.seed = v.seed;
             for o in &v.overrides {
                 level::apply(&mut l, &o.target, &o.value).expect("variant validated at load");
             }
         }
-        for (e, &c) in base.edits.iter().zip(&play.choice) {
+        for (e, &c) in self.effective_edits().iter().zip(&play.choice) {
             level::apply(&mut l, &e.target, &e.options[c].value).expect("validated at load");
         }
         l
@@ -677,8 +724,8 @@ impl Game {
                        "mx": (a.x + b.x) / 2, "my": (a.y + b.y) / 2})
             })
             .collect();
-        let edits: Vec<Value> = base
-            .edits
+        let eff_edits = self.effective_edits();
+        let edits: Vec<Value> = eff_edits
             .iter()
             .enumerate()
             .map(|(ei, e)| {

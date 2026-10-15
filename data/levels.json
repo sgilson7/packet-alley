@@ -81,7 +81,34 @@
         "answer": 0,
         "why": "A switch that does not yet know a destination sends the frame everywhere, then remembers which port the replies come back on."
       },
-      "debrief": "The first order reached the kitchen. The shop can work again."
+      "debrief": "The first order reached the kitchen. The shop can work again.",
+      "evidence": ["pc", "prn", "sw"],
+      "predict": {
+        "prompt": "Once you send it, who receives the order?",
+        "options": [
+          {"label": "The kitchen printer", "claim": {"kind": "delivered_to", "node": "prn"}},
+          {"label": "The shop computer", "claim": {"kind": "delivered_to", "node": "pc"}},
+          {"label": "No one — the order is lost", "claim": {"kind": "not_delivered", "app": "order"}}
+        ]
+      },
+      "variants": [
+        {"seed": 2,
+          "overrides": [
+            {"target": {"node": "pc", "field": "ip"}, "value": "10.0.1.10/24"},
+            {"target": {"node": "prn", "field": "ip"}, "value": "10.0.1.20/24"}],
+          "edits": [{"edit": "dest", "options": [
+            {"label": "To itself (10.0.1.10)", "value": "10.0.1.10"},
+            {"label": "To the printer (10.0.1.20)", "value": "10.0.1.20"},
+            {"label": "To 10.0.1.99 (nobody)", "value": "10.0.1.99"}]}]},
+        {"seed": 3,
+          "overrides": [
+            {"target": {"node": "pc", "field": "ip"}, "value": "192.168.5.10/24"},
+            {"target": {"node": "prn", "field": "ip"}, "value": "192.168.5.20/24"}],
+          "edits": [{"edit": "dest", "options": [
+            {"label": "To itself (192.168.5.10)", "value": "192.168.5.10"},
+            {"label": "To the printer (192.168.5.20)", "value": "192.168.5.20"},
+            {"label": "To 192.168.5.99 (nobody)", "value": "192.168.5.99"}]}]}
+      ]
     },
     {
       "id": "hub",

@@ -95,13 +95,20 @@ pub enum Claim {
     NoLoss,
 }
 
-/// One fixed practice case: value overrides applied over the base level.
+/// One fixed practice case: new numbers over the base level. `overrides` set
+/// device/program/cable fields; `edits` replace an edit's option list so the
+/// labels and values match the variant's addresses. The topology, the edit
+/// targets and the prediction claims (which name device ids, not numbers) stay,
+/// so the lesson is the same and only the numbers change.
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct Variant {
     #[serde(default = "one")]
     pub seed: u32,
+    #[serde(default)]
     pub overrides: Vec<Override>,
+    #[serde(default)]
+    pub edits: Vec<OptionOverride>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -109,6 +116,14 @@ pub struct Variant {
 pub struct Override {
     pub target: Target,
     pub value: String,
+}
+
+/// Replaces the option list of one edit (by its id) in a practice variant.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct OptionOverride {
+    pub edit: String,
+    pub options: Vec<OptionDef>,
 }
 
 fn one() -> u32 {

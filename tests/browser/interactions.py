@@ -47,12 +47,18 @@ def run(page, check, engine):
     check(page.locator("#legend .item").count() >= 1, "the packet legend is shown")
     check(images_loaded(page, "#map-wrap"), "the backdrop and device icons loaded")
 
-    # inspect a device
+    # inspect a device — on this evidence-first level, opening a glowing device
+    # also records it as evidence for the prediction.
     page.locator("#map .node-hit").first.click()
     page.wait_for_selector("#overlay:not([hidden])", timeout=5000)
     check(page.locator("#overlay-body h2").count() == 1, "clicking a device opens its details")
     page.click("#overlay-close")
     page.wait_for_selector("#overlay[hidden]", state="attached", timeout=5000)
+
+    # the prediction step appears; commit the correct outcome (the printer)
+    check(page.locator("#l-predict:not([hidden])").count() == 1, "the prediction step is shown")
+    page.locator("#predict-opts .opt").filter(has_text=re.compile("printer", re.I)).first.click()
+    check("chosen" in (page.locator("#predict-opts .opt").first.get_attribute("class") or ""), "the prediction is recorded")
 
     # set the destination on the map: open the edit badge, which lights up the
     # machines you can send to, then point at the printer.
@@ -62,6 +68,9 @@ def run(page, check, engine):
     check(page.locator("#map .node-hit.candidate").count() >= 2, "the machines you can send to light up")
     page.locator("#map .node-hit.candidate").filter(has_text=re.compile("printer", re.I)).first.click()
     check("chosen" in (page.locator("#l-edits .opt").nth(1).get_attribute("class") or ""), "pointing at the printer sets the address")
+
+    # commit and run — the button was disabled until evidence and a prediction
+    check(page.locator("#run-btn:not([disabled])").count() == 1, "commit is enabled once evidence and a prediction are in")
     page.click("#run-btn")
     check(page.locator("#controls").is_visible(), "the playback controls appear")
     # The run plays itself; skip to the end if the controls are still up, then
@@ -73,13 +82,10 @@ def run(page, check, engine):
         pass
     page.wait_for_selector("#overlay:not([hidden])", timeout=20000)
     check(page.inner_text("#overlay-body h2") == COPY["passed"], "the right address delivers the order")
+    check(COPY["predict_right"] in page.inner_text("#overlay-body"), "the prediction matched the run")
 
-    # answer the quiz (option 0 is correct for this level)
-    page.locator(".sheet-actions .primary").first.click()
-    page.wait_for_selector(".quiz-opt", timeout=5000)
-    page.locator(".quiz-opt").first.click()
-    check(page.locator(".quiz-opt.right").count() == 1, "the right quiz answer is accepted")
-    page.locator(".sheet-actions .primary").first.click()
+    # the final star is the prediction's; close the result (no quiz here)
+    page.locator(".sheet-actions .ghost").last.click()
     page.wait_for_selector("#overlay[hidden]", state="attached", timeout=5000)
 
     # a reload keeps the stars
