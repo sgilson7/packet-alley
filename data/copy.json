@@ -177,5 +177,7 @@
   "err_bad_choice": "That choice is not available.",
   "err_not_run": "Run the level first.",
   "err_quiz_first": "Pass the level before answering the question.",
+  "err_inspect_first": "Inspect the evidence on the map before you commit.",
+  "err_predict_first": "Mark your prediction before you commit and run.",
   "err_load": "The game data could not be loaded."
 }

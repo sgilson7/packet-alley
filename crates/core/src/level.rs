@@ -42,6 +42,73 @@ pub struct Level {
     pub bonus: Cond,
     pub quiz: Quiz,
     pub debrief: String,
+    /// Evidence-first (Phase 2). Node and cable ids worth inspecting before a
+    /// run; the student must open at least one before committing. Empty on a
+    /// level that has not been migrated — such a level keeps the old flow.
+    #[serde(default)]
+    pub evidence: Vec<String>,
+    /// The prediction the student commits before running. Graded against the
+    /// real run (not a stored answer index). `None` keeps the old quiz star.
+    #[serde(default)]
+    pub predict: Option<PredictDef>,
+    /// A few fixed practice cases offered after a wrong committed attempt. Each
+    /// re-applies the base level's edits over its own value overrides, so the
+    /// numbers change but the lesson does not. Never re-awards the star.
+    #[serde(default)]
+    pub variants: Vec<Variant>,
+}
+
+/// The prediction step: a prompt and the outcomes the student may claim. Every
+/// option carries a claim the core can check against the committed run.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct PredictDef {
+    pub prompt: String,
+    pub options: Vec<PredictOption>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct PredictOption {
+    pub label: String,
+    pub claim: Claim,
+}
+
+/// A verifiable statement about a finished run. The grader (`game::graded`)
+/// checks it against the recorded events, so no correct option is stored.
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum Claim {
+    /// The program's traffic reaches its destination.
+    Delivered { app: String },
+    /// The program's traffic does not reach its destination.
+    NotDelivered { app: String },
+    /// This specific device is the one that receives the delivery.
+    DeliveredTo { node: String },
+    /// A frame is dropped or collides at this device.
+    FailsAt { node: String },
+    /// A packet runs out of hops (TTL) at this device.
+    ExpiresAt { node: String },
+    /// This device's outgoing line fills and sheds frames.
+    QueueFull { node: String },
+    /// Nothing is lost: no drops and no collisions.
+    NoLoss,
+}
+
+/// One fixed practice case: value overrides applied over the base level.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct Variant {
+    #[serde(default = "one")]
+    pub seed: u32,
+    pub overrides: Vec<Override>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct Override {
+    pub target: Target,
+    pub value: String,
 }
 
 fn one() -> u32 {

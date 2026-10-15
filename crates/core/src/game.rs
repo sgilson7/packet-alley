@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
 use crate::ip::{show_ip, show_mac, BROADCAST_MAC};
-use crate::level::{self, Cond, Level, LevelFile};
+use crate::level::{self, Claim, Cond, Level, LevelFile};
 use crate::sim::{Body, Proto, Record, Sim};
 
 /// The map's size in its own units; node coordinates in the level file are
@@ -43,6 +43,13 @@ struct Play {
     choice: Vec<usize>,
     record: Option<Record>,
     passed: bool,
+    /// Evidence-first (Phase 2): node/cable ids the student has inspected, the
+    /// outcome they committed to, and which fixed practice variant is active
+    /// (`None` = the scored base case). A level with no `predict` ignores all
+    /// three and plays exactly as before.
+    evidence_seen: Vec<String>,
+    prediction: Option<usize>,
+    variant: Option<usize>,
 }
 
 pub struct Game {
@@ -156,6 +163,8 @@ const OTHER_KEYS: &[&str] = &[
     "err_bad_choice",
     "err_not_run",
     "err_quiz_first",
+    "err_inspect_first",
+    "err_predict_first",
 ];
 
 fn fill(template: &str, args: &[String]) -> String {
@@ -243,8 +252,60 @@ pub fn validate(file: &LevelFile) -> Result<(), String> {
                 Sim::build(&one).map_err(|m| format!("{} with {} = {}: {m}", l.id, e.id, o.value))?;
             }
         }
+        // Phase 2: every prediction claim names a real device or program,
+        // every evidence id a real device or cable, and every fixed practice
+        // variant builds with the level's starting edits.
+        if let Some(pd) = &l.predict {
+            for o in &pd.options {
+                check_claim(l, &o.claim)?;
+            }
+        }
+        for id in &l.evidence {
+            let known = l.nodes.iter().any(|n| &n.id == id) || l.links.iter().any(|k| &k.id == id);
+            if !known {
+                return Err(format!("{}: evidence names no device or cable {id}", l.id));
+            }
+        }
+        for v in &l.variants {
+            let mut vl = l.clone();
+            vl.seed = v.seed;
+            for o in &v.overrides {
+                level::apply(&mut vl, &o.target, &o.value)
+                    .map_err(|m| format!("{}: a variant: {m}", l.id))?;
+            }
+            for e in &l.edits {
+                level::apply(&mut vl, &e.target, &e.options[e.start].value)
+                    .map_err(|m| format!("{}: a variant: {m}", l.id))?;
+            }
+            Sim::build(&vl).map_err(|m| format!("{}: a variant: {m}", l.id))?;
+        }
     }
     Ok(())
+}
+
+fn check_claim(l: &Level, claim: &Claim) -> Result<(), String> {
+    let node = |id: &String| -> Result<(), String> {
+        if l.nodes.iter().any(|n| &n.id == id) {
+            Ok(())
+        } else {
+            Err(format!("{}: a prediction names no device {id}", l.id))
+        }
+    };
+    let app = |id: &String| -> Result<(), String> {
+        if l.apps.iter().any(|a| &a.id == id) {
+            Ok(())
+        } else {
+            Err(format!("{}: a prediction names no program {id}", l.id))
+        }
+    };
+    match claim {
+        Claim::Delivered { app: a } | Claim::NotDelivered { app: a } => app(a),
+        Claim::DeliveredTo { node: n }
+        | Claim::FailsAt { node: n }
+        | Claim::ExpiresAt { node: n }
+        | Claim::QueueFull { node: n } => node(n),
+        Claim::NoLoss => Ok(()),
+    }
 }
 
 fn check_cond(l: &Level, c: &Cond) -> Result<(), String> {
@@ -310,6 +371,28 @@ fn holds(l: &Level, c: &Cond, s: &crate::sim::Stats, _ticks: u32) -> bool {
         // get right, so the goal always holds once the run has played.
         "observe" => true,
         _ => true,
+    }
+}
+
+/// Whether a committed prediction came true. The claim is checked against the
+/// run's recorded events and stats — never a stored answer index — so a correct
+/// prediction means the student read the network, not that they guessed an
+/// option position (Phase 2, PA8).
+pub fn graded(l: &Level, claim: &Claim, rec: &Record) -> bool {
+    let s = rec.stats();
+    let idx = |id: &str| l.nodes.iter().position(|n| n.id == id);
+    let at = |id: &str, pred: &dyn Fn(&crate::sim::Event) -> bool| match idx(id) {
+        Some(i) => rec.events.iter().any(|e| e.node == i && pred(e)),
+        None => false,
+    };
+    match claim {
+        Claim::Delivered { app } => s.delivered[app_index(l, app)] >= 1,
+        Claim::NotDelivered { app } => s.delivered[app_index(l, app)] == 0,
+        Claim::DeliveredTo { node } => at(node, &|e| e.key == "ev_delivered"),
+        Claim::FailsAt { node } => at(node, &|e| e.fx == "drop" || e.fx == "collision"),
+        Claim::ExpiresAt { node } => at(node, &|e| e.key == "ev_ttl"),
+        Claim::QueueFull { node } => at(node, &|e| e.key == "ev_queue_full"),
+        Claim::NoLoss => s.drops == 0 && s.collisions == 0,
     }
 }
 
@@ -451,6 +534,9 @@ impl Game {
             choice,
             record: None,
             passed: false,
+            evidence_seen: Vec::new(),
+            prediction: None,
+            variant: None,
         });
         Ok(self.view())
     }
@@ -477,10 +563,67 @@ impl Game {
         let play = self.play.as_ref().expect("a level is open");
         let base = &self.file.levels[play.level];
         let mut l = base.clone();
+        // A fixed practice variant changes the numbers before the student
+        // configures: its overrides go on first, then its seed, then the edits.
+        if let Some(v) = play.variant.and_then(|vi| base.variants.get(vi)) {
+            l.seed = v.seed;
+            for o in &v.overrides {
+                level::apply(&mut l, &o.target, &o.value).expect("variant validated at load");
+            }
+        }
         for (e, &c) in base.edits.iter().zip(&play.choice) {
             level::apply(&mut l, &e.target, &e.options[c].value).expect("validated at load");
         }
         l
+    }
+
+    /// Records that the student inspected a device or cable (the evidence step).
+    pub fn inspect(&mut self, id: &str) -> Result<String, String> {
+        if self.play.is_none() {
+            return Err(self.t("err_no_level"));
+        }
+        let play = self.play.as_mut().expect("checked");
+        if !play.evidence_seen.iter().any(|e| e == id) {
+            play.evidence_seen.push(id.to_string());
+        }
+        Ok(self.view())
+    }
+
+    /// Commits the outcome the student predicts, before the run.
+    pub fn predict(&mut self, option: usize) -> Result<String, String> {
+        let i = self.play.as_ref().ok_or_else(|| self.t("err_no_level"))?.level;
+        let ok = self.file.levels[i]
+            .predict
+            .as_ref()
+            .map(|p| option < p.options.len())
+            .unwrap_or(false);
+        if !ok {
+            return Err(self.t("err_bad_choice"));
+        }
+        self.play.as_mut().expect("checked").prediction = Some(option);
+        Ok(self.view())
+    }
+
+    /// Switches to the next fixed practice case after a miss. A practice run is
+    /// for learning and never re-awards a star.
+    pub fn practice(&mut self) -> Result<String, String> {
+        let i = self.play.as_ref().ok_or_else(|| self.t("err_no_level"))?.level;
+        let n = self.file.levels[i].variants.len();
+        if n == 0 {
+            return Err(self.t("err_bad_choice"));
+        }
+        let choice: Vec<usize> = self.file.levels[i].edits.iter().map(|e| e.start).collect();
+        let play = self.play.as_mut().expect("checked");
+        play.variant = Some(match play.variant {
+            None => 0,
+            Some(v) => (v + 1) % n,
+        });
+        play.choice = choice;
+        play.record = None;
+        play.passed = false;
+        play.prediction = None;
+        play.evidence_seen.clear();
+        Ok(self.view())
     }
 
     fn view(&self) -> String {
@@ -624,6 +767,15 @@ impl Game {
             .map(|c| json!({"cls": c, "letter": self.t(&format!("pkt_{c}")), "name": self.t(&format!("pkt_{c}_name"))}))
             .collect();
         let s = self.stars_of(&base.id);
+        // Phase 2: the prediction choices (graded against the run, so no correct
+        // option is marked here) and the evidence the student should inspect.
+        let predict = base.predict.as_ref().map(|pd| {
+            json!({
+                "prompt": pd.prompt,
+                "options": pd.options.iter().map(|o| json!({"label": o.label})).collect::<Vec<_>>(),
+                "chosen": play.prediction,
+            })
+        });
         json!({
             "id": base.id, "title": base.title,
             "number": fill(&self.t("level_n"), &[(play.level + 1).to_string()]),
@@ -633,6 +785,10 @@ impl Game {
             "nodes": nodes, "links": links, "edits": edits,
             "viewbox": format!("0 0 {MAP_W} {MAP_H}"),
             "stars": s, "stars_text": self.stars_text(s), "next": next, "legend": legend,
+            "predict": predict,
+            "evidence": base.evidence,
+            "evidence_seen": play.evidence_seen,
+            "variant": play.variant,
         })
         .to_string()
     }
@@ -641,6 +797,18 @@ impl Game {
     /// record for playback.
     pub fn run(&mut self) -> Result<String, String> {
         let i = self.play.as_ref().ok_or_else(|| self.t("err_no_level"))?.level;
+        // Evidence-first levels will not run until the student has looked at the
+        // evidence and committed a prediction (Phase 2, PA5). A level without a
+        // `predict` block has neither gate and runs on demand as before.
+        if self.file.levels[i].predict.is_some() {
+            let play = self.play.as_ref().expect("level open");
+            if !self.file.levels[i].evidence.is_empty() && play.evidence_seen.is_empty() {
+                return Err(self.t("err_inspect_first"));
+            }
+            if play.prediction.is_none() {
+                return Err(self.t("err_predict_first"));
+            }
+        }
         let l = self.edited();
         let rec = Sim::build(&l)?.run(l.ticks);
         let goals: Vec<(String, bool)> = l
@@ -650,9 +818,35 @@ impl Game {
             .collect();
         let passed = goals.iter().all(|g| g.1);
         let bonus = passed && met(&l, &l.bonus, &rec);
-        let entry = self.progress.stars.entry(l.id.clone()).or_insert([false; 3]);
-        entry[0] |= passed;
-        entry[2] |= bonus;
+        let has_predict = self.file.levels[i].predict.is_some();
+        let predict_ok = self.file.levels[i]
+            .predict
+            .as_ref()
+            .and_then(|pd| {
+                self.play
+                    .as_ref()
+                    .and_then(|p| p.prediction)
+                    .and_then(|pi| pd.options.get(pi))
+            })
+            .map(|o| graded(&l, &o.claim, &rec))
+            .unwrap_or(false);
+        let on_variant = self.play.as_ref().map(|p| p.variant.is_some()).unwrap_or(false);
+        if on_variant {
+            // A practice case teaches; it awards nothing.
+        } else {
+            let entry = self.progress.stars.entry(l.id.clone()).or_insert([false; 3]);
+            entry[0] |= passed;
+            if has_predict {
+                // The prediction gates the final star — earned only when the
+                // level is passed and the committed prediction came true, so a
+                // correct guess about an unfixed network earns nothing. The
+                // no-loss bonus takes the middle star. (No prediction: quiz.)
+                entry[1] |= bonus;
+                entry[2] |= passed && predict_ok;
+            } else {
+                entry[2] |= bonus;
+            }
+        }
         let diagnosis = if passed { Vec::new() } else { self.diagnose(&rec) };
         let s = rec.stats();
         let summary = vec![
@@ -663,11 +857,17 @@ impl Game {
             fill(&self.t("sum_retransmits"), &[s.retransmits.to_string()]),
         ];
         let base = &self.file.levels[i];
-        let quiz = if passed {
+        let quiz = if passed && base.predict.is_none() {
             json!({"question": base.quiz.question, "options": base.quiz.options})
         } else {
             Value::Null
         };
+        let predict = if has_predict {
+            json!({"shown": true, "right": predict_ok})
+        } else {
+            Value::Null
+        };
+        let can_practice = !base.variants.is_empty();
         let stars = self.stars_of(&l.id);
         let out = json!({
             "passed": passed,
@@ -678,6 +878,9 @@ impl Game {
             "diagnosis": diagnosis,
             "debrief": if passed { base.debrief.clone() } else { String::new() },
             "quiz": quiz,
+            "predict": predict,
+            "can_practice": can_practice,
+            "on_variant": on_variant,
             "stars": stars,
             "stars_text": self.stars_text(stars),
             "ticks": rec.ticks,
