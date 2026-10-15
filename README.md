@@ -45,6 +45,15 @@ each chapter gets genuinely technical.
   of ordinary requests overwhelms a single server's link, most are dropped, and
   a question draws out why — and what actually defends against it. See below.
 
+Each chapter opens with a short, watch-first **demonstration** on a separate
+test network, then every level runs an **evidence-first** loop: inspect the
+devices and packets, commit a prediction of what will happen, then run — and the
+final star is a correct prediction, graded against the real run, not a quiz. A
+missed attempt offers a fresh practice case with new numbers. The mechanical
+explanations are quoted verbatim from an open textbook (CC BY-SA 3.0; see
+`LICENSES.md`), and the go-back-N levels say on screen that they are a simplified
+teaching model, not full TCP.
+
 Every change is made on the map — click an edit badge to open a chooser right
 there, or point at a glowing machine to send a packet to it — with the same
 choices mirrored in a side panel you can hide. Every choice is a click, never

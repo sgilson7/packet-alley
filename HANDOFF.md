@@ -71,13 +71,15 @@ now quote the open textbook (CC BY-SA 3.0, attributed in `LICENSES.md` and
 `data/textbook_extracts.json`). Data only; the deterministic engine, the pinned
 campaign choices and the quizzes are untouched. See `SECOND-ORDER.md` rows 24–25.
 
-**Phase 2 is gated and NOT built** (the packet's Stage 9 / R9 say not to
-self-authorize it, and ask for professor review): the typed
-Inspect→Predict→Configure→Commit→Simulate→Debrief core state machine,
-prediction-gated scoring with per-case practice variants, the four replayable
-demonstration scenes, the quiz→prediction change, the textbook concept panel and
-new property tests. Contracts for it are in `packet_alley_curriculum_packet/`.
-See `SECOND-ORDER.md` row 26.
+**Phase 2 is built** (branch `evidence-first`, after Sam signed off the design
+and its five decisions): the evidence-first model — inspect, predict, commit,
+with the final star gated on a correct prediction graded against the run;
+fixed practice variants for a fresh case on a miss; the four watch-first
+demonstration scenes; the quiz→prediction change on every level; the textbook
+concept panel and the Go-Back-N badge; and new property + browser tests. See
+`HANDOFF_CURRICULUM.md` for the full audit and `SECOND-ORDER.md` rows 27–29.
+The packet's Stage 9 still asks Ally to review the playable build's conceptual
+accuracy (MAC/IP, ARP placement, GBN scope, congestion wording).
 
 ## Waiting on the peer / Sam
 
