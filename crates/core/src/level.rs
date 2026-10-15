@@ -108,9 +108,15 @@ pub struct BuildDef {
     /// The addresses offered in the dropdown for each host.
     #[serde(default)]
     pub addr_choices: Vec<String>,
-    /// Total-cost thresholds for the bonus stars, cheapest first.
+    /// Total-cost thresholds for the three visible stars, cheapest first:
+    /// `star_cost[0]` is the third star (top third of builds), `star_cost[1]`
+    /// the second (top two thirds); passing at all earns the first.
     #[serde(default)]
     pub star_cost: Vec<u32>,
+    /// A hidden fourth "gold" star for a build in the cheapest few per cent of
+    /// all tried. 0 means no gold star.
+    #[serde(default)]
+    pub gold_cost: u32,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

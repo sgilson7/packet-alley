@@ -26,6 +26,16 @@ function t(key) {
   return copy[key] || "";
 }
 
+// Fills {a}..{d} in a copy string with the given values, in order. (The core
+// fills most templates; a few build-mode strings are filled here.)
+function fill(s, args) {
+  let out = s;
+  ["{a}", "{b}", "{c}", "{d}"].forEach((k, i) => {
+    out = out.replace(k, args[i]);
+  });
+  return out;
+}
+
 function loadSave() {
   try {
     return localStorage.getItem(SAVE_KEY) || "";
@@ -135,10 +145,37 @@ function renderMenu() {
       }
       grid.appendChild(card);
     }
+    // The zone's "super" build level, if any, as a distinct card.
+    if (ch.super) {
+      grid.appendChild(superCard(ch.super));
+    }
     sec.appendChild(grid);
     box.appendChild(sec);
   }
   setMode("menu");
+}
+
+function superCard(sp) {
+  const card = tag("button", "super-card" + (sp.locked ? " locked" : ""));
+  card.type = "button";
+  card.appendChild(tag("span", "num super-tag", t("super_tag")));
+  card.appendChild(tag("span", "name", sp.title));
+  const stars = tag("span", "stars");
+  for (const got of sp.stars) {
+    stars.appendChild(tag("span", got ? "full" : "empty", got ? "★" : "☆"));
+  }
+  // the hidden fourth star, shown only once earned
+  if (sp.gold) {
+    stars.appendChild(tag("span", "gold", "★"));
+  }
+  card.appendChild(stars);
+  if (sp.locked) {
+    card.appendChild(tag("span", "lock-note", t("super_locked")));
+    card.disabled = true;
+  } else {
+    card.addEventListener("click", () => openLevel(sp.id));
+  }
+  return card;
 }
 
 // ---------- level ----------
@@ -186,8 +223,9 @@ function openLevel(id) {
 function renderLevel() {
   const v = cur.view;
   const sc = !!v.scene;
-  el("l-chapter").textContent = (sc ? t("scene_tag") + " · " : "") + v.chapter + " · " + v.layer;
-  el("l-title").textContent = sc ? v.title : v.number + ": " + v.title;
+  const bd = !!v.build;
+  el("l-chapter").textContent = (bd ? t("super_tag") + " · " : sc ? t("scene_tag") + " · " : "") + v.chapter + " · " + v.layer;
+  el("l-title").textContent = sc || bd ? v.title : v.number + ": " + v.title;
   el("l-story").textContent = v.story;
   el("task-h").textContent = t("panel_task");
   el("l-task").textContent = v.task;
@@ -218,16 +256,17 @@ function renderLevel() {
     el("l-textbook-text").textContent = v.textbook;
     el("l-textbook-src").textContent = v.textbook_src;
   }
-  // A demonstration scene has no goals, bonus or edits — just inspect, predict
-  // and watch. A scored level shows them as before.
-  el("goals-h").hidden = sc;
-  el("l-goals").hidden = sc;
-  el("l-bonus").hidden = sc;
+  // A demonstration scene has no goals, bonus or edits; a build level has its
+  // own palette panel instead. A scored level shows goals and edits as before.
+  const scored = !sc && !bd;
+  el("goals-h").hidden = !scored;
+  el("l-goals").hidden = !scored;
+  el("l-bonus").hidden = !scored;
   const editsHead = el("edits-h").parentElement;
-  editsHead.hidden = sc;
-  el("edits-hint").hidden = sc;
-  el("l-edits").hidden = sc;
-  if (!sc) {
+  editsHead.hidden = !scored;
+  el("edits-hint").hidden = !scored;
+  el("l-edits").hidden = !scored;
+  if (scored) {
     el("goals-h").textContent = t("panel_goals");
     const gl = el("l-goals");
     clear(gl);
@@ -245,9 +284,14 @@ function renderLevel() {
   updateCommit(v);
 
   el("backdrop").src = "art/backdrops/" + v.backdrop + ".png";
-  renderMap(v);
+  el("l-build").hidden = !bd;
+  if (bd) {
+    enterBuild();
+  } else {
+    renderMap(v);
+    markEvidence(v);
+  }
   renderLegend(v);
-  markEvidence(v);
 
   el("legend-h").textContent = t("panel_legend");
   el("log-h").textContent = t("panel_log");
@@ -352,7 +396,7 @@ function predict(i) {
 // is confusing. It always does something: it runs, or (on a level that still
 // wants a prediction) a hint says so and clicking explains.
 function updateCommit(v) {
-  const label = v.predict ? "btn_commit" : cur.ran ? "btn_rerun" : "btn_run";
+  const label = v.build ? "build_run" : v.predict ? "btn_commit" : cur.ran ? "btn_rerun" : "btn_run";
   el("run-btn").textContent = t(label);
   const needPredict = !!v.predict && (v.predict.chosen === null || v.predict.chosen === undefined);
   el("commit-hint").hidden = !needPredict;
@@ -603,6 +647,413 @@ function renderLegend(v) {
   }
 }
 
+// ---------- build levels (end-of-zone "super" levels) ----------
+
+// The build canvas state: the last build_state from the core, which machine
+// kind is armed to place, whether we are drawing cables, and the cable start.
+const bld = { state: null, armed: null, draw: false, from: null, index: {} };
+
+function enterBuild() {
+  const bs = call("build_state");
+  if (!bs) {
+    return;
+  }
+  bld.state = bs;
+  bld.armed = null;
+  bld.draw = false;
+  bld.from = null;
+  el("map-hint").hidden = true;
+  closeChooser();
+  renderBuild();
+}
+
+// After a build edit the core returns the fresh state; redraw from it.
+function refreshBuild(bs) {
+  if (!bs) {
+    return;
+  }
+  bld.state = bs;
+  renderBuild();
+}
+
+function renderBuild() {
+  renderBuildPanel();
+  renderBuildMap();
+  updateCommit(cur.view);
+}
+
+function money(n) {
+  return "$" + n;
+}
+
+function renderBuildPanel() {
+  const bs = bld.state;
+  el("build-palette-h").textContent = t("build_palette_h");
+  const pal = el("build-palette");
+  clear(pal);
+  for (const p of bs.palette) {
+    const b = tag("button", "palette-item" + (bld.armed === p.kind ? " armed" : ""));
+    b.type = "button";
+    const img = document.createElement("img");
+    img.className = "opt-icon";
+    img.src = "art/icons/" + p.kind + ".png";
+    img.alt = "";
+    b.appendChild(img);
+    const txt = tag("span", "palette-text");
+    txt.appendChild(tag("span", "palette-name", p.name));
+    txt.appendChild(
+      tag("span", "palette-sub", money(p.cost) + " · " + fill(t("build_placed_of"), [String(p.placed), String(p.max)])),
+    );
+    b.appendChild(txt);
+    b.addEventListener("click", () => armPlace(p.kind));
+    pal.appendChild(b);
+  }
+  const tools = el("build-tools");
+  clear(tools);
+  const draw = tag("button", "build-tool" + (bld.draw ? " on" : ""), t(bld.draw ? "build_draw_on" : "build_draw_off"));
+  draw.type = "button";
+  draw.addEventListener("click", toggleDraw);
+  tools.appendChild(draw);
+  const clr = tag("button", "build-tool ghost", t("build_clear"));
+  clr.type = "button";
+  clr.addEventListener("click", clearBoard);
+  tools.appendChild(clr);
+
+  el("build-cost-h").textContent = t("build_cost_h");
+  const cost = el("build-cost");
+  clear(cost);
+  const costRow = (k, v, cls) => {
+    const r = tag("div", "cost-row" + (cls ? " " + cls : ""));
+    r.appendChild(tag("span", "cost-k", t(k)));
+    r.appendChild(tag("span", "cost-v", money(v)));
+    cost.appendChild(r);
+  };
+  costRow("build_cost_machines", bs.cost.machines);
+  costRow("build_cost_wire", bs.cost.wire);
+  costRow("build_cost_total", bs.cost.total, "total");
+  const tier = buildTier(bs);
+  cost.appendChild(tag("p", "cost-tier " + tier.cls, tier.text));
+
+  const steps = el("build-steps");
+  clear(steps);
+  for (const k of ["build_step_place", "build_step_addr", "build_step_table", "build_step_cost"]) {
+    steps.appendChild(tag("li", null, t(k)));
+  }
+}
+
+// A running guess at the star tier from the bill. It only means something once
+// a cable is drawn; the real stars come from the run.
+function buildTier(bs) {
+  if (bs.cost.wire === 0) {
+    return { cls: "t0", text: t("build_tier0") };
+  }
+  if (bs.cost.total <= bs.star_cost[0]) {
+    return { cls: "t3", text: t("build_tier3") };
+  }
+  if (bs.cost.total <= bs.star_cost[1]) {
+    return { cls: "t2", text: t("build_tier2") };
+  }
+  return { cls: "t1", text: t("build_tier1") };
+}
+
+function buildMachines() {
+  return bld.state.fixed.concat(bld.state.placed);
+}
+
+function renderBuildMap() {
+  const bs = bld.state;
+  const map = el("map");
+  map.setAttribute("viewBox", bs.viewbox);
+  clear(map);
+  for (const id in nodeEls) {
+    delete nodeEls[id];
+  }
+  bld.index = {};
+  buildMachines().forEach((m, i) => {
+    bld.index[m.id] = i;
+  });
+
+  // Fixtures to route around.
+  const obs = svg("g", {});
+  for (const o of bs.obstacles) {
+    obs.appendChild(svg("rect", { class: "obstacle", x: o.x, y: o.y, width: o.w, height: o.h }));
+    if (o.label) {
+      const txt = svg("text", { class: "obstacle-label", x: o.cx, y: o.cy });
+      txt.textContent = o.label;
+      obs.appendChild(txt);
+    }
+  }
+  map.appendChild(obs);
+
+  // Cables, each with its length and price, and a wide invisible hit line so a
+  // cable can be clicked to pull it out while drawing.
+  const cables = svg("g", {});
+  for (const k of bs.cables) {
+    const d = "M " + k.ax + " " + k.ay + " L " + k.bx + " " + k.by;
+    cables.appendChild(svg("path", { class: "build-cable", d: d }));
+    const hit = svg("path", { class: "build-cable-hit", d: d });
+    hit.addEventListener("click", (ev) => onCableClick(ev, k));
+    cables.appendChild(hit);
+    const label = svg("text", { class: "cable-label", x: k.mx, y: k.my });
+    label.textContent = money(k.cost);
+    cables.appendChild(label);
+  }
+  map.appendChild(cables);
+
+  // Machines.
+  const nodes = svg("g", {});
+  for (const m of buildMachines()) {
+    let cls = "node-hit build-machine";
+    if (bld.from === m.id) {
+      cls += " wiring";
+    }
+    if (m.needs_addr && !m.addr) {
+      cls += " needs-addr";
+    }
+    const g = svg("g", { class: cls });
+    const img = svg("image", { x: m.x, y: m.y, width: m.size, height: m.size, "aria-label": m.name });
+    img.setAttribute("href", "art/icons/" + m.kind + ".png");
+    g.appendChild(img);
+    g.appendChild(svg("text", { class: "node-label", x: m.cx, y: m.ly }));
+    g.lastChild.textContent = m.name;
+    const sub = m.addr || (m.needs_addr ? t("build_needs_addr") : "");
+    if (sub) {
+      const st = svg("text", { class: "node-addr" + (m.addr ? "" : " warn"), x: m.cx, y: m.ly2 });
+      st.textContent = sub;
+      g.appendChild(st);
+    }
+    g.addEventListener("click", (ev) => onBuildMachineClick(ev, m));
+    nodeEls[m.id] = g;
+    nodes.appendChild(g);
+  }
+  map.appendChild(nodes);
+  map.appendChild(svg("g", { id: "packets" }));
+  map.appendChild(svg("g", { id: "effects" }));
+
+  // Placement happens on the open floor (clicks that miss a machine).
+  el("map").onclick = onFloorClick;
+}
+
+function armPlace(kind) {
+  bld.armed = bld.armed === kind ? null : kind;
+  bld.draw = false;
+  bld.from = null;
+  if (bld.armed) {
+    const item = bld.state.palette.find((p) => p.kind === kind);
+    el("map-hint").textContent = fill(t("build_hint_place"), [item ? item.name : kind]);
+    el("map-hint").hidden = false;
+  } else {
+    el("map-hint").hidden = true;
+  }
+  closeChooser();
+  renderBuild();
+}
+
+function toggleDraw() {
+  bld.draw = !bld.draw;
+  bld.armed = null;
+  bld.from = null;
+  el("map-hint").hidden = !bld.draw;
+  if (bld.draw) {
+    el("map-hint").textContent = t("build_hint_wire");
+  }
+  closeChooser();
+  renderBuild();
+}
+
+function clearBoard() {
+  for (const m of bld.state.placed) {
+    call("unplace", m.id);
+  }
+  // any cables between fixed machines remain; pull them too
+  const bs = bld.state;
+  for (const c of bs.cables.slice()) {
+    call("unwire", c.a, c.b);
+  }
+  bld.from = null;
+  bld.armed = null;
+  refreshBuild(call("build_state"));
+}
+
+// Screen point of a pointer event, in map coordinates.
+function mapPoint(ev) {
+  const svgEl = el("map");
+  const pt = svgEl.createSVGPoint();
+  pt.x = ev.clientX;
+  pt.y = ev.clientY;
+  return pt.matrixTransform(svgEl.getScreenCTM().inverse());
+}
+
+function onFloorClick(ev) {
+  if (bld.armed) {
+    // The core takes whole map units; the wasm boundary truncates the point.
+    const p = mapPoint(ev);
+    const bs = call("place", bld.armed, p.x, p.y);
+    // placing is one-shot: drop one, then the floor is free again
+    bld.armed = null;
+    el("map-hint").hidden = true;
+    refreshBuild(bs);
+    return;
+  }
+  if (bld.draw && bld.from) {
+    bld.from = null;
+    el("map-hint").textContent = t("build_hint_wire");
+    renderBuildMap();
+  }
+}
+
+function onBuildMachineClick(ev, m) {
+  ev.stopPropagation();
+  if (bld.armed) {
+    // placing on the floor near a machine: drop where clicked
+    onFloorClick(ev);
+    return;
+  }
+  if (bld.draw) {
+    if (!bld.from) {
+      bld.from = m.id;
+      el("map-hint").textContent = fill(t("build_hint_wire_from"), [m.name]);
+      renderBuildMap();
+    } else if (bld.from === m.id) {
+      bld.from = null;
+      renderBuildMap();
+    } else {
+      const bs = call("wire", bld.from, m.id);
+      bld.from = null;
+      el("map-hint").textContent = t("build_hint_wire");
+      refreshBuild(bs);
+    }
+    return;
+  }
+  openMachineEditor(m);
+}
+
+function onCableClick(ev, k) {
+  if (!bld.draw) {
+    return;
+  }
+  ev.stopPropagation();
+  refreshBuild(call("unwire", k.a, k.b));
+}
+
+// The popover for one machine: give a host its address, fill a switch's table,
+// start a cable, or remove a placed machine.
+function openMachineEditor(m) {
+  closeChooser();
+  const body = el("chooser-body");
+  clear(body);
+  body.appendChild(tag("h3", "chooser-title", m.name));
+
+  if (m.needs_addr) {
+    const wrap = tag("div", "chooser-field");
+    wrap.appendChild(tag("p", "chooser-label", t("build_pick_addr")));
+    const sel = buildSelect(t("build_addr_none"), bld.state.addr_choices.map((ip) => [ip, ip]), m.addr, (val) => {
+      refreshBuild(call("set_addr", m.id, val));
+      openMachineEditor(nodeById(m.id));
+    });
+    wrap.appendChild(sel);
+    body.appendChild(wrap);
+  }
+
+  if (!m.fixed && m.kind === "switch") {
+    body.appendChild(switchTableEditor(m));
+  }
+
+  const act = tag("div", "chooser-actions");
+  const cable = tag("button", "ghost small", t("build_start_cable"));
+  cable.type = "button";
+  cable.addEventListener("click", () => {
+    closeChooser();
+    bld.draw = true;
+    bld.from = m.id;
+    el("map-hint").textContent = fill(t("build_hint_wire_from"), [m.name]);
+    renderBuild();
+  });
+  act.appendChild(cable);
+  if (!m.fixed) {
+    const rm = tag("button", "ghost small danger", t("build_remove"));
+    rm.type = "button";
+    rm.addEventListener("click", () => {
+      closeChooser();
+      refreshBuild(call("unplace", m.id));
+    });
+    act.appendChild(rm);
+  }
+  body.appendChild(act);
+
+  el("chooser").hidden = false;
+  positionChooser({ ax: m.cx, ay: m.cy });
+}
+
+function nodeById(id) {
+  return buildMachines().find((m) => m.id === id);
+}
+
+// A switch's forwarding table: one row per other machine, each a dropdown of
+// the neighbours this switch is cabled to.
+function switchTableEditor(m) {
+  const bs = bld.state;
+  const wrap = tag("div", "chooser-field");
+  wrap.appendChild(tag("p", "chooser-label", t("build_table_h")));
+  wrap.appendChild(tag("p", "chooser-hint", t("build_table_hint")));
+  // the machines this switch is cabled to (its ports), by neighbour id
+  const neighbours = [];
+  for (const c of bs.cables) {
+    if (c.a === m.id) {
+      neighbours.push(c.b);
+    } else if (c.b === m.id) {
+      neighbours.push(c.a);
+    }
+  }
+  const rows = (bs.tables[m.id] || []).reduce((acc, r) => {
+    acc[r.dst] = r.via;
+    return acc;
+  }, {});
+  const table = tag("table", "switch-table");
+  for (const dst of buildMachines()) {
+    if (dst.id === m.id) {
+      continue;
+    }
+    const tr = tag("tr");
+    tr.appendChild(tag("td", "st-dst", dst.name));
+    const td = tag("td");
+    const opts = neighbours.map((nid) => {
+      const nm = nodeById(nid);
+      return [nid, nm ? nm.name : nid];
+    });
+    const sel = buildSelect(t("build_via_none"), opts, rows[dst.id], (val) => {
+      call("set_port", m.id, dst.id, val);
+      refreshBuild(call("build_state"));
+    });
+    td.appendChild(sel);
+    tr.appendChild(td);
+    table.appendChild(tr);
+  }
+  wrap.appendChild(table);
+  return wrap;
+}
+
+// A <select> built from [value, label] pairs with a blank first option.
+function buildSelect(blank, pairs, chosen, onchange) {
+  const sel = document.createElement("select");
+  sel.className = "build-select";
+  const none = document.createElement("option");
+  none.value = "";
+  none.textContent = blank;
+  sel.appendChild(none);
+  for (const [val, label] of pairs) {
+    const o = document.createElement("option");
+    o.value = val;
+    o.textContent = label;
+    if (val === chosen) {
+      o.selected = true;
+    }
+    sel.appendChild(o);
+  }
+  sel.addEventListener("change", (e) => onchange(e.target.value));
+  return sel;
+}
+
 // ---------- run and playback ----------
 
 function runLevel() {
@@ -618,7 +1069,7 @@ function runLevel() {
   clearLogRows();
   el("hud").hidden = false;
   el("controls").hidden = false;
-  el("run-btn").textContent = t(cur.view.predict ? "btn_commit" : "btn_rerun");
+  el("run-btn").textContent = t(cur.view.build ? "build_run" : cur.view.predict ? "btn_commit" : "btn_rerun");
   setPlay(true);
 }
 
@@ -938,14 +1389,28 @@ function showResults() {
     return;
   }
   body.appendChild(tag("h2", null, r.headline));
-  body.appendChild(starsRow(r.stars));
+  const sr = starsRow(r.stars);
+  if (r.gold) {
+    sr.appendChild(tag("span", "gold", "★"));
+  }
+  body.appendChild(sr);
   body.appendChild(tag("p", null, r.stars_text));
+
+  // A build level reports the bill instead of a quiz bonus.
+  if (r.cost) {
+    body.appendChild(tag("p", "result-bill", fill(t("result_cost"), [money(r.cost.total)])));
+    if (r.gold) {
+      body.appendChild(tag("p", "debrief gold-note", t("result_gold")));
+    }
+  }
 
   const goals = tag("ul", "result-goals");
   for (const g of r.goals) {
     goals.appendChild(tag("li", g.met ? "met" : "unmet", (g.met ? "✓ " : "✕ ") + g.text));
   }
-  goals.appendChild(tag("li", r.bonus.met ? "met" : "unmet", (r.bonus.met ? "★ " : "☆ ") + r.bonus.text));
+  if (!r.cost) {
+    goals.appendChild(tag("li", r.bonus.met ? "met" : "unmet", (r.bonus.met ? "★ " : "☆ ") + r.bonus.text));
+  }
   body.appendChild(goals);
 
   const sum = tag("ul", "summary");

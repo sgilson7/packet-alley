@@ -68,4 +68,25 @@ impl Game {
     pub fn node(&mut self, i: u32, ms: u32, ms_per_tick: u32) -> String {
         self.inner.node(i, ms, ms_per_tick)
     }
+    pub fn build_state(&mut self) -> String {
+        self.inner.build_state()
+    }
+    pub fn place(&mut self, kind: &str, x: i32, y: i32) -> String {
+        self.inner.place(kind, x, y)
+    }
+    pub fn unplace(&mut self, id: &str) -> String {
+        self.inner.unplace(id)
+    }
+    pub fn wire(&mut self, a: &str, b: &str) -> String {
+        self.inner.wire(a, b)
+    }
+    pub fn unwire(&mut self, a: &str, b: &str) -> String {
+        self.inner.unwire(a, b)
+    }
+    pub fn set_addr(&mut self, node: &str, ip: &str) -> String {
+        self.inner.set_addr(node, ip)
+    }
+    pub fn set_port(&mut self, switch: &str, dst: &str, via: &str) -> String {
+        self.inner.set_port(switch, dst, via)
+    }
 }

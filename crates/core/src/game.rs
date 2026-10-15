@@ -39,6 +39,9 @@ pub struct Progress {
     /// Which chapters' demonstration scenes have been watched (Phase 2).
     #[serde(default)]
     pub scenes_seen: BTreeMap<String, bool>,
+    /// Which build levels earned the hidden "gold" (cheapest few per cent) star.
+    #[serde(default)]
+    pub gold: BTreeMap<String, bool>,
 }
 
 struct Play {
@@ -671,7 +674,8 @@ impl Game {
                     let s = self.stars_of(&l.id);
                     json!({"id": l.id, "title": l.title, "stars": s,
                            "stars_text": self.stars_text(s),
-                           "locked": !self.unlocked(i), "passed": s[0]})
+                           "locked": !self.unlocked(i), "passed": s[0],
+                           "gold": self.progress.gold.get(&l.id).copied().unwrap_or(false)})
                 });
                 json!({"id": c.id, "title": c.title, "layer": c.layer, "blurb": c.blurb,
                        "backdrop": c.backdrop, "levels": levels, "scene": scene_info,
@@ -798,6 +802,19 @@ impl Game {
             }
         }
         edits
+    }
+
+    /// The concrete level the record was built from: an assembled build level
+    /// if this is one, otherwise the edited level. Playback (`frame`, `node`)
+    /// uses it so node indices and positions line up with the record.
+    fn current_level(&self) -> Level {
+        let play = self.play.as_ref().expect("a level is open");
+        if self.file.levels[play.level].build.is_some() {
+            self.assembled()
+                .unwrap_or_else(|_| self.file.levels[play.level].clone())
+        } else {
+            self.edited()
+        }
     }
 
     fn edited(&self) -> Level {
@@ -1155,28 +1172,40 @@ impl Game {
                        "placed": placed_count(&p.kind), "cost": self.cost_of_kind(&def, &p.kind)})
             })
             .collect();
+        // A machine ready to draw: its centre is its map point; the icon and
+        // the labels hang off it by the same constants the ordinary map uses.
+        let machine = |id: &str, kind: &str, name: &str, x: i32, y: i32, fixed: bool| {
+            json!({"id": id, "kind": kind, "name": name, "fixed": fixed,
+                   "cost": self.cost_of_kind(&def, kind),
+                   "addr": st.addrs.get(id),
+                   "needs_addr": def.needs_addr.iter().any(|n| n == id),
+                   "x": x - ICON / 2, "y": y - ICON / 2, "size": ICON,
+                   "cx": x, "cy": y,
+                   "ly": y + ICON / 2 + LABEL_GAP,
+                   "ly2": y + ICON / 2 + LABEL_GAP + LINE_GAP})
+        };
         let fixed: Vec<Value> = base
             .nodes
             .iter()
-            .map(|n| {
-                json!({"id": n.id, "kind": n.kind, "name": n.name, "x": n.x, "y": n.y,
-                       "cost": self.cost_of_kind(&def, &n.kind), "addr": st.addrs.get(&n.id)})
-            })
+            .map(|n| machine(&n.id, &n.kind, &n.name, n.x, n.y, true))
             .collect();
         let placed: Vec<Value> = st
             .placed
             .iter()
-            .map(|p| {
-                json!({"id": p.id, "kind": p.kind, "name": p.name, "x": p.x, "y": p.y,
-                       "cost": self.cost_of_kind(&def, &p.kind), "addr": st.addrs.get(&p.id)})
-            })
+            .map(|p| machine(&p.id, &p.kind, &p.name, p.x, p.y, false))
             .collect();
+        let nodes = self.build_nodes();
+        let center = |id: &str| nodes.iter().find(|n| n.0 == id).map(|n| (n.3, n.4));
         let cables: Vec<Value> = st
             .cables
             .iter()
-            .map(|(a, b)| {
+            .filter_map(|(a, b)| {
+                let (ax, ay) = center(a)?;
+                let (bx, by) = center(b)?;
                 let len = self.cable_len(a, b);
-                json!({"a": a, "b": b, "len": len, "cost": len * def.wire_cost})
+                Some(json!({"a": a, "b": b, "ax": ax, "ay": ay, "bx": bx, "by": by,
+                            "mx": (ax + bx) / 2, "my": (ay + by) / 2,
+                            "len": len, "cost": len * def.wire_cost}))
             })
             .collect();
         let tables: BTreeMap<&String, Vec<Value>> = st
@@ -1193,13 +1222,16 @@ impl Game {
             .collect();
         json!({
             "build": true,
+            "viewbox": format!("0 0 {MAP_W} {MAP_H}"),
             "subnet": def.subnet,
             "wire_cost": def.wire_cost,
             "max_wire": def.max_wire,
             "cost": {"machines": machines, "wire": wire, "total": total},
             "star_cost": def.star_cost,
+            "gold_cost": def.gold_cost,
             "palette": palette,
-            "obstacles": def.obstacles.iter().map(|o| json!({"x": o.x, "y": o.y, "w": o.w, "h": o.h, "label": o.label})).collect::<Vec<_>>(),
+            "obstacles": def.obstacles.iter().map(|o| json!({"x": o.x, "y": o.y, "w": o.w, "h": o.h,
+                "cx": o.x + o.w / 2, "cy": o.y + o.h / 2, "label": o.label})).collect::<Vec<_>>(),
             "fixed": fixed,
             "placed": placed,
             "cables": cables,
@@ -1375,6 +1407,7 @@ impl Game {
             "evidence_seen": play.evidence_seen,
             "variant": play.variant,
             "scene": base.scene,
+            "build": base.build.is_some(),
             "note": base.note,
             "textbook": chapter.textbook,
             "textbook_src": chapter.textbook_src,
@@ -1436,6 +1469,14 @@ impl Game {
                 .unwrap_or(false)
         };
         let (cheap_enough, cheapest) = (under(1), under(0));
+        // The hidden gold star: a build in the cheapest few per cent of all tried.
+        let gold = is_build
+            && passed
+            && self.file.levels[i]
+                .build
+                .as_ref()
+                .map(|b| b.gold_cost > 0 && build_cost.2 <= b.gold_cost)
+                .unwrap_or(false);
         let on_variant = self.play.as_ref().map(|p| p.variant.is_some()).unwrap_or(false);
         let is_scene = self.file.levels[i].scene;
         if on_variant || is_scene {
@@ -1446,6 +1487,9 @@ impl Game {
             if is_build {
                 entry[1] |= cheap_enough;
                 entry[2] |= cheapest;
+                if gold {
+                    self.progress.gold.insert(l.id.clone(), true);
+                }
             } else if has_predict {
                 // The prediction gates the final star — earned only when the
                 // level is passed and the committed prediction came true, so a
@@ -1502,6 +1546,8 @@ impl Game {
             "stars_text": self.stars_text(stars),
             "ticks": rec.ticks,
             "cost": if is_build { json!({"machines": build_cost.0, "wire": build_cost.1, "total": build_cost.2}) } else { Value::Null },
+            "gold": gold,
+            "gold_cost": self.file.levels[i].build.as_ref().map(|b| b.gold_cost),
         });
         let play = self.play.as_mut().expect("checked");
         play.record = Some(rec);
@@ -1567,7 +1613,7 @@ impl Game {
     pub fn frame(&self, ms: u32, ms_per_tick: u32, log_from: usize) -> Result<String, String> {
         let play = self.play.as_ref().ok_or_else(|| self.t("err_no_level"))?;
         let rec = play.record.as_ref().ok_or_else(|| self.t("err_not_run"))?;
-        let l = self.edited();
+        let l = self.current_level();
         let end = (rec.ticks as i64 + 1) * MILLI;
         let tt = (ms as i64 * MILLI / ms_per_tick.max(1) as i64).min(end);
         let tick = (tt / MILLI) as u32;
@@ -1646,7 +1692,7 @@ impl Game {
         let play = self.play.as_ref().ok_or_else(|| self.t("err_no_level"))?;
         let rec = play.record.as_ref().ok_or_else(|| self.t("err_not_run"))?;
         let x = rec.transits.get(id).ok_or_else(|| self.t("err_bad_choice"))?;
-        let l = self.edited();
+        let l = self.current_level();
         let f = &x.frame;
         let row = |k: &str, v: String| json!([self.t(k), v]);
         let cls = f.class();
@@ -1730,7 +1776,7 @@ impl Game {
     /// What a node knows at a moment of playback (before a run: at the start).
     pub fn node(&self, i: usize, ms: u32, ms_per_tick: u32) -> Result<String, String> {
         let play = self.play.as_ref().ok_or_else(|| self.t("err_no_level"))?;
-        let l = self.edited();
+        let l = self.current_level();
         let n = l.nodes.get(i).ok_or_else(|| self.t("err_bad_choice"))?;
         let owned;
         let info = match &play.record {

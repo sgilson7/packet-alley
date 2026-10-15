@@ -84,4 +84,27 @@ impl Api {
     pub fn node(&mut self, i: u32, ms: u32, ms_per_tick: u32) -> String {
         self.with(|g| g.node(i as usize, ms, ms_per_tick))
     }
+
+    // Build levels (end-of-zone "super" levels).
+    pub fn build_state(&mut self) -> String {
+        self.with(|g| Ok(g.build_state()))
+    }
+    pub fn place(&mut self, kind: &str, x: i32, y: i32) -> String {
+        self.with(|g| g.place(kind, x, y))
+    }
+    pub fn unplace(&mut self, id: &str) -> String {
+        self.with(|g| g.unplace(id))
+    }
+    pub fn wire(&mut self, a: &str, b: &str) -> String {
+        self.with(|g| g.wire(a, b))
+    }
+    pub fn unwire(&mut self, a: &str, b: &str) -> String {
+        self.with(|g| g.unwire(a, b))
+    }
+    pub fn set_addr(&mut self, node: &str, ip: &str) -> String {
+        self.with(|g| g.set_addr(node, ip))
+    }
+    pub fn set_port(&mut self, switch: &str, dst: &str, via: &str) -> String {
+        self.with(|g| g.set_port(switch, dst, via))
+    }
 }

@@ -78,10 +78,39 @@ fn the_bill_is_what_the_geometry_costs() {
         has(&out, "\"total\":3311"),
         "the total is machines plus cable: {out}"
     );
-    // 3311 is under both thresholds, so this earns all three stars.
+    // 3311 sits in the middle third (<= 3325 but > 3293): two stars, no gold.
+    assert!(
+        has(&out, "\"stars\":[true,true,false]"),
+        "a fair build earns two stars: {out}"
+    );
+    assert!(has(&out, "\"gold\":false"), "a fair build is not gold: {out}");
+}
+
+#[test]
+fn a_tight_placement_earns_three_stars_and_the_gold() {
+    // Tucked against the kitchen wall, near the geometric best the walls allow:
+    // the cheapest few per cent of builds, so every visible star and the hidden
+    // gold one.
+    let mut g = game();
+    g.place("switch", 416, 300).unwrap();
+    for other in ["srv", "reg1", "reg2", "reg3"] {
+        g.wire("m1", other).unwrap();
+    }
+    g.set_addr("reg1", "10.0.0.11/24").unwrap();
+    g.set_addr("reg2", "10.0.0.12/24").unwrap();
+    g.set_addr("reg3", "10.0.0.13/24").unwrap();
+    for dst in ["srv", "reg1", "reg2", "reg3"] {
+        g.set_port("m1", dst, dst).unwrap();
+    }
+    let out = g.run().unwrap();
+    assert!(has(&out, "\"passed\":true"), "the tight build delivers: {out}");
     assert!(
         has(&out, "\"stars\":[true,true,true]"),
-        "a tidy build earns every star: {out}"
+        "a tight build earns every visible star: {out}"
+    );
+    assert!(
+        has(&out, "\"gold\":true"),
+        "a tight build earns the gold star: {out}"
     );
 }
 

@@ -120,3 +120,77 @@ def run(page, check, engine):
     page.wait_for_selector("body[data-mode='menu']", state="attached", timeout=10000)
     check(page.locator(".level-card .stars .full").count() >= 2, "the earned stars survive a reload")
     check(page.locator(".level-card.locked").count() == 17, "passing the first level unlocked the second")
+
+    build_flow(page, check)
+
+
+def mapclick(page, mx, my):
+    """Clicks the screen point for a map coordinate, via the SVG's own matrix
+    (the viewBox is letterboxed, so a linear guess would miss)."""
+    q = page.evaluate(
+        "([mx, my]) => { const s = document.getElementById('map');"
+        " const p = s.createSVGPoint(); p.x = mx; p.y = my;"
+        " const r = p.matrixTransform(s.getScreenCTM()); return [r.x, r.y]; }",
+        [mx, my],
+    )
+    page.mouse.click(q[0], q[1])
+
+
+def machine_img(page, i):
+    return page.locator(".build-machine").nth(i).locator("image")
+
+
+def build_flow(page, check):
+    """The end-of-zone build level: place a switch, wire the four machines,
+    address the registers, fill the switch table, and open for business. The
+    expected outcome (a passing, cheapest-few build earns the gold star) is
+    worked out from the level by hand, not read from the game."""
+    # Teacher mode unlocks the super challenge without clearing the whole zone.
+    page.check("#teacher")
+    page.wait_for_selector(".super-card", timeout=5000)
+    check(page.locator(".super-card").count() == 1, "the zone offers one super challenge")
+    page.locator(".super-card").first.click()
+    page.wait_for_selector("body[data-mode='level']", state="attached", timeout=5000)
+    check(page.locator("#l-build:not([hidden])").count() == 1, "the build panel is shown")
+    check(images_loaded(page, "#map-wrap"), "the restaurant floor loaded")
+
+    # place one switch near the kitchen (the cheapest few per cent of builds)
+    page.locator(".palette-item").first.click()
+    mapclick(page, 416, 300)
+    page.wait_for_selector("#map .build-machine", timeout=5000)
+    check(page.locator(".build-machine").count() == 5, "the switch joins the four fixed machines")
+
+    # draw a cable from the switch (index 4) to each of the four others
+    page.locator(".build-tool").filter(has_text=re.compile("cable", re.I)).first.click()
+    for i in [3, 0, 1, 2]:
+        machine_img(page, 4).click()
+        machine_img(page, i).click()
+    check(page.locator(".build-cable").count() == 4, "four cables were run")
+
+    # leave drawing mode; give each register an address
+    page.locator(".build-tool").filter(has_text=re.compile("Drawing", re.I)).first.click()
+    for i, idx in [(0, 1), (1, 2), (2, 3)]:
+        machine_img(page, i).click()
+        page.wait_for_selector("#chooser:not([hidden])", timeout=5000)
+        page.locator("#chooser .build-select").first.select_option(index=idx)
+        page.keyboard.press("Escape")
+        page.wait_for_selector("#chooser[hidden]", state="attached", timeout=5000)
+
+    # fill the switch's table: each machine is reached down its own cable
+    machine_img(page, 4).click()
+    page.wait_for_selector("#chooser .switch-table", timeout=5000)
+    rows = page.locator("#chooser .switch-table .build-select")
+    for i in range(rows.count()):
+        name = page.locator("#chooser .switch-table td.st-dst").nth(i).inner_text()
+        rows.nth(i).select_option(label=name)
+    page.keyboard.press("Escape")
+
+    # open for business
+    page.click("#run-btn")
+    try:
+        page.click("#skip-btn", timeout=4000)
+    except Exception:
+        pass
+    page.wait_for_selector("#overlay:not([hidden])", timeout=20000)
+    check(page.inner_text("#overlay-body h2") == COPY["passed"], "every register reaches the server")
+    check(page.locator("#overlay-body .stars-big .gold").count() == 1, "a cheapest-few build earns the hidden gold star")
