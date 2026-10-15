@@ -197,11 +197,18 @@ function renderLevel() {
   if (v.note) {
     note.textContent = v.note;
   }
-  el("concept-h").textContent = t("panel_concept");
-  const cl = el("l-concept");
-  clear(cl);
-  for (const c of v.concept) {
-    cl.appendChild(tag("li", null, c));
+  // "What this level teaches" gives the answer away, so for a scored level it
+  // is held back until the level is passed (shown in the result). A scene is a
+  // demonstration, so it keeps its teaching points up front.
+  el("concept-h").hidden = !sc;
+  el("l-concept").hidden = !sc;
+  if (sc) {
+    el("concept-h").textContent = t("panel_concept");
+    const cl = el("l-concept");
+    clear(cl);
+    for (const c of v.concept) {
+      cl.appendChild(tag("li", null, c));
+    }
   }
   // A verbatim passage from the open networking textbook, with attribution.
   const tb = el("l-textbook");
@@ -388,6 +395,16 @@ function recordInspect(id) {
 function openChooser(group) {
   const v = cur.view;
   closeChooser();
+  // On an advanced level a device may be both evidence and the spot an edit
+  // badge sits on; opening that badge also counts as inspecting the device, so
+  // the evidence can always be gathered.
+  group.forEach((ei) => {
+    const e = v.edits[ei];
+    const n = v.nodes.find((n) => n.cx === e.ax && n.cy === e.ay);
+    if (n) {
+      recordInspect(n.id);
+    }
+  });
   // A "point at a machine" edit is answered on the map, not in a popover that
   // would cover the machines; everything else gets the popover.
   const body = el("chooser-body");
@@ -827,7 +844,26 @@ function showResults() {
     body.appendChild(tag("p", "debrief", r.debrief));
   }
 
+  // "What this level teaches" is revealed here, once the level is passed.
+  if (r.passed && r.concept && r.concept.length) {
+    body.appendChild(tag("h3", null, t("panel_concept")));
+    const cl = tag("ul", "result-concept");
+    for (const c of r.concept) {
+      cl.appendChild(tag("li", null, c));
+    }
+    body.appendChild(cl);
+  }
+
   const actions = tag("div", "sheet-actions");
+  if (r.passed && r.next) {
+    const nb = tag("button", "primary", t("btn_next"));
+    nb.type = "button";
+    nb.addEventListener("click", () => {
+      closeOverlay();
+      openLevel(r.next);
+    });
+    actions.appendChild(nb);
+  }
   if (r.can_practice) {
     const pb = tag("button", "ghost", t("btn_practice"));
     pb.type = "button";
@@ -845,19 +881,10 @@ function showResults() {
     actions.appendChild(pb);
   }
   if (r.passed && r.quiz) {
-    const qb = tag("button", "primary", t("quiz_q"));
+    const qb = tag("button", "ghost", t("quiz_q"));
     qb.type = "button";
     qb.addEventListener("click", () => showQuiz(r.quiz));
     actions.appendChild(qb);
-  }
-  if (r.passed && r.next) {
-    const nb = tag("button", "ghost", t("btn_next"));
-    nb.type = "button";
-    nb.addEventListener("click", () => {
-      closeOverlay();
-      openLevel(r.next);
-    });
-    actions.appendChild(nb);
   }
   const retry = tag("button", "ghost", t("btn_retry"));
   retry.type = "button";

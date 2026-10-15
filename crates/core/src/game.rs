@@ -965,6 +965,11 @@ impl Game {
             Value::Null
         };
         let can_practice = !base.variants.is_empty();
+        // The next scored level (scenes are skipped), for the result's Next button.
+        let next = self.file.levels[i + 1..]
+            .iter()
+            .find(|l| !l.scene)
+            .map(|l| l.id.clone());
         let stars = self.stars_of(&l.id);
         let out = json!({
             "passed": passed,
@@ -978,6 +983,8 @@ impl Game {
             "predict": predict,
             "can_practice": can_practice,
             "on_variant": on_variant,
+            "next": next,
+            "concept": base.concept,
             "stars": stars,
             "stars_text": self.stars_text(stars),
             "ticks": rec.ticks,

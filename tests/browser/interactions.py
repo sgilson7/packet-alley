@@ -108,6 +108,8 @@ def run(page, check, engine):
     page.wait_for_selector("#overlay:not([hidden])", timeout=20000)
     check(page.inner_text("#overlay-body h2") == COPY["passed"], "the right address delivers the order")
     check(COPY["predict_right"] in page.inner_text("#overlay-body"), "the prediction matched the run")
+    check(page.locator(".sheet-actions .primary").filter(has_text=COPY["btn_next"]).count() == 1, "a next-level button is offered")
+    check(COPY["panel_concept"] in page.inner_text("#overlay-body"), "the lesson is revealed after passing")
 
     # the final star is the prediction's; close the result (no quiz here)
     page.locator(".sheet-actions .ghost").last.click()

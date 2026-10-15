@@ -807,10 +807,21 @@ impl Sim {
         self.nodes[x.from].pending.push((self.t + wait, port, f));
     }
 
+    /// A cable carries nothing if it is down or either end has blocked its
+    /// port. A spanning-tree block names a port on one switch, but the cable it
+    /// closes is dead in both directions — so the other switch must not keep
+    /// pushing frames onto it (they would ride a cable drawn as disconnected,
+    /// then vanish). Those frames were silently discarded at the blocked end
+    /// anyway, so dropping them here changes no score.
+    fn link_closed(&self, li: usize) -> bool {
+        let l = &self.links[li];
+        l.down || self.nodes[l.a.0].blocked[l.a.1] || self.nodes[l.b.0].blocked[l.b.1]
+    }
+
     /// The ports a switch or hub floods a frame out of.
     fn flood_ports(&self, n: usize, inport: usize) -> Vec<usize> {
         (0..self.nodes[n].ports.len())
-            .filter(|&p| p != inport && !self.nodes[n].blocked[p] && !self.links[self.nodes[n].ports[p]].down)
+            .filter(|&p| p != inport && !self.link_closed(self.nodes[n].ports[p]))
             .collect()
     }
 
@@ -1196,7 +1207,7 @@ impl Sim {
             }
             for port in 0..self.nodes[n].ports.len() {
                 let li = self.nodes[n].ports[port];
-                if self.links[li].down || self.nodes[n].blocked[port] {
+                if self.link_closed(li) {
                     self.nodes[n].outq[port].clear();
                     continue;
                 }
