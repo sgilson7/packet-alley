@@ -30,6 +30,10 @@ sha256() { if command -v shasum >/dev/null; then shasum -a 256; else sha256sum; 
 BUILD=$(find dist -type f | LC_ALL=C sort | xargs cat | sha256 | cut -c1-8)
 for js in dist/*.js; do
   perl -0777 -pi -e "s{from \"\./([A-Za-z0-9_/-]+\.js)\"}{from \"./\$1?v=$BUILD\"}g" "$js"
+  # The page fetches its data (levels, copy, display) by a plain path; stamp
+  # those too, or a data-only change would sit behind Pages' cache on a
+  # returning player's visit while the module (already stamped) looked current.
+  perl -0777 -pi -e "s{fetch\(\"(data/[A-Za-z0-9_/-]+\.json)\"\)}{fetch(\"\$1?v=$BUILD\")}g" "$js"
 done
 perl -0777 -pi -e "s{new URL\('pa_shim_bg\.wasm', import\.meta\.url\)}{new URL('pa_shim_bg.wasm?v=$BUILD', import.meta.url)}g" dist/pkg/pa_shim.js
 for page in dist/*.html; do
@@ -37,6 +41,11 @@ for page in dist/*.html; do
 done
 grep -q "app.js?v=$BUILD" dist/index.html || { echo "cache busting did not apply to index.html" >&2; exit 1; }
 grep -q "pa_shim_bg.wasm?v=$BUILD" dist/pkg/pa_shim.js || { echo "wasm URL not stamped" >&2; exit 1; }
+grep -q "data/levels.json?v=$BUILD" dist/app.js || { echo "data URLs not stamped (a data change would be served stale)" >&2; exit 1; }
+if grep -nE 'fetch\("data/[A-Za-z0-9_/-]+\.json"\)' dist/*.js; then
+  echo "a data fetch above is unstamped and would be served stale after a deploy" >&2
+  exit 1
+fi
 if grep -nE 'from "\./[A-Za-z0-9_/-]+\.js"' dist/*.js; then
   echo "an import above is unstamped and would be served stale after a deploy" >&2
   exit 1
