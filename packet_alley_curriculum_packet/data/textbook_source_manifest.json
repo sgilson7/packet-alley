@@ -1,0 +1,121 @@
+{
+  "work": "Computer Networking: Principles, Protocols and Practice, 3rd edition",
+  "authors": "Olivier Bonaventure and credited contributors; see per-file credits",
+  "repository": "https://github.com/cnp3/ebook",
+  "book": "https://beta.computer-networking.info/syllabus/default/",
+  "license": "CC BY-SA 3.0 for ebook repository; inspect per-file license before extraction",
+  "rules": [
+    "Extract exact visible sentences from listed source pages only; do not paraphrase the technical explanations.",
+    "Preserve attribution, link, license, and modifications notices alongside educational content.",
+    "Fail closed on unmatched anchors; do not silently substitute generated technical explanation.",
+    "Extract no embedded solutions, source code executing networking attacks, or login-gated exercise material.",
+    "Do not present a worked example using the same values or topology as a scored question."
+  ],
+  "passages": [
+    {
+      "id": "LAN_IP_VS_MAC",
+      "zone": "block",
+      "url": "https://beta.computer-networking.info/syllabus/default/protocols/lan.html",
+      "starts_with": "The datalink layer addresses used in Ethernet networks are often called MAC addresses",
+      "max_sentences": 1
+    },
+    {
+      "id": "LAN_MAC_TABLE",
+      "zone": "block",
+      "url": "https://beta.computer-networking.info/syllabus/default/protocols/lan.html",
+      "starts_with": "An Ethernet switch understands the format",
+      "max_sentences": 2
+    },
+    {
+      "id": "HUB_RELAY",
+      "zone": "block",
+      "url": "https://beta.computer-networking.info/syllabus/default/protocols/lan.html",
+      "starts_with": "The second major change introduced by 10BaseT was that",
+      "max_sentences": 3
+    },
+    {
+      "id": "LAN_LEARNING",
+      "zone": "block",
+      "url": "https://beta.computer-networking.info/syllabus/default/protocols/lan.html",
+      "starts_with": "This implies that Ethernet switches must be able",
+      "max_sentences": 2
+    },
+    {
+      "id": "LAN_LOOP",
+      "zone": "block",
+      "url": "https://beta.computer-networking.info/syllabus/default/protocols/lan.html",
+      "starts_with": "The MAC address learning algorithm combined",
+      "max_sentences": 2
+    },
+    {
+      "id": "ARP_LOCAL",
+      "zone": "wires",
+      "url": "https://beta.computer-networking.info/syllabus/default/glossary.html",
+      "starts_with": "The Address Resolution Protocol is a protocol used by IPv4 devices",
+      "max_sentences": 1
+    },
+    {
+      "id": "IP_FORWARD",
+      "zone": "town",
+      "url": "https://beta.computer-networking.info/syllabus/default/principles/network.html",
+      "starts_with": "With the datagram organization, routers use hop-by-hop forwarding",
+      "max_sentences": 2
+    },
+    {
+      "id": "IP_BLACKHOLE",
+      "zone": "town",
+      "url": "https://beta.computer-networking.info/syllabus/default/principles/network.html",
+      "starts_with": "A path may lead to a black hole",
+      "max_sentences": 2
+    },
+    {
+      "id": "IP_CYCLE",
+      "zone": "town",
+      "url": "https://beta.computer-networking.info/syllabus/default/principles/network.html",
+      "starts_with": "A second type of problem may exist",
+      "max_sentences": 2
+    },
+    {
+      "id": "TCP_OPEN",
+      "zone": "wires",
+      "url": "https://beta.computer-networking.info/syllabus/default/protocols/tcp.html",
+      "starts_with": "A TCP connection is established by using a three-way handshake",
+      "max_sentences": 2
+    },
+    {
+      "id": "TCP_BYTE_STREAM",
+      "zone": "wires",
+      "url": "https://beta.computer-networking.info/syllabus/default/protocols/tcp.html",
+      "starts_with": "TCP provides a reliable bytestream",
+      "max_sentences": 1
+    },
+    {
+      "id": "GBN_MODEL",
+      "zone": "wires",
+      "url": "https://beta.computer-networking.info/syllabus/default/principles/reliability.html",
+      "starts_with": "The simplest sliding window protocol uses the go-back-n recovery",
+      "max_sentences": 3
+    },
+    {
+      "id": "CONGESTION_BUFFER",
+      "zone": "storm",
+      "url": "https://beta.computer-networking.info/syllabus/default/principles/sharing.html",
+      "starts_with": "If R1 has one available buffer",
+      "max_sentences": 2
+    },
+    {
+      "id": "CONGESTION_QUEUE",
+      "zone": "storm",
+      "url": "https://beta.computer-networking.info/syllabus/default/principles/sharing.html",
+      "starts_with": "Besides the link bandwidth, the buffers on the network nodes",
+      "max_sentences": 2
+    },
+    {
+      "id": "CONGESTION_CAPACITY",
+      "zone": "storm",
+      "url": "https://beta.computer-networking.info/syllabus/default/principles/sharing.html",
+      "starts_with": "Their combined transmission rate",
+      "max_sentences": 2
+    }
+  ]
+}

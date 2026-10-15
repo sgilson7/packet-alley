@@ -1,0 +1,84 @@
+{
+  "work": "Computer Networking: Principles, Protocols and Practice, 3rd edition",
+  "authors": "Olivier Bonaventure and contributors (see cnp3/ebook AUTHORS)",
+  "repository": "github.com/cnp3/ebook",
+  "book": "beta.computer-networking.info/syllabus/default/",
+  "license": "CC BY-SA 3.0 Unported (per cnp3/ebook README: all repository files)",
+  "license_url": "creativecommons.org/licenses/by-sa/3.0/",
+  "extracted_utc": "2026-10-15T05:38:17.534211+00:00",
+  "note": "Short verbatim excerpts quoted under CC BY-SA 3.0 with attribution; not covered by the game's MIT license. Used only for the 9 device/mechanism explainers referenced by the interface routes; further passages are generated when the evidence-first concept panel ships.",
+  "passages": {
+    "LAN_IP_VS_MAC": {
+      "id": "LAN_IP_VS_MAC",
+      "zone": "block",
+      "verbatim": "The datalink layer addresses used in Ethernet networks are often called MAC addresses.",
+      "source_url": "https://beta.computer-networking.info/syllabus/default/protocols/lan.html",
+      "sha256": "352e004e1f4d6ff500f80c4a3d32835c970c6cf575feb1d22b02b955141fee80",
+      "extraction_method": "HTML paragraph-start anchor; whitespace-normalized; first N sentences"
+    },
+    "LAN_MAC_TABLE": {
+      "id": "LAN_MAC_TABLE",
+      "zone": "block",
+      "verbatim": "An Ethernet switch understands the format of the Ethernet frames and can selectively forward frames over each interface. For this, each Ethernet switch maintains a MAC address table.",
+      "source_url": "https://beta.computer-networking.info/syllabus/default/protocols/lan.html",
+      "sha256": "2b1557c6560d981351fb5ad3307e010b5c4cfe69724e9e187266f4ff2ebd866d",
+      "extraction_method": "HTML paragraph-start anchor; whitespace-normalized; first N sentences"
+    },
+    "LAN_LEARNING": {
+      "id": "LAN_LEARNING",
+      "zone": "block",
+      "verbatim": "The pseudo-code below details how an Ethernet switch forwards Ethernet frames. It first updates its MAC address table with the source address of the frame.",
+      "source_url": "https://beta.computer-networking.info/syllabus/default/protocols/lan.html",
+      "sha256": "0ab696fe79ba922e8d7fa889099759d1d5a6c8d0ee04b7247378845470dded68",
+      "extraction_method": "HTML paragraph-start anchor; whitespace-normalized; first N sentences"
+    },
+    "HUB_RELAY": {
+      "id": "HUB_RELAY",
+      "zone": "block",
+      "verbatim": "A hub is thus a physical layer relay that receives an electrical signal on one of its interfaces, regenerates the signal and transmits it over all its other interfaces.",
+      "source_url": "https://beta.computer-networking.info/syllabus/default/protocols/lan.html",
+      "sha256": "9a9a5fc23c21afcb37e573573b3dfe184bf7f5887d5e2f151966af11c6314d0f",
+      "extraction_method": "verbatim sentence from live page (paragraph-start anchor drifted; selected sentence directly; see SECOND-ORDER)"
+    },
+    "IP_FORWARD": {
+      "id": "IP_FORWARD",
+      "zone": "town",
+      "verbatim": "With the datagram organization, routers use hop-by-hop forwarding. This means that when a router receives a packet that is not destined to itself, it looks up the destination address of the packet in its forwarding table.",
+      "source_url": "https://beta.computer-networking.info/syllabus/default/principles/network.html",
+      "sha256": "a4e761064760043c6d96dbb0a3b1ff801499f47e473d2cba7dd23f026a20845e",
+      "extraction_method": "HTML paragraph-start anchor; whitespace-normalized; first N sentences"
+    },
+    "IP_BLACKHOLE": {
+      "id": "IP_BLACKHOLE",
+      "zone": "town",
+      "verbatim": "A path may lead to a black hole. In a network, a black hole is a router that receives packets for at least one given source/destination pair but does not have an entry inside its forwarding table for this destination.",
+      "source_url": "https://beta.computer-networking.info/syllabus/default/principles/network.html",
+      "sha256": "060eb1a9b50de3a9e7645a2ca210f9d083ac4ae518aafe07ac9adc1663045404",
+      "extraction_method": "HTML paragraph-start anchor; whitespace-normalized; first N sentences"
+    },
+    "IP_CYCLE": {
+      "id": "IP_CYCLE",
+      "zone": "town",
+      "verbatim": "A second type of problem may exist in networks using the datagram organization. Consider a path that contains a cycle.",
+      "source_url": "https://beta.computer-networking.info/syllabus/default/principles/network.html",
+      "sha256": "86e76df9e453c65a8a4643c9056e458db67897797329beef940aa471e07c0c2b",
+      "extraction_method": "HTML paragraph-start anchor; whitespace-normalized; first N sentences"
+    },
+    "ARP_LOCAL": {
+      "id": "ARP_LOCAL",
+      "zone": "wires",
+      "verbatim": "The Address Resolution Protocol is a protocol used by IPv4 devices to obtain the datalink layer address that corresponds to an IPv4 address on the local area network.",
+      "source_url": "https://beta.computer-networking.info/syllabus/default/glossary.html",
+      "sha256": "d022ac1c3158b4b08ecabf3f0cb4c00f20123ef49c5d81c4510086d4f2a8f519",
+      "extraction_method": "HTML paragraph-start anchor; whitespace-normalized; first N sentences"
+    },
+    "TCP_OPEN": {
+      "id": "TCP_OPEN",
+      "zone": "wires",
+      "verbatim": "A TCP connection is established by using a three-way handshake. The connection establishment phase uses the sequence number, the acknowledgment number and the SYN flag.",
+      "source_url": "https://beta.computer-networking.info/syllabus/default/protocols/tcp.html",
+      "sha256": "642acbeae7c820cdd8d3918b33ed875565dc71f675c1340d38b5ecead807b4b6",
+      "extraction_method": "HTML paragraph-start anchor; whitespace-normalized; first N sentences"
+    }
+  }
+}

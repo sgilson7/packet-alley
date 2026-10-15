@@ -1,0 +1,234 @@
+{
+  "version": 1,
+  "approach": "preserve identifiers and deterministic Rust core; content-layer changes plus verified new core assessment features",
+  "zones": {
+    "block": {
+      "lesson_demo_id": "LAN-MICRO-01",
+      "learning_targets": [
+        "Destination IP versus destination MAC",
+        "Switch source-MAC learning and unknown-destination flooding",
+        "Collision domains and loop-free switching"
+      ],
+      "scene_example": "A demonstration switch connects two sample computers and a test printer on TEST-NET. Click the first computer to see its IP address; click the printer to see its Ethernet address. Trigger one sample frame. Pause it at the switch, inspect its source MAC, then inspect the switch table after the frame. This demonstration uses distinct addresses and links from all scored missions."
+    },
+    "town": {
+      "lesson_demo_id": "IP-MICRO-01",
+      "learning_targets": [
+        "Local prefixes and first-hop gateway",
+        "Forwarding tables, matching prefixes, next hops",
+        "Forward and reverse routes; hop limit"
+      ],
+      "scene_example": "A demonstration host on 192.0.2.10/24 sends to 198.51.100.20 through a sample router on 192.0.2.1/24. Click the local prefix, select the router interface, then step through a packet and watch its hop limit decrease. The demonstration is read-only and does not reveal any mission next hops."
+    },
+    "wires": {
+      "lesson_demo_id": "TCP-MICRO-01",
+      "learning_targets": [
+        "Ports, SYN/SYN-ACK/ACK, sequence/acknowledgment values",
+        "End-to-end transport versus router forwarding",
+        "Simplified Go-Back-N versus actual TCP; acknowledgments and recovery"
+      ],
+      "scene_example": "In a demonstration network, a client at 203.0.113.10 and a server at 203.0.113.20 exchange a SYN, SYN-ACK, and ACK with numbers different from scored levels. Drag each message into a timeline, inspect the two endpoints, then watch one simulated loss in a separate simplified Go-Back-N teaching example. Label the two protocols separately."
+    },
+    "storm": {
+      "lesson_demo_id": "QUEUE-MICRO-01",
+      "learning_targets": [
+        "Link capacity and finite buffers",
+        "Offered load, queue growth, drops and fairness",
+        "Congestion is not itself proof of an attack"
+      ],
+      "scene_example": "A sample queue receives two ordinary requests each step while a sample link transmits one. Pause and inspect the queue count, then run to a fixed limit. This is an observation of shared capacity, not an attack or attack-building exercise."
+    }
+  },
+  "levels": {
+    "address": {
+      "chapter": "block",
+      "current_objective": "Distinguish destination IP and delivery on one LAN",
+      "revised_objective": "Separate destination IP from Ethernet destination MAC; inspect a learned or flooded forwarding decision",
+      "evidence_to_inspect": "Host IP, MAC, local prefix; switch source-MAC table before and after an observed demonstration",
+      "commit_prediction": "Mark who should receive the IP packet and which MAC is used on the local frame",
+      "map_interaction": "Address a packet using separate IP-destination and link-destination inspection; require evidence card",
+      "exercise_reference": "E-LAN-5",
+      "verbatim_copy_id": "address"
+    },
+    "hub": {
+      "chapter": "block",
+      "current_objective": "Compare shared hub collisions versus switched forwarding",
+      "revised_objective": "Predict a collision from simultaneous arrivals and select topology based on observed evidence",
+      "evidence_to_inspect": "Arrival timestamps and hub forwarding inspector",
+      "commit_prediction": "Predict collision location and cite shared-medium evidence",
+      "map_interaction": "Swap central device on map, rerun one committed variant",
+      "exercise_reference": "E-LAN-5",
+      "verbatim_copy_id": "hub"
+    },
+    "loop": {
+      "chapter": "block",
+      "current_objective": "Explain a broadcast loop and select a loop-free forwarding tree",
+      "revised_objective": "Identify cycles, preserve connectivity and distinguish forwarding/blocking ports",
+      "evidence_to_inspect": "Cycle highlighting; MAC-table state; edge/port inspector",
+      "commit_prediction": "Mark the cycle and identify an alternate reachable path",
+      "map_interaction": "Block any valid non-bridge cycle edge, not a pre-labelled “spare”",
+      "exercise_reference": "E-LAN-3",
+      "verbatim_copy_id": "loop"
+    },
+    "crowd": {
+      "chapter": "block",
+      "current_objective": "Diagnose collision domains on a larger segment",
+      "revised_objective": "Compare collision domains, multiple devices and forwarding evidence",
+      "evidence_to_inspect": "Collision-domain overlays for all four hosts",
+      "commit_prediction": "Mark all collision domains before edits",
+      "map_interaction": "Choose device types in two locations; verify every register",
+      "exercise_reference": "E-LAN-5",
+      "verbatim_copy_id": "crowd"
+    },
+    "backbone": {
+      "chapter": "block",
+      "current_objective": "Detect multiple independent switching loops",
+      "revised_objective": "Construct a connected acyclic forwarding subgraph rather than block named links",
+      "evidence_to_inspect": "Port/link roles; connected-components preview (not solver)",
+      "commit_prediction": "Highlight all cycles on map",
+      "map_interaction": "Block enough ports to obtain connected acyclic forwarding paths",
+      "exercise_reference": "E-LAN-3",
+      "verbatim_copy_id": "backbone"
+    },
+    "floor": {
+      "chapter": "block",
+      "current_objective": "Combine hub replacement and loop prevention",
+      "revised_objective": "Commission a LAN using an evidence-based checklist",
+      "evidence_to_inspect": "Two collision domains, redundant path and end-host delivery evidence",
+      "commit_prediction": "Predict the number of independent faults and their consequences",
+      "map_interaction": "Fix device roles and forwarding graph; completion requires all sources",
+      "exercise_reference": "E-LAN-6",
+      "verbatim_copy_id": "floor"
+    },
+    "gateway": {
+      "chapter": "town",
+      "current_objective": "Recognize local versus remote subnet and gateway",
+      "revised_objective": "Use prefixes to decide local delivery versus first-hop routing",
+      "evidence_to_inspect": "IP/prefix and router interface cards; packet encapsulation inspector",
+      "commit_prediction": "Mark the local subnet and which interface shares it",
+      "map_interaction": "Set gateway via on-map interface selection, no labelled-correct option",
+      "exercise_reference": "E-NET-1",
+      "verbatim_copy_id": "gateway"
+    },
+    "route": {
+      "chapter": "town",
+      "current_objective": "Configure next-hop route and reverse route",
+      "revised_objective": "Read both forwarding tables and trace request/reply paths",
+      "evidence_to_inspect": "R1 route table, connected networks on R2, reverse path",
+      "commit_prediction": "Mark forward and return next hops",
+      "map_interaction": "Edit router route card with prefix and neighbor selector",
+      "exercise_reference": "E-NET-1",
+      "verbatim_copy_id": "route"
+    },
+    "ttl": {
+      "chapter": "town",
+      "current_objective": "Explain routing-loop behavior and IP TTL",
+      "revised_objective": "Trace a loop and predict where TTL expires",
+      "evidence_to_inspect": "Router tables, TTL decrement trace, path cycle",
+      "commit_prediction": "Predict expiration hop from current TTL",
+      "map_interaction": "Choose route edge; do not treat higher TTL as a repair for a loop",
+      "exercise_reference": "E-NET-2",
+      "verbatim_copy_id": "ttl"
+    },
+    "point": {
+      "chapter": "town",
+      "current_objective": "Combine first-hop gateway and static route",
+      "revised_objective": "Distinguish a host forwarding decision from a router forwarding decision",
+      "evidence_to_inspect": "Source subnet and near-router route table",
+      "commit_prediction": "Identify two distinct decision points with evidence",
+      "map_interaction": "Set gateway and next hop after a preflight prediction",
+      "exercise_reference": "E-NET-1",
+      "verbatim_copy_id": "point"
+    },
+    "roads": {
+      "chapter": "town",
+      "current_objective": "Distinguish two destination prefixes and next hops",
+      "revised_objective": "Apply prefix-based forwarding for multiple destinations; add an overlap case",
+      "evidence_to_inspect": "Destination prefix cards, R1 interfaces, two router paths",
+      "commit_prediction": "Assign each destination to matching prefix first",
+      "map_interaction": "Drag prefix cards onto egress interfaces; include overlapping-prefix variant",
+      "exercise_reference": "E-NET-3",
+      "verbatim_copy_id": "roads"
+    },
+    "across": {
+      "chapter": "town",
+      "current_objective": "Combine route chain, return path and hop limit",
+      "revised_objective": "Predict every forwarding step and TTL consumption",
+      "evidence_to_inspect": "All route tables, hop count and reverse paths",
+      "commit_prediction": "Draw all hops with TTL after each router",
+      "map_interaction": "Edit only missing entries plus initial TTL, certify route table reasoning",
+      "exercise_reference": "E-NET-2",
+      "verbatim_copy_id": "across"
+    },
+    "arp": {
+      "chapter": "wires",
+      "current_objective": "Understand ARP request/reply for a local Ethernet address",
+      "revised_objective": "Explain IP-to-MAC discovery and scope; separate from transport-layer connection state",
+      "evidence_to_inspect": "ARP cache, broadcast reach, responding host",
+      "commit_prediction": "Mark which machines receive a broadcast and which can answer",
+      "map_interaction": "Pick requested IP via scene, inspect learned mapping; avoid showing answer in prompt",
+      "exercise_reference": "E-LAN-5",
+      "verbatim_copy_id": "arp"
+    },
+    "handshake": {
+      "chapter": "wires",
+      "current_objective": "Order TCP SYN/SYN-ACK/ACK and acknowledgement semantics",
+      "revised_objective": "Predict connection state and next expected sequence number, including ports",
+      "evidence_to_inspect": "Endpoint state panels, TCP four-tuple and sequence/ack ledger",
+      "commit_prediction": "Place three handshake events on timeline and derive ACK",
+      "map_interaction": "Drag header flags and values into packet slots, core validates transcript",
+      "exercise_reference": "E-TCP-1",
+      "verbatim_copy_id": "handshake"
+    },
+    "transfer": {
+      "chapter": "wires",
+      "current_objective": "Explain retransmission and window in a simplified GBN model",
+      "revised_objective": "Compare a simplified Go-Back-N teaching model with real TCP; predict loss recovery",
+      "evidence_to_inspect": "Timeline of part numbers, window and timeout; explicit “simplified Go-Back-N” badge",
+      "commit_prediction": "Mark lost part and predicted resend set",
+      "map_interaction": "Set window and timer after explaining expected repeat work",
+      "exercise_reference": "E-REL-1",
+      "verbatim_copy_id": "transfer"
+    },
+    "window": {
+      "chapter": "wires",
+      "current_objective": "Explore GBN tradeoff between throughput and retransmission",
+      "revised_objective": "Use trace measurements to justify window/timeout, contrast TCP congestion-control concepts",
+      "evidence_to_inspect": "Timeline with RTT estimate, loss schedule, retransmit counts",
+      "commit_prediction": "Predict comparative completion and redundant transmissions",
+      "map_interaction": "Commit parameter card, run on shifted deterministic case",
+      "exercise_reference": "E-REL-1",
+      "verbatim_copy_id": "window"
+    },
+    "connect": {
+      "chapter": "wires",
+      "current_objective": "Recognize end-to-end TCP over routed IP",
+      "revised_objective": "Preserve endpoint addresses and port/ACK semantics across routers",
+      "evidence_to_inspect": "TCP/IP header layers before and after router, flags/ports",
+      "commit_prediction": "Mark which fields may change at each hop and which are end-to-end",
+      "map_interaction": "Set destination endpoint and handshake transcript; inspect multi-layer path",
+      "exercise_reference": "E-TCP-1",
+      "verbatim_copy_id": "connect"
+    },
+    "reliable": {
+      "chapter": "wires",
+      "current_objective": "Combine routing and lossy reliable transfer",
+      "revised_objective": "Plan an end-to-end delivery with correct route and modeled loss recovery",
+      "evidence_to_inspect": "Route/next hop, loss trace, sender timeline",
+      "commit_prediction": "Predict route and recovery cost before run",
+      "map_interaction": "Configure route plus window/timeout; certify clean transfer",
+      "exercise_reference": "E-REL-1",
+      "verbatim_copy_id": "reliable"
+    },
+    "flood": {
+      "chapter": "storm",
+      "current_objective": "Observe finite queue under concurrent honest demand",
+      "revised_objective": "Separate congestion from intentional denial of service; reason about capacity, fairness, and service loss",
+      "evidence_to_inspect": "Queue depth, link service rate, requests accepted/dropped, loss causes",
+      "commit_prediction": "Predict which link backs up and identify queue evidence",
+      "map_interaction": "Watch-only traffic; nonattack analysis and optional non-operational capacity thought experiment",
+      "exercise_reference": "E-SHARE-1",
+      "verbatim_copy_id": "flood"
+    }
+  }
+}

@@ -1,0 +1,15 @@
+# Source fidelity, direct quotation and licensing
+
+The user's requirement is that **mechanical explanations come verbatim from an open textbook** and that textbook exercises inspire the map challenges. We use an extraction manifest instead of pasting whole copyrighted book sections into this handoff. The short sample quotes in `03_TEXTBOOK_EXERCISE_MAP.md` are minimal; the other passages are referenced by book URL and an exact start-of-paragraph anchor, then extracted at build time without an LLM rewrite. **This packet does not itself contain the full verbatim textbook explanations**; those are generated from the cited source when Claude runs the extraction step. They must be checked for accuracy and licensing before distribution.
+
+Textbook: Olivier Bonaventure, *Computer Networking: Principles, Protocols and Practice*, third edition: https://github.com/cnp3/ebook ; https://beta.computer-networking.info/syllabus/default/. The GitHub book repository says its files use Creative Commons Attribution–ShareAlike 3.0 Unported. Individual online exercise files may have different attribution/licensing statements, e.g. CC BY 3.0. Check each source file's copyright notice; maintain source title, contributors, section, URL, license, and exact extraction timestamps and content hashes. The game's MIT license does **not** automatically cover adapted/reproduced textbook copy. Attribute the CC material separately, and review share-alike obligations if redistributing it as adapted content.
+
+Extraction algorithm should retain exact punctuation and sentence order. Since browser DOM flattens inline text, normalization is limited to whitespace; no paraphrase, deleted qualifications, or silent ellipsis. Save `extraction_method`, exact source URL, license, extracted string and SHA256. The original copy remains accessible by link. A changed source paragraph should fail with a visible diagnostic. Exercise prompt language may be quoted minimally with source credit; the original textbook figures and complete worksheets are referenced by URL rather than copied into the game.
+
+### Technical caveats requiring professor review
+
+- `address`: IP identifies an end host at network layer; local Ethernet frames use MACs and a switch's MAC table. The old story confuses these layers.
+- `arp`: ARP resolves local link-layer next-hop addresses and is not a TCP handshake. Keep concept timing clear, even if legacy level ID stays in chapter 3.
+- `transfer`/`window`/`reliable`: `bulk` simulates a Go-Back-N-like protocol, not full TCP Reno/CUBIC. Label this simplification on-screen. Do not present GBN as an exact TCP retransmission algorithm.
+- `flood`: simultaneously sent honest requests are sufficient to demonstrate finite-capacity congestion, but not evidence of an attacker or distributed intentional DoS. Keep watch-only.
+- All textbook excerpts are explanatory; **the exercise answer must be derived from a different visible case** and may not be copied as a worked solution into a scored level.

@@ -1,0 +1,134 @@
+{
+  "rules": [
+    "Do not retain old mechanically explanatory about_*, why_*, or level concept/quiz/debrief copy in student view.",
+    "Render textbook_excerpt by ID only after attribution/licensing and failed-extraction checks; never improvise its content.",
+    "Render event fields as directly observed simulator state, not an unverified general protocol rule.",
+    "Do not allow a correctness score until after map evidence and one complete commit.",
+    "All labels/titles without overrides keep existing display strings unless a professor approves a new exact label."
+  ],
+  "app_copy_overrides": {
+    "menu_how": "How to use the map",
+    "panel_concept": "From the networking textbook",
+    "panel_edits": "Changes you can make on the map",
+    "panel_edits_hint": "Select a device, port or cable to inspect it. Make changes on the map or use the equivalent controls in this panel.",
+    "quiz_q": "What does the evidence show?",
+    "btn_run": "Commit and run",
+    "btn_rerun": "Practice a different case",
+    "btn_retry": "Review the evidence",
+    "quiz_right": "Your prediction matches the recorded events.",
+    "quiz_wrong": "Your prediction does not match the recorded events. Inspect the trace and try a new practice case.",
+    "how_1": "Select any device or cable to inspect it. The inspector records which evidence you used.",
+    "how_2": "Choose a packet to inspect its headers. Pause, step or replay its movement along the cables.",
+    "how_3": "Before a scored run, mark your predicted path and select the evidence supporting it.",
+    "how_4": "Edit devices or routes in the scene. Commit one complete plan, then inspect the outcome.",
+    "how_5": "After a run, compare your prediction with the event log. A new practice case is available if you need more work."
+  },
+  "legacy_text_routes": {
+    "about_host": {
+      "kind": "ui_instruction",
+      "text": "Select the computer to inspect its addresses and connected links."
+    },
+    "about_printer": {
+      "kind": "ui_instruction",
+      "text": "Select the printer to inspect its addresses and connected links."
+    },
+    "about_server": {
+      "kind": "ui_instruction",
+      "text": "Select the server to inspect its current connections and received requests."
+    },
+    "about_hub": {
+      "kind": "textbook_excerpt",
+      "source_ids": [
+        "HUB_RELAY"
+      ]
+    },
+    "about_switch": {
+      "kind": "textbook_excerpt",
+      "source_ids": [
+        "LAN_MAC_TABLE",
+        "LAN_LEARNING"
+      ]
+    },
+    "about_router": {
+      "kind": "textbook_excerpt",
+      "source_ids": [
+        "IP_FORWARD"
+      ]
+    },
+    "why_no_gateway": {
+      "kind": "textbook_excerpt",
+      "source_ids": [
+        "IP_FORWARD"
+      ]
+    },
+    "why_arp_fail": {
+      "kind": "textbook_excerpt",
+      "source_ids": [
+        "ARP_LOCAL"
+      ]
+    },
+    "why_arp_fail_gw": {
+      "kind": "textbook_excerpt",
+      "source_ids": [
+        "ARP_LOCAL",
+        "IP_FORWARD"
+      ]
+    },
+    "why_ttl": {
+      "kind": "textbook_excerpt",
+      "source_ids": [
+        "IP_CYCLE"
+      ]
+    },
+    "why_no_route": {
+      "kind": "textbook_excerpt",
+      "source_ids": [
+        "IP_BLACKHOLE"
+      ]
+    },
+    "why_collision": {
+      "kind": "textbook_excerpt",
+      "source_ids": [
+        "HUB_RELAY",
+        "LAN_MAC_TABLE"
+      ]
+    },
+    "why_not_mine": {
+      "kind": "textbook_excerpt",
+      "source_ids": [
+        "LAN_IP_VS_MAC"
+      ]
+    },
+    "why_reset": {
+      "kind": "textbook_excerpt",
+      "source_ids": [
+        "TCP_OPEN"
+      ]
+    },
+    "why_bad_ack": {
+      "kind": "textbook_excerpt",
+      "source_ids": [
+        "TCP_OPEN"
+      ]
+    },
+    "why_nothing_lost": {
+      "kind": "ui_instruction",
+      "text": "No frames were lost in this run. Compare the outcome with the mission objective before changing another device."
+    }
+  },
+  "level_field_routes": {
+    "title": "data/verbatim_story_copy.json levels[id].title",
+    "story": "data/verbatim_story_copy.json levels[id].story",
+    "task": "data/verbatim_story_copy.json levels[id].task",
+    "debrief": "data/verbatim_story_copy.json levels[id].debrief",
+    "concept": "refer to source IDs in data/textbook_source_manifest.json for the associated zone; never retain original concept literals",
+    "quiz": "remove existing answer-index question; replace with inspected scene-based precommit prediction and evidence requirements",
+    "goal": "keep solver-internal predicates, but neutralize student-visible answer-spoiling goal strings",
+    "bonus": "keep solver-internal predicate, suppress solution-bearing text before attempt"
+  },
+  "event_copy_policy": {
+    "prefix": "ev_",
+    "kind": "simulated_observation",
+    "rule": "Retain only event observations derived from live state. If a phrase makes a generalized mechanism claim, replace with registered excerpt slot; do not present a dynamic message as textbook quotation."
+  }
+}

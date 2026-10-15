@@ -1,0 +1,220 @@
+{
+  "title": "Packet Alley",
+  "tagline": "Keep a city connected. See what each packet does.",
+  "menu_intro": "The city works because its networks work. Inspect them, make a plan, and watch your changes take effect.",
+  "assessment_policy": "Before you run: inspect the map, choose evidence, and commit a prediction. Each scored attempt uses one network case. Practice remains available after a mistake.",
+  "chapters": {
+    "block": {
+      "title": "Frames on the Block",
+      "opening": "It is opening morning in Packet Alley. The noodle shop, its printers, and the nearby desks share one local network. Before anyone can depend on it, you need to find out what each device knows.",
+      "example_instruction": "A demonstration switch connects two sample computers and a test printer on TEST-NET. Click the first computer to see its IP address; click the printer to see its Ethernet address. Trigger one sample frame. Pause it at the switch, inspect its source MAC, then inspect the switch table after the frame. This demonstration uses distinct addresses and links from all scored missions."
+    },
+    "town": {
+      "title": "Routes Across Town",
+      "opening": "The local network is running. Now the shop needs services on the other side of the city. Each router makes its own forwarding decision. Your job is to read those decisions before changing them.",
+      "example_instruction": "A demonstration host on 192.0.2.10/24 sends to 198.51.100.20 through a sample router on 192.0.2.1/24. Click the local prefix, select the router interface, then step through a packet and watch its hop limit decrease. The demonstration is read-only and does not reveal any mission next hops."
+    },
+    "wires": {
+      "title": "Handshakes and Delivery",
+      "opening": "Messages can cross the city. The remaining problem is keeping a conversation open long enough to finish the work. The service desk needs a connection, and the shop needs complete files.",
+      "example_instruction": "In a demonstration network, a client at 203.0.113.10 and a server at 203.0.113.20 exchange a SYN, SYN-ACK, and ACK with numbers different from scored levels. Drag each message into a timeline, inspect the two endpoints, then watch one simulated loss in a separate simplified Go-Back-N teaching example. Label the two protocols separately."
+    },
+    "storm": {
+      "title": "When Too Much Arrives",
+      "opening": "The night market is open. The city is busy, and a small server receives more requests than its link can carry. Your assignment is to observe what fails and explain the evidence.",
+      "example_instruction": "A sample queue receives two ordinary requests each step while a sample link transmits one. Pause and inspect the queue count, then run to a fixed limit. This is an observation of shared capacity, not an attack or attack-building exercise."
+    }
+  },
+  "levels": {
+    "address": {
+      "title": "The kitchen order",
+      "story": "The noodle shop is open. The kitchen printer has gone quiet, and the orders are waiting at the counter.",
+      "task": "Inspect the computer, printer, and switch. Prepare the order for delivery without changing the wrong machine.",
+      "debrief": "The first order reached the kitchen. The shop can work again.",
+      "inspect_prompt": "Inspect the marked devices and packet headers. Record the evidence you used.",
+      "predict_prompt": "Before running, mark your predicted path or failure point and explain which device record supports it.",
+      "commit_prompt": "Commit this plan and run the network.",
+      "retry_prompt": "The evidence does not yet support this plan. Review the trace, then try a new practice case."
+    },
+    "hub": {
+      "title": "Lunch rush",
+      "story": "Two registers send their totals at once. The old wiring loses both. Lunch is coming, and the owner wants an explanation before buying new equipment.",
+      "task": "Inspect the two incoming links and the middle device. Decide what change will let both tills report at the same time.",
+      "debrief": "The totals arrived. The owner has a working shop and a reason for the change.",
+      "inspect_prompt": "Inspect the marked devices and packet headers. Record the evidence you used.",
+      "predict_prompt": "Before running, mark your predicted path or failure point and explain which device record supports it.",
+      "commit_prompt": "Commit this plan and run the network.",
+      "retry_prompt": "The evidence does not yet support this plan. Review the trace, then try a new practice case."
+    },
+    "loop": {
+      "title": "The backup line",
+      "story": "A spare cable was installed overnight. Since then, the printer receives repeated copies of the same message.",
+      "task": "Trace both paths between the switches. Choose a port to block while keeping the printer connected.",
+      "debrief": "The repeated traffic stopped. One route remains open to the printer.",
+      "inspect_prompt": "Inspect the marked devices and packet headers. Record the evidence you used.",
+      "predict_prompt": "Before running, mark your predicted path or failure point and explain which device record supports it.",
+      "commit_prompt": "Commit this plan and run the network.",
+      "retry_prompt": "The evidence does not yet support this plan. Review the trace, then try a new practice case."
+    },
+    "crowd": {
+      "title": "Four registers",
+      "story": "The noodle shop opened two more registers. Now the old boxes are losing sales during the busiest part of the day.",
+      "task": "Inspect both middle boxes. Make a plan for the shared lines before replacing anything.",
+      "debrief": "Every register reported its sales. There is enough room to serve the queue.",
+      "inspect_prompt": "Inspect the marked devices and packet headers. Record the evidence you used.",
+      "predict_prompt": "Before running, mark your predicted path or failure point and explain which device record supports it.",
+      "commit_prompt": "Commit this plan and run the network.",
+      "retry_prompt": "The evidence does not yet support this plan. Review the trace, then try a new practice case."
+    },
+    "backbone": {
+      "title": "The duplicate paths",
+      "story": "The shop added backup cables between the service rooms. Traffic now circles through both ends of the building.",
+      "task": "Find every closed forwarding path. Leave a working route between the desk and printer.",
+      "debrief": "The backbone is stable. The backup cables are still there, ready for a failed primary link.",
+      "inspect_prompt": "Inspect the marked devices and packet headers. Record the evidence you used.",
+      "predict_prompt": "Before running, mark your predicted path or failure point and explain which device record supports it.",
+      "commit_prompt": "Commit this plan and run the network.",
+      "retry_prompt": "The evidence does not yet support this plan. Review the trace, then try a new practice case."
+    },
+    "floor": {
+      "title": "Open the upstairs floor",
+      "story": "Upstairs opens in an hour. Three desks need the server, and the contractor left the network half configured.",
+      "task": "Inspect the boxes, links, and test traffic. Sign off only when the network serves every desk.",
+      "debrief": "The new floor is ready. You can hear the printers working above the shop.",
+      "inspect_prompt": "Inspect the marked devices and packet headers. Record the evidence you used.",
+      "predict_prompt": "Before running, mark your predicted path or failure point and explain which device record supports it.",
+      "commit_prompt": "Commit this plan and run the network.",
+      "retry_prompt": "The evidence does not yet support this plan. Review the trace, then try a new practice case."
+    },
+    "gateway": {
+      "title": "The other side of the street",
+      "story": "A customer at the shop needs a document stored across the street. The computer can see its local network, but nothing beyond it.",
+      "task": "Inspect the client address, subnet, and both sides of the router. Set a reachable first hop.",
+      "debrief": "The reply came back across the street. The client can reach the other block.",
+      "inspect_prompt": "Inspect the marked devices and packet headers. Record the evidence you used.",
+      "predict_prompt": "Before running, mark your predicted path or failure point and explain which device record supports it.",
+      "commit_prompt": "Commit this plan and run the network.",
+      "retry_prompt": "The evidence does not yet support this plan. Review the trace, then try a new practice case."
+    },
+    "route": {
+      "title": "A missing direction",
+      "story": "The market server answers messages. The shop router simply does not know how to reach it.",
+      "task": "Trace the outward and return paths. Add the missing forwarding entry to the near router.",
+      "debrief": "A route now leads to the market. Both directions of the exchange are visible on the map.",
+      "inspect_prompt": "Inspect the marked devices and packet headers. Record the evidence you used.",
+      "predict_prompt": "Before running, mark your predicted path or failure point and explain which device record supports it.",
+      "commit_prompt": "Commit this plan and run the network.",
+      "retry_prompt": "The evidence does not yet support this plan. Review the trace, then try a new practice case."
+    },
+    "ttl": {
+      "title": "A message going in circles",
+      "story": "The shop router and the middle router keep sending the same request back to each other. It never reaches the far server.",
+      "task": "Read the forwarding entries. Break the cycle before the request runs out of hops.",
+      "debrief": "The request has a path out of town. The repeated trip through the middle is over.",
+      "inspect_prompt": "Inspect the marked devices and packet headers. Record the evidence you used.",
+      "predict_prompt": "Before running, mark your predicted path or failure point and explain which device record supports it.",
+      "commit_prompt": "Commit this plan and run the network.",
+      "retry_prompt": "The evidence does not yet support this plan. Review the trace, then try a new practice case."
+    },
+    "point": {
+      "title": "Two missing settings",
+      "story": "The riverside server is online. The shop cannot reach it, and two devices have incomplete instructions.",
+      "task": "Examine the client and the near router separately. Repair the handoff and the onward route.",
+      "debrief": "The riverside answered. Both missing settings are now accounted for.",
+      "inspect_prompt": "Inspect the marked devices and packet headers. Record the evidence you used.",
+      "predict_prompt": "Before running, mark your predicted path or failure point and explain which device record supports it.",
+      "commit_prompt": "Commit this plan and run the network.",
+      "retry_prompt": "The evidence does not yet support this plan. Review the trace, then try a new practice case."
+    },
+    "roads": {
+      "title": "Market or harbor",
+      "story": "The shop sends receipts to the market and orders to the harbor. One junction serves both, but its signs are missing.",
+      "task": "Inspect each destination network. Give the junction a separate forwarding decision for each one.",
+      "debrief": "Both neighborhoods answered. No message took the wrong road.",
+      "inspect_prompt": "Inspect the marked devices and packet headers. Record the evidence you used.",
+      "predict_prompt": "Before running, mark your predicted path or failure point and explain which device record supports it.",
+      "commit_prompt": "Commit this plan and run the network.",
+      "retry_prompt": "The evidence does not yet support this plan. Review the trace, then try a new practice case."
+    },
+    "across": {
+      "title": "The far-side delivery",
+      "story": "The final shipment report must cross the entire city before the market opens. Three routers stand between the shop and the archive.",
+      "task": "Trace the complete route there and back. Make the forwarding entries and hop limit consistent with that path.",
+      "debrief": "The archive confirmed the report. The city route is ready for heavier work.",
+      "inspect_prompt": "Inspect the marked devices and packet headers. Record the evidence you used.",
+      "predict_prompt": "Before running, mark your predicted path or failure point and explain which device record supports it.",
+      "commit_prompt": "Commit this plan and run the network.",
+      "retry_prompt": "The evidence does not yet support this plan. Review the trace, then try a new practice case."
+    },
+    "arp": {
+      "title": "An unknown neighbor",
+      "story": "The shop knows the printer’s IP address. Its address cache is empty, so the first frame cannot be prepared yet.",
+      "task": "Inspect the cache and the devices on this block. Prepare a neighbor query, then trace the response.",
+      "debrief": "The printer was identified. The computer has the local address it needed.",
+      "inspect_prompt": "Inspect the marked devices and packet headers. Record the evidence you used.",
+      "predict_prompt": "Before running, mark your predicted path or failure point and explain which device record supports it.",
+      "commit_prompt": "Commit this plan and run the network.",
+      "retry_prompt": "The evidence does not yet support this plan. Review the trace, then try a new practice case."
+    },
+    "handshake": {
+      "title": "Open the service desk",
+      "story": "The city help desk is online, but its client has not opened a connection. The first attempt is incomplete.",
+      "task": "Inspect the endpoint ports and sequence cards. Arrange the opening exchange before sending it.",
+      "debrief": "The connection is open. The client can now ask for the service record.",
+      "inspect_prompt": "Inspect the marked devices and packet headers. Record the evidence you used.",
+      "predict_prompt": "Before running, mark your predicted path or failure point and explain which device record supports it.",
+      "commit_prompt": "Commit this plan and run the network.",
+      "retry_prompt": "The evidence does not yet support this plan. Review the trace, then try a new practice case."
+    },
+    "transfer": {
+      "title": "A missing page",
+      "story": "The shop needs a six-part document. The line drops an occasional frame, and the file never arrives in one uninterrupted run.",
+      "task": "Inspect the loss trace. Predict which parts the teaching sender will resend, then choose a transfer plan.",
+      "debrief": "The document arrived intact. The delivery record shows the cost of the lost parts.",
+      "inspect_prompt": "Inspect the marked devices and packet headers. Record the evidence you used.",
+      "predict_prompt": "Before running, mark your predicted path or failure point and explain which device record supports it.",
+      "commit_prompt": "Commit this plan and run the network.",
+      "retry_prompt": "The evidence does not yet support this plan. Review the trace, then try a new practice case."
+    },
+    "window": {
+      "title": "The catalogue download",
+      "story": "The market catalogue is larger than the last document. Sending one piece at a time is slow, and sending too much makes every loss expensive.",
+      "task": "Study the baseline trace. Choose a window and timeout, and state what you expect to change.",
+      "debrief": "The catalogue reached the shop. The record shows how much work the line repeated.",
+      "inspect_prompt": "Inspect the marked devices and packet headers. Record the evidence you used.",
+      "predict_prompt": "Before running, mark your predicted path or failure point and explain which device record supports it.",
+      "commit_prompt": "Commit this plan and run the network.",
+      "retry_prompt": "The evidence does not yet support this plan. Review the trace, then try a new practice case."
+    },
+    "connect": {
+      "title": "A connection across town",
+      "story": "The customer’s browser needs the city service desk. A router sits between them, but the conversation still has two endpoints.",
+      "task": "Trace the packet through the router and build the client-server opening exchange.",
+      "debrief": "The page returned across town. The router forwarded it without joining the conversation.",
+      "inspect_prompt": "Inspect the marked devices and packet headers. Record the evidence you used.",
+      "predict_prompt": "Before running, mark your predicted path or failure point and explain which device record supports it.",
+      "commit_prompt": "Commit this plan and run the network.",
+      "retry_prompt": "The evidence does not yet support this plan. Review the trace, then try a new practice case."
+    },
+    "reliable": {
+      "title": "The final report",
+      "story": "The market closes in an hour. The last report is eight parts long, and the line beyond the bridge is unreliable.",
+      "task": "Trace the forwarding path, then plan the transfer. Both decisions must work together.",
+      "debrief": "The full report reached the market. The town is ready for the night.",
+      "inspect_prompt": "Inspect the marked devices and packet headers. Record the evidence you used.",
+      "predict_prompt": "Before running, mark your predicted path or failure point and explain which device record supports it.",
+      "commit_prompt": "Commit this plan and run the network.",
+      "retry_prompt": "The evidence does not yet support this plan. Review the trace, then try a new practice case."
+    },
+    "flood": {
+      "title": "The night market crowd",
+      "story": "The night market opens. Five places send legitimate requests to one small server at once. The server link is the busiest part of the city.",
+      "task": "Inspect the queue, predict where requests will wait, then watch the rush. Record what the bottleneck did.",
+      "debrief": "The rush is over. Some requests were served, and some were lost. The log shows where capacity ran out.",
+      "inspect_prompt": "Inspect the marked devices and packet headers. Record the evidence you used.",
+      "predict_prompt": "Before running, mark your predicted path or failure point and explain which device record supports it.",
+      "commit_prompt": "Commit this plan and run the network.",
+      "retry_prompt": "The evidence does not yet support this plan. Review the trace, then try a new practice case."
+    }
+  }
+}

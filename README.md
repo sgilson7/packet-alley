@@ -37,7 +37,7 @@ each chapter gets genuinely technical.
   longest-prefix match, directly-connected blocks, and the TTL that stops a
   routing loop from lasting forever — then pointing two roads apart at a
   junction and routing a packet, hop by hop, clear across a four-router town.
-- **Handshakes (transport layer).** ARP, the three-way handshake and its
+- **Handshakes and Delivery (transport layer).** ARP, the three-way handshake and its
   acknowledgement numbers, and go-back-N retransmission on a lossy link — then
   tuning window and timeout for a bigger file, opening a connection across a
   router, and running a reliable transfer across town over a lossy last mile.
@@ -94,4 +94,10 @@ it, `SECOND-ORDER.md` what came up while building, and `HANDOFF.md` what was
 checked. The levels, their networks and all reader-visible text are data
 (`data/levels.json`, `data/copy.json`) and change without touching a rule.
 
-MIT licence; see `LICENSE`.
+The device and mechanism explanations in the inspectors (hub, switch, router)
+quote an open networking textbook **verbatim** — *Computer Networking: Principles,
+Protocols and Practice* (Bonaventure, `cnp3/ebook`), under **CC BY-SA 3.0**. Those
+excerpts are not MIT; their source, exact text and SHA-256 are in
+`data/textbook_extracts.json` and the attribution is in `LICENSES.md`.
+
+MIT licence (the game); see `LICENSE`.

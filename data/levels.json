@@ -4,28 +4,28 @@
       "id": "block",
       "title": "Frames on the Block",
       "layer": "Link layer — one network",
-      "blurb": "One block, a few devices, and the frames that carry data between them. Addresses, hubs, switches, and what happens when wires form a loop.",
+      "blurb": "It is opening morning in Packet Alley. The noodle shop, its printers, and the nearby desks share one local network. Before anyone can depend on it, you need to find out what each device knows.",
       "backdrop": "block"
     },
     {
       "id": "town",
       "title": "Routes Across Town",
       "layer": "Network layer — between networks",
-      "blurb": "More than one block. Gateways and routers, the routing table, longest-prefix match, and the hop count that stops a packet from circling forever.",
+      "blurb": "The local network is running. Now the shop needs services on the other side of the city. Each router makes its own forwarding decision. Your job is to read those decisions before changing them.",
       "backdrop": "town"
     },
     {
       "id": "wires",
-      "title": "Handshakes",
+      "title": "Handshakes and Delivery",
       "layer": "Transport layer — reliable streams",
-      "blurb": "Finding a neighbour's hardware address, opening a connection the TCP way, and finishing a transfer over a line that drops frames.",
+      "blurb": "Messages can cross the city. The remaining problem is keeping a conversation open long enough to finish the work. The service desk needs a connection, and the shop needs complete files.",
       "backdrop": "wires"
     },
     {
       "id": "storm",
       "title": "When Too Much Arrives",
       "layer": "Availability — a service overwhelmed",
-      "blurb": "Watch what a flood of ordinary requests does to one small server, and why no single machine can answer an unlimited crowd. This chapter is to watch and think about, not to play.",
+      "blurb": "The night market is open. The city is busy, and a small server receives more requests than its link can carry. Your assignment is to observe what fails and explain the evidence.",
       "backdrop": "town"
     }
   ],
@@ -33,14 +33,14 @@
     {
       "id": "address",
       "chapter": "block",
-      "title": "Address the parcel",
-      "story": "Every night the Noodle Shop's computer sends its order to the kitchen printer beside it. Both sit on one block, wired to a single switch — just like the PCs and printers sharing a switch in any office. For the switch to deliver the order, the packet has to carry the right address: the printer's, and no one else's.",
+      "title": "The kitchen order",
+      "story": "The noodle shop is open. The kitchen printer has gone quiet, and the orders are waiting at the counter.",
       "concept": [
         "Every device on a block has its own IP address.",
         "A packet carries the address of where it is going.",
         "Send to the right address and the switch delivers it."
       ],
-      "task": "Set the order to go to the printer's address, then run it.",
+      "task": "Inspect the computer, printer, and switch. Prepare the order for delivery without changing the wrong machine.",
       "ticks": 20,
       "nodes": [
         {"id": "pc", "kind": "host", "name": "Shop PC", "x": 180, "y": 300, "ip": "10.0.0.10/24"},
@@ -81,19 +81,19 @@
         "answer": 0,
         "why": "A switch that does not yet know a destination sends the frame everywhere, then remembers which port the replies come back on."
       },
-      "debrief": "Addresses are how a frame finds its device. Next, meet the switch's older cousin."
+      "debrief": "The first order reached the kitchen. The shop can work again."
     },
     {
       "id": "hub",
       "chapter": "block",
-      "title": "One mouth, one ear",
-      "story": "Two shop computers reach for the server at the same instant. They meet at an old hub — the cheap box that just shouts every message out of every port, so only one machine can talk at a time. When two arrive together they collide and both are lost. This is exactly why offices tore out their hubs and put in switches.",
+      "title": "Lunch rush",
+      "story": "Two registers send their totals at once. The old wiring loses both. Lunch is coming, and the owner wants an explanation before buying new equipment.",
       "concept": [
         "A hub repeats every frame out of every other port.",
         "Only one device can talk at a time; two at once collide.",
         "A switch gives each device its own line, so they do not collide."
       ],
-      "task": "The hub keeps causing collisions. Swap it for a switch and run it again.",
+      "task": "Inspect the two incoming links and the middle device. Decide what change will let both tills report at the same time.",
       "ticks": 40,
       "nodes": [
         {"id": "a", "kind": "host", "name": "Register A", "x": 180, "y": 160, "ip": "10.0.0.11/24"},
@@ -138,19 +138,19 @@
         "answer": 0,
         "why": "Because a switch forwards each frame to just the right port, two conversations can cross it at once without meeting."
       },
-      "debrief": "A hub is one shared wire; a switch is many private ones. Now watch what happens when the wires form a loop."
+      "debrief": "The totals arrived. The owner has a working shop and a reason for the change."
     },
     {
       "id": "loop",
       "chapter": "block",
-      "title": "Round and round",
-      "story": "Someone ran a second cable between the two switches 'for safety.' But two cables between the same switches form a loop, and a broadcast caught in a loop copies itself forever — a broadcast storm that can take down a real network in seconds. Switches normally run spanning tree to block one cable automatically; here you do it by hand.",
+      "title": "The backup line",
+      "story": "A spare cable was installed overnight. Since then, the printer receives repeated copies of the same message.",
       "concept": [
         "Two switches joined by two cables make a loop.",
         "A flooded frame goes around the loop forever, copying itself.",
         "Blocking one of the two cables breaks the loop (this is what spanning tree does)."
       ],
-      "task": "Block the spare cable on the second switch so the loop is broken, then run it.",
+      "task": "Trace both paths between the switches. Choose a port to block while keeping the printer connected.",
       "ticks": 30,
       "nodes": [
         {"id": "pc", "kind": "host", "name": "Front desk", "x": 160, "y": 300, "ip": "10.0.0.10/24"},
@@ -194,19 +194,19 @@
         "answer": 0,
         "why": "A frame on a loop has nothing to kill it — unlike an IP packet, a frame has no hop count — so it multiplies until something blocks a path."
       },
-      "debrief": "That is the whole link layer: addresses, hubs and switches, and loops. Time to leave the block."
+      "debrief": "The repeated traffic stopped. One route remains open to the printer."
     },
     {
       "id": "crowd",
       "chapter": "block",
-      "title": "Split the crowd",
-      "story": "The cafe added registers until four of them share two old boxes on the way to the shop server. At the lunch rush their sales keep crashing into each other and vanishing. The more machines you pack onto shared wiring, the more often this happens — the real reason a busy office gives every machine its own switched port. Sort out the two boxes.",
+      "title": "Four registers",
+      "story": "The noodle shop opened two more registers. Now the old boxes are losing sales during the busiest part of the day.",
       "concept": [
         "A hub is one shared wire: only one device can talk at a time.",
         "Two frames arriving together on a hub collide, and both are lost — and the more machines share a hub, the more often that happens.",
         "A switch gives every machine its own line, so a whole crowd can talk at once without colliding."
       ],
-      "task": "Decide what each of the two boxes should be, then run it so all four registers get through with no collisions.",
+      "task": "Inspect both middle boxes. Make a plan for the shared lines before replacing anything.",
       "ticks": 40,
       "nodes": [
         {"id": "a", "kind": "host", "name": "Register A", "x": 150, "y": 110, "ip": "10.0.0.41/24"},
@@ -271,19 +271,19 @@
         "answer": 0,
         "why": "Every machine on a hub shares the one wire, so the more of them there are, the more often two talk at once and collide. A switch is what lets a crowd grow."
       },
-      "debrief": "A hub shares one wire among everyone; a switch hands each machine its own. That is why real networks are built from switches. Now about those backup cables the IT crew ran…"
+      "debrief": "Every register reported its sales. There is enough room to serve the queue."
     },
     {
       "id": "backbone",
       "chapter": "block",
-      "title": "Backup cables everywhere",
-      "story": "To be safe, the crew ran a spare cable beside every link between the shop's switches — the kind of redundancy real data centres build in. But every spare cable is also a second path, which is a loop, and one print job now storms around them until the lines choke. Break each loop without cutting the working path, the way spanning tree does.",
+      "title": "The duplicate paths",
+      "story": "The shop added backup cables between the service rooms. Traffic now circles through both ends of the building.",
       "concept": [
         "Two switches joined by two cables make a loop, and a flooded frame rides a loop forever, copying itself.",
         "Each spare cable here adds its own loop, so each one has to be dealt with.",
         "Blocking one end of a spare cable breaks that loop while leaving the real path intact — this is what spanning tree does automatically."
       ],
-      "task": "Block the spare cable at each of the two loops, then run the print job through.",
+      "task": "Find every closed forwarding path. Leave a working route between the desk and printer.",
       "ticks": 30,
       "nodes": [
         {"id": "pc", "kind": "host", "name": "Front desk", "x": 130, "y": 300, "ip": "10.0.0.10/24"},
@@ -340,19 +340,19 @@
         "answer": 0,
         "why": "A loop needs no partner to run away: one unbroken loop lets a frame copy itself without end. Every redundant link is its own loop to break."
       },
-      "debrief": "Redundant cables are good to have — but every one is a loop that must be blocked, which is exactly the job spanning tree does on real switches. Time to wire a whole new floor at once."
+      "debrief": "The backbone is stable. The backup cables are still there, ready for a failed primary link."
     },
     {
       "id": "floor",
       "chapter": "block",
-      "title": "Open the new floor",
-      "story": "The upstairs floor goes live today. Two of its boxes are still cheap hubs, and a backup cable was already run between the last two switches — a typical half-finished install. Commission it the way a network tech signs off a new floor: everyone connected, nothing colliding, and no loop left running.",
+      "title": "Open the upstairs floor",
+      "story": "Upstairs opens in an hour. Three desks need the server, and the contractor left the network half configured.",
       "concept": [
         "A real segment has to get every part right at once: no shared-wire hubs where machines collide, and no unbroken loop where frames storm.",
         "Swap each hub for a switch so every machine has its own line.",
         "Block the one spare cable so the backbone has no loop."
       ],
-      "task": "Fix both boxes and block the spare cable, then run it: all three machines served, no collisions, no storm.",
+      "task": "Inspect the boxes, links, and test traffic. Sign off only when the network serves every desk.",
       "ticks": 44,
       "nodes": [
         {"id": "h1", "kind": "host", "name": "Desk 1", "x": 140, "y": 130, "ip": "10.0.0.51/24"},
@@ -428,19 +428,19 @@
         "answer": 0,
         "why": "They solve different faults: a hub causes collisions because its machines share one wire, and an open loop causes a storm because a frame can circle forever. A healthy segment has neither."
       },
-      "debrief": "You commissioned a whole segment: switched, loop-free, everyone served. That is the link layer in full. Next chapter, the packets leave the block."
+      "debrief": "The new floor is ready. You can hear the printers working above the shop."
     },
     {
       "id": "gateway",
       "chapter": "town",
-      "title": "Off the block",
-      "story": "The shop PC needs to reach a server one block over, past a router. A device can talk directly only to its own block; for anywhere else — another office, any website — it hands the packet to its gateway. That gateway is exactly the 'default gateway' setting on every real computer, and on this PC it is missing.",
+      "title": "The other side of the street",
+      "story": "A customer at the shop needs a document stored across the street. The computer can see its local network, but nothing beyond it.",
       "concept": [
         "A device talks to its own block directly.",
         "For anywhere else, it hands the packet to its gateway — the router.",
         "The gateway must be an address on the device's own block."
       ],
-      "task": "Give the shop PC the right gateway, then run the ping.",
+      "task": "Inspect the client address, subnet, and both sides of the router. Set a reachable first hop.",
       "ticks": 30,
       "nodes": [
         {"id": "pc", "kind": "host", "name": "Shop PC", "x": 160, "y": 300, "ip": "10.0.1.10/24"},
@@ -482,19 +482,19 @@
         "answer": 0,
         "why": "To reach anywhere else the PC first has to deliver the packet to the router, and it can only do that on the block they share."
       },
-      "debrief": "A gateway gets a packet off its own block. Now the router has to decide where it goes next."
+      "debrief": "The reply came back across the street. The client can reach the other block."
     },
     {
       "id": "route",
       "chapter": "town",
-      "title": "Which way out",
-      "story": "Now two routers stand between the PC and the server, with a short link between them. The first router has never been told how to reach the far block — like a brand-new office router with an empty routing table. Give it the one route it needs so it knows where to forward the packet next.",
+      "title": "A missing direction",
+      "story": "The market server answers messages. The shop router simply does not know how to reach it.",
       "concept": [
         "A router keeps a table: for each destination block, the next hop.",
         "A block it is plugged into needs no route — it is directly connected.",
         "For a block further away, it forwards to the next router."
       ],
-      "task": "Give the first router a route to the server's block, then run the ping.",
+      "task": "Trace the outward and return paths. Add the missing forwarding entry to the near router.",
       "ticks": 40,
       "nodes": [
         {"id": "pc", "kind": "host", "name": "Shop PC", "x": 140, "y": 300, "ip": "10.0.1.10/24", "gateway": "10.0.1.1"},
@@ -540,19 +540,19 @@
         "answer": 0,
         "why": "A router always knows the blocks it is directly attached to. Routes are only needed for blocks it cannot see directly."
       },
-      "debrief": "A route is a signpost to the next router. Point one the wrong way and a packet can go in circles."
+      "debrief": "A route now leads to the market. Both directions of the exchange are visible on the map."
     },
     {
       "id": "ttl",
       "chapter": "town",
-      "title": "The hop that never ends",
-      "story": "Three routers form a triangle, and a misconfigured route makes the packet bounce between two of them. Every IP packet carries a hop limit (TTL) that drops by one at each router — the safety valve that stops exactly this kind of routing loop from lasting forever, and the trick traceroute runs on. Fix the route so the packet heads straight to the far router.",
+      "title": "A message going in circles",
+      "story": "The shop router and the middle router keep sending the same request back to each other. It never reaches the far server.",
       "concept": [
         "Every IP packet starts with a hop count (TTL).",
         "Each router it crosses subtracts one.",
         "At zero the packet is dropped — this is what stops a routing loop from lasting forever."
       ],
-      "task": "Point Router 1 straight at the far router instead of looping through the middle one, then run it.",
+      "task": "Read the forwarding entries. Break the cycle before the request runs out of hops.",
       "ticks": 50,
       "nodes": [
         {"id": "pc", "kind": "host", "name": "Shop PC", "x": 120, "y": 300, "ip": "10.0.1.10/24", "gateway": "10.0.1.1", "ttl": 8},
@@ -602,19 +602,19 @@
         "answer": 0,
         "why": "The hop count is the safety net: a misconfigured loop still ends, because every router subtracts one and the packet dies at zero."
       },
-      "debrief": "You have moved a packet across town. Now make the delivery reliable."
+      "debrief": "The request has a path out of town. The repeated trip through the middle is over."
     },
     {
       "id": "point",
       "chapter": "town",
-      "title": "Point the way",
-      "story": "The shop pings a server two blocks over, a router at each end. Two things are unset: the PC doesn't know how to leave its own block, and the first router doesn't know where the far block is — together the two most common reasons a machine 'has no internet.' Set the hand-off and the signpost.",
+      "title": "Two missing settings",
+      "story": "The riverside server is online. The shop cannot reach it, and two devices have incomplete instructions.",
       "concept": [
         "A device reaches its own block directly; for anywhere else it hands the packet to its gateway, which must sit on its own block.",
         "A router forwards by its table: for each far-off block, the next router toward it.",
         "Set the hand-off and the signpost, and the packet finds its way."
       ],
-      "task": "Give the PC its gateway and point the first router toward the server's block, then run the ping.",
+      "task": "Examine the client and the near router separately. Repair the handoff and the onward route.",
       "ticks": 44,
       "nodes": [
         {"id": "pc", "kind": "host", "name": "Shop PC", "x": 130, "y": 300, "ip": "10.0.1.10/24"},
@@ -671,19 +671,19 @@
         "answer": 0,
         "why": "A router always knows the blocks it is wired to. Signposts (routes) are only for blocks it cannot see directly — like the near router needed for the server's block."
       },
-      "debrief": "A gateway gets a packet off its block; a signpost sends it the right way at each router. Now one router has to tell two roads apart."
+      "debrief": "The riverside answered. Both missing settings are now accounted for."
     },
     {
       "id": "roads",
       "chapter": "town",
-      "title": "Two roads out of town",
-      "story": "The junction router has two roads leaving it — one to the market block, one to the harbour block, each with its own server. The shop pings both, but the junction has no signposts, so neither ping knows which way to go. A real router's table is exactly this: for each destination network, which way out. Point each block down its own road.",
+      "title": "Market or harbor",
+      "story": "The shop sends receipts to the market and orders to the harbor. One junction serves both, but its signs are missing.",
       "concept": [
         "A routing table is a list of signposts: for each destination block, which road leads there.",
         "Point a block down the wrong road and the packet reaches a router that cannot deliver it — and it is dropped.",
         "Each block needs its own correct signpost."
       ],
-      "task": "Point each block down its own road — market to the market router, harbour to the harbour router — then run both pings.",
+      "task": "Inspect each destination network. Give the junction a separate forwarding decision for each one.",
       "ticks": 44,
       "nodes": [
         {"id": "pc", "kind": "host", "name": "Shop PC", "x": 120, "y": 300, "ip": "10.0.1.10/24", "gateway": "10.0.1.1"},
@@ -748,19 +748,19 @@
         "answer": 0,
         "why": "A router only knows the blocks it is wired to and the signposts it was given. Sent the wrong way, a packet reaches a router that cannot deliver it, and there the journey ends."
       },
-      "debrief": "A routing table is just a set of correct signposts, one per destination. For the last trip, you'll set a whole chain of them — and keep the packet alive long enough to arrive."
+      "debrief": "Both neighborhoods answered. No message took the wrong road."
     },
     {
       "id": "across",
       "chapter": "town",
-      "title": "Across town",
-      "story": "The longest trip yet — from the shop to a server three routers away, right across town, the way a packet crosses the real internet through router after router. Every router in the chain needs the right signpost, and this packet is leaving with only enough hop-life for two routers, not three. Trace the whole path and give it the life to finish.",
+      "title": "The far-side delivery",
+      "story": "The final shipment report must cross the entire city before the market opens. Three routers stand between the shop and the archive.",
       "concept": [
         "A packet crosses one router per hop, and every router subtracts one from its hop count (TTL); at zero it is dropped, so a long trip needs enough hops of life to begin with.",
         "Every router along the way needs a signpost toward the destination — one missing or wrong signpost strands the packet.",
         "Set the whole chain, and give the packet the life to reach the end."
       ],
-      "task": "Give the PC's packets enough hops to survive the trip, and point both near routers toward the server's block. Then run the ping.",
+      "task": "Trace the complete route there and back. Make the forwarding entries and hop limit consistent with that path.",
       "ticks": 60,
       "nodes": [
         {"id": "pc", "kind": "host", "name": "Shop PC", "x": 110, "y": 300, "ip": "10.0.1.10/24", "gateway": "10.0.1.1", "ttl": 2},
@@ -832,19 +832,19 @@
         "answer": 0,
         "why": "The hop count is a safety limit, not an address. Each of the three routers decrements it; start with only two and the packet dies in transit, however perfect the routes are."
       },
-      "debrief": "A full routing table, hop by hop, with enough life to arrive — that is how a packet crosses a real network of networks. Next: making the delivery reliable, not just possible."
+      "debrief": "The archive confirmed the report. The city route is ready for heavier work."
     },
     {
       "id": "arp",
       "chapter": "wires",
-      "title": "Who has that address?",
-      "story": "The shop PC knows the printer's IP, but to put a frame on the wire it also needs the printer's hardware (MAC) address. So it broadcasts a question to the whole block — 'who has this IP?' — and only the owner answers. That is ARP, and it runs constantly and invisibly on every network you use.",
+      "title": "An unknown neighbor",
+      "story": "The shop knows the printer’s IP address. Its address cache is empty, so the first frame cannot be prepared yet.",
       "concept": [
         "A frame is addressed by MAC, not by IP.",
         "ARP finds the MAC for an IP: a broadcast asks everyone on the block.",
         "Only the device that owns that IP answers."
       ],
-      "task": "Ask for the printer's address, then run it.",
+      "task": "Inspect the cache and the devices on this block. Prepare a neighbor query, then trace the response.",
       "ticks": 20,
       "nodes": [
         {"id": "pc", "kind": "host", "name": "Shop PC", "x": 180, "y": 300, "ip": "10.0.0.10/24"},
@@ -887,19 +887,19 @@
         "answer": 0,
         "why": "A broadcast reaches all, but only the owner of that address recognises it and sends its MAC back."
       },
-      "debrief": "Now the PC can reach the server's door. Opening a conversation takes three steps."
+      "debrief": "The printer was identified. The computer has the local address it needed."
     },
     {
       "id": "handshake",
       "chapter": "wires",
-      "title": "The three-way handshake",
-      "story": "Before a browser can load a page or an app can send data, TCP opens the connection with three messages: the client's SYN, the server's SYN-ACK, and the client's ACK. Get the three steps right and the connection opens; get one wrong and nothing connects at all. Set the first message and the third's acknowledgement.",
+      "title": "Open the service desk",
+      "story": "The city help desk is online, but its client has not opened a connection. The first attempt is incomplete.",
       "concept": [
         "SYN says 'let's talk, my number is x'.",
         "SYN-ACK says 'alright, my number is y, and I heard your x'.",
         "The ACK must acknowledge the server's number: y plus one."
       ],
-      "task": "Set the first message and the third message's acknowledgement, then run it.",
+      "task": "Inspect the endpoint ports and sequence cards. Arrange the opening exchange before sending it.",
       "ticks": 40,
       "nodes": [
         {"id": "pc", "kind": "host", "name": "Shop PC", "x": 180, "y": 300, "ip": "10.0.0.10/24"},
@@ -951,19 +951,19 @@
         "answer": 0,
         "why": "TCP acknowledges by naming the next sequence number it wants, so hearing y means asking for y + 1."
       },
-      "debrief": "The connection is open. The last challenge is finishing a transfer when the line drops frames."
+      "debrief": "The connection is open. The client can now ask for the service record."
     },
     {
       "id": "transfer",
       "chapter": "wires",
-      "title": "Finish the transfer",
-      "story": "The PC is downloading a six-part file, but the line drops a frame now and then — like any real connection over a busy or distant link. TCP keeps several parts in flight and, when an acknowledgement runs late, resends from the first one still unconfirmed. Choose a window and a timeout that get all six parts across.",
+      "title": "A missing page",
+      "story": "The shop needs a six-part document. The line drops an occasional frame, and the file never arrives in one uninterrupted run.",
       "concept": [
         "A window is how many segments may be unacknowledged at once.",
         "A timeout resends from the first one still unacknowledged (go-back-N).",
         "The receiver only accepts segments in order and acknowledges the run it has."
       ],
-      "task": "Choose a window and a timeout that get all six parts across, then run it.",
+      "task": "Inspect the loss trace. Predict which parts the teaching sender will resend, then choose a transfer plan.",
       "ticks": 120,
       "seed": 3,
       "nodes": [
@@ -1017,19 +1017,19 @@
         "answer": 0,
         "why": "Go-back-N resends everything from the oldest unacknowledged segment onward, since the receiver dropped the ones that arrived out of order."
       },
-      "debrief": "You have carried data from a single wire to a reliable stream across town. That is TCP/IP."
+      "debrief": "The document arrived intact. The delivery record shows the cost of the lost parts."
     },
     {
       "id": "window",
       "chapter": "wires",
-      "title": "Tune the window",
-      "story": "A customer downloads an eight-part catalogue over a line that drops a frame now and then. One part at a time is painfully slow; firing all eight means re-sending a whole pile whenever one goes missing. Every real TCP connection is tuning this same balance between speed and waste — find the window and timeout that finish in time.",
+      "title": "The catalogue download",
+      "story": "The market catalogue is larger than the last document. Sending one piece at a time is slow, and sending too much makes every loss expensive.",
       "concept": [
         "The window is how many parts may be in flight before any are acknowledged — a bigger window keeps the line busier.",
         "On a loss, go-back-N resends everything from the oldest unacknowledged part, so too large a window wastes effort when the link is lossy.",
         "The timeout must be long enough not to resend a part that was only delayed, short enough to recover quickly when one is truly lost."
       ],
-      "task": "Choose a window and a timeout that get all eight parts across within the time limit, then run it.",
+      "task": "Study the baseline trace. Choose a window and timeout, and state what you expect to change.",
       "ticks": 160,
       "seed": 3,
       "nodes": [
@@ -1083,19 +1083,19 @@
         "answer": 0,
         "why": "A window keeps the line busy, but on a lossy link every loss forces a resend of the whole run behind it. The sweet spot keeps the pipe full without making each loss expensive."
       },
-      "debrief": "Window and timeout together decide how fast — and how wastefully — a transfer copes with loss. Next, open the connection the data rides on, over a longer path."
+      "debrief": "The catalogue reached the shop. The record shows how much work the line repeated."
     },
     {
       "id": "connect",
       "chapter": "wires",
-      "title": "Open across town",
-      "story": "The customer's browser opens a connection to a web server on another block, through a router in between. The three-way handshake works identically across networks — that is the whole point of TCP being end-to-end — as long as it is aimed at the right server and the steps are right. Aim it and set the steps.",
+      "title": "A connection across town",
+      "story": "The customer’s browser needs the city service desk. A router sits between them, but the conversation still has two endpoints.",
       "concept": [
         "A connection opens with three messages: the client's SYN, the server's SYN-ACK, and the client's ACK.",
         "The acknowledgement names the next number expected — one past what was heard.",
         "None of this changes across a router: the handshake is end to end, so it only needs the right destination and the right steps."
       ],
-      "task": "Aim the connection at the web server and set the first and third messages, then run it.",
+      "task": "Trace the packet through the router and build the client-server opening exchange.",
       "ticks": 50,
       "nodes": [
         {"id": "pc", "kind": "host", "name": "Customer PC", "x": 140, "y": 300, "ip": "10.0.1.10/24", "gateway": "10.0.1.1"},
@@ -1159,19 +1159,19 @@
         "answer": 0,
         "why": "Routers forward packets; they do not take part in the connection. The handshake is strictly between the two ends, so crossing a network changes nothing about it."
       },
-      "debrief": "A connection opens the same across town as across the room. For the last test, carry a real transfer over that distance — on a line that loses frames."
+      "debrief": "The page returned across town. The router forwarded it without joining the conversation."
     },
     {
       "id": "reliable",
       "chapter": "wires",
-      "title": "Reliable across town",
-      "story": "The final delivery: an eight-part file from a server three blocks away, over a last stretch that keeps dropping frames — the real-world mix of routing and an unreliable link that every download faces. Point the packets the right way, and tune the transfer so it finishes in time without drowning the lossy link in re-sends.",
+      "title": "The final report",
+      "story": "The market closes in an hour. The last report is eight parts long, and the line beyond the bridge is unreliable.",
       "concept": [
         "Reliability and routing work together: the route decides where the parts go, the window and timeout decide how well they survive a lossy link.",
         "A missing signpost strands the transfer no matter how well it is tuned.",
         "Over a lossy link, the window must be large enough to keep moving but small enough that each loss is cheap to recover."
       ],
-      "task": "Point the first router toward the server, then choose a window and timeout that finish the transfer in time. Run it.",
+      "task": "Trace the forwarding path, then plan the transfer. Both decisions must work together.",
       "ticks": 200,
       "seed": 3,
       "nodes": [
@@ -1241,19 +1241,19 @@
         "answer": 0,
         "why": "Routing is about reachability, reliability is about coping with loss. Get the signpost wrong and nothing arrives; get the window wrong and it arrives too slowly. A real transfer needs both."
       },
-      "debrief": "Routed across three blocks and tuned to survive a lossy link, your file arrived whole and in order. That is the internet doing its everyday job."
+      "debrief": "The full report reached the market. The town is ready for the night."
     },
     {
       "id": "flood",
       "chapter": "storm",
-      "title": "The server that could not keep up",
-      "story": "Five machines across town all hit one little shop server at the same moment. They funnel through a single street switch, and the one cable from that switch to the server carries just one frame at a time. Watch the pile-up: this is how a server gets overwhelmed when demand outruns its weakest link — the plain mechanism behind a denial-of-service. Nothing to change here; just watch.",
+      "title": "The night market crowd",
+      "story": "The night market opens. Five places send legitimate requests to one small server at once. The server link is the busiest part of the city.",
       "concept": [
         "Every link carries only so many frames per tick, and every device can hold only so many waiting in line before it must drop the next one.",
         "When requests arrive faster than the server's link can carry them, the queue fills and the extra requests are thrown away — lost, not served.",
         "That is what a denial-of-service attack abuses: not a clever trick, just more requests than the target can answer. The defence is more capacity, or turning the flood away before it reaches the server — rate limits and filtering further out."
       ],
-      "task": "Run it and watch. Count the ✕ drops piling up where the switch meets the server — that one cable is the bottleneck.",
+      "task": "Inspect the queue, predict where requests will wait, then watch the rush. Record what the bottleneck did.",
       "ticks": 16,
       "seed": 1,
       "nodes": [
@@ -1296,7 +1296,7 @@
         "answer": 0,
         "why": "No address is wrong and nothing is broken. The server's one link has a fixed capacity; five senders at once exceed it, the switch's queue for that cable fills, and every frame past the limit is dropped. More senders would only drop more — which is exactly how a flood denies service."
       },
-      "debrief": "A single server behind a single link can always be swamped by enough senders. That is why real services spread load across many machines and push filtering and rate limits out toward the edge, so a flood is turned away before it reaches the one cable that cannot grow."
+      "debrief": "The rush is over. Some requests were served, and some were lost. The log shows where capacity ran out."
     }
   ]
 }

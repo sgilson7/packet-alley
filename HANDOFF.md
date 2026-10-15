@@ -57,9 +57,27 @@ examples — are built.
 | `./scripts/check.sh` final local run | BUILDER CHECK PASSED: browser check in Chromium, Firefox and WebKit |
 | `./scripts/check.sh` after the advanced-mission tier + map zoom | BUILDER CHECK PASSED in Chromium, Firefox and WebKit (19-level campaign probe green; zoom verified by screenshot at 3×) |
 | `./scripts/check.sh` after v2 (edit on the map, curved cables, wider palette, rewritten prose) | BUILDER CHECK PASSED in Chromium, Firefox and WebKit; campaign green (choices unchanged); the browser check now drives the on-map pointing gesture (SECOND-ORDER rows 20–23) |
+| `./scripts/check.sh` after the curriculum content rewrite (verbatim story/task/debrief for all 19 levels, chapter openings, textbook-sourced device blurbs) | BUILDER CHECK PASSED in Chromium, Firefox and WebKit; `cargo test -p pa_core` green; campaign choices unchanged; `python3 packet_alley_curriculum_packet/scripts/validate_packet.py` passes the answer-leak lint |
 | CI on `main` (Chromium) | check: success, deploy: success |
 | `BUILDER_ORIGIN=https://sgilson7.github.io/packet-alley tests/browser/check.py` | PASSED in Chromium against the live site |
 | Website `make check`, `make packet`, `make gate`, `make deploy` | all passed; the listing is live and filed as a classroom tool |
+
+## The curriculum packet (Sam's `packet_alley_curriculum_packet`)
+
+An evidence-first redesign handoff. **Phase 1, the content layer, is applied and
+deployed:** every level's title, story, task and debrief is the packet's verbatim
+copy, the chapter intros are its openings, and the hub/switch/router inspectors
+now quote the open textbook (CC BY-SA 3.0, attributed in `LICENSES.md` and
+`data/textbook_extracts.json`). Data only; the deterministic engine, the pinned
+campaign choices and the quizzes are untouched. See `SECOND-ORDER.md` rows 24–25.
+
+**Phase 2 is gated and NOT built** (the packet's Stage 9 / R9 say not to
+self-authorize it, and ask for professor review): the typed
+Inspect→Predict→Configure→Commit→Simulate→Debrief core state machine,
+prediction-gated scoring with per-case practice variants, the four replayable
+demonstration scenes, the quiz→prediction change, the textbook concept panel and
+new property tests. Contracts for it are in `packet_alley_curriculum_packet/`.
+See `SECOND-ORDER.md` row 26.
 
 ## Waiting on the peer / Sam
 

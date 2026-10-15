@@ -1,6 +1,6 @@
 {
   "title": "Packet Alley",
-  "tagline": "Move packets through a city's networks.",
+  "tagline": "Keep a city connected. See what each packet does.",
 
   "menu_play": "Play",
   "menu_how": "How to read the map",
@@ -60,9 +60,9 @@
   "about_host": "A computer on the network. It sends and receives packets, and it has one IP address.",
   "about_printer": "A printer. On the network it behaves like any other computer with one address.",
   "about_server": "A server. It waits for connections and answers requests, such as a web page.",
-  "about_hub": "A hub. It copies every frame it receives out of every other port, so everyone hears everything and two senders at once collide.",
-  "about_switch": "A switch. It learns which device is on each port and sends each frame only out of the port it belongs on.",
-  "about_router": "A router. It joins blocks together and forwards packets between them using its routing table.",
+  "about_hub": "A hub is thus a physical layer relay that receives an electrical signal on one of its interfaces, regenerates the signal and transmits it over all its other interfaces. (Computer Networking, Bonaventure — CC BY-SA 3.0)",
+  "about_switch": "An Ethernet switch understands the format of the Ethernet frames and can selectively forward frames over each interface. For this, each Ethernet switch maintains a MAC address table. The pseudo-code below details how an Ethernet switch forwards Ethernet frames. It first updates its MAC address table with the source address of the frame. (Computer Networking, Bonaventure — CC BY-SA 3.0)",
+  "about_router": "With the datagram organization, routers use hop-by-hop forwarding. This means that when a router receives a packet that is not destined to itself, it looks up the destination address of the packet in its forwarding table. (Computer Networking, Bonaventure — CC BY-SA 3.0)",
 
   "pkt_data": "D", "pkt_data_name": "Data (UDP)",
   "pkt_ping": "P", "pkt_ping_name": "Ping request",
