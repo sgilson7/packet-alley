@@ -90,6 +90,10 @@ pub enum Claim {
     NotDelivered { app: String },
     /// A TCP connection opens and the server answers the request.
     Served { app: String },
+    /// A request gets a reply back (ping, ARP).
+    Replies { app: String },
+    /// A whole file (go-back-N bulk transfer) arrives complete.
+    Transferred { app: String },
     /// This specific device is the one that receives the delivery.
     DeliveredTo { node: String },
     /// A frame is dropped or collides at this device.

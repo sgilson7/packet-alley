@@ -331,7 +331,11 @@ fn check_claim(l: &Level, claim: &Claim) -> Result<(), String> {
         }
     };
     match claim {
-        Claim::Delivered { app: a } | Claim::NotDelivered { app: a } | Claim::Served { app: a } => app(a),
+        Claim::Delivered { app: a }
+        | Claim::NotDelivered { app: a }
+        | Claim::Served { app: a }
+        | Claim::Replies { app: a }
+        | Claim::Transferred { app: a } => app(a),
         Claim::DeliveredTo { node: n }
         | Claim::FailsAt { node: n }
         | Claim::ExpiresAt { node: n }
@@ -421,6 +425,8 @@ pub fn graded(l: &Level, claim: &Claim, rec: &Record) -> bool {
         Claim::Delivered { app } => s.delivered[app_index(l, app)] >= 1,
         Claim::NotDelivered { app } => s.delivered[app_index(l, app)] == 0,
         Claim::Served { app } => s.served[app_index(l, app)],
+        Claim::Replies { app } => s.replies[app_index(l, app)] >= 1,
+        Claim::Transferred { app } => s.transferred[app_index(l, app)],
         Claim::DeliveredTo { node } => at(node, &|e| e.key == "ev_delivered"),
         Claim::FailsAt { node } => at(node, &|e| e.fx == "drop" || e.fx == "collision"),
         Claim::ExpiresAt { node } => at(node, &|e| e.key == "ev_ttl"),

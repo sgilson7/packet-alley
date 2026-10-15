@@ -165,7 +165,13 @@
         "answer": 0,
         "why": "Because a switch forwards each frame to just the right port, two conversations can cross it at once without meeting."
       },
-      "debrief": "The totals arrived. The owner has a working shop and a reason for the change."
+      "debrief": "The totals arrived. The owner has a working shop and a reason for the change.",
+      "evidence": ["dev", "srv"]
+,
+      "predict": {"prompt": "When both tills send at once, what happens?", "options": [
+        {"label": "Both totals arrive with no collision", "claim": {"kind": "no_loss"}},
+        {"label": "They collide and some are lost", "claim": {"kind": "fails_at", "node": "dev"}}
+      ]}
     },
     {
       "id": "loop",
@@ -221,7 +227,13 @@
         "answer": 0,
         "why": "A frame on a loop has nothing to kill it — unlike an IP packet, a frame has no hop count — so it multiplies until something blocks a path."
       },
-      "debrief": "The repeated traffic stopped. One route remains open to the printer."
+      "debrief": "The repeated traffic stopped. One route remains open to the printer.",
+      "evidence": ["prn", "sw2"]
+,
+      "predict": {"prompt": "Once you block one path, how does the job reach the printer?", "options": [
+        {"label": "It arrives cleanly, no repeats", "claim": {"kind": "no_loss"}},
+        {"label": "The printer is flooded with copies", "claim": {"kind": "fails_at", "node": "prn"}}
+      ]}
     },
     {
       "id": "crowd",
@@ -298,7 +310,13 @@
         "answer": 0,
         "why": "Every machine on a hub shares the one wire, so the more of them there are, the more often two talk at once and collide. A switch is what lets a crowd grow."
       },
-      "debrief": "Every register reported its sales. There is enough room to serve the queue."
+      "debrief": "Every register reported its sales. There is enough room to serve the queue.",
+      "evidence": ["box1", "box2", "srv"]
+,
+      "predict": {"prompt": "With the right devices in place, do all registers report?", "options": [
+        {"label": "Yes — every sale arrives, nothing collides", "claim": {"kind": "no_loss"}},
+        {"label": "They still collide on the shared boxes", "claim": {"kind": "fails_at", "node": "box1"}}
+      ]}
     },
     {
       "id": "backbone",
@@ -367,7 +385,13 @@
         "answer": 0,
         "why": "A loop needs no partner to run away: one unbroken loop lets a frame copy itself without end. Every redundant link is its own loop to break."
       },
-      "debrief": "The backbone is stable. The backup cables are still there, ready for a failed primary link."
+      "debrief": "The backbone is stable. The backup cables are still there, ready for a failed primary link.",
+      "evidence": ["prn", "sw2"]
+,
+      "predict": {"prompt": "Once the loops are cut, how does the job travel?", "options": [
+        {"label": "One clean path to the printer", "claim": {"kind": "no_loss"}},
+        {"label": "It storms around the backbone", "claim": {"kind": "fails_at", "node": "prn"}}
+      ]}
     },
     {
       "id": "floor",
@@ -455,7 +479,13 @@
         "answer": 0,
         "why": "They solve different faults: a hub causes collisions because its machines share one wire, and an open loop causes a storm because a frame can circle forever. A healthy segment has neither."
       },
-      "debrief": "The new floor is ready. You can hear the printers working above the shop."
+      "debrief": "The new floor is ready. You can hear the printers working above the shop.",
+      "evidence": ["srv", "b1", "b3"]
+,
+      "predict": {"prompt": "With the floor commissioned, do all desks reach the server?", "options": [
+        {"label": "Yes — every desk served, nothing lost", "claim": {"kind": "no_loss"}},
+        {"label": "Some desks collide or are dropped", "claim": {"kind": "fails_at", "node": "srv"}}
+      ]}
     },
     {
       "id": "gateway",
@@ -509,7 +539,13 @@
         "answer": 0,
         "why": "To reach anywhere else the PC first has to deliver the packet to the router, and it can only do that on the block they share."
       },
-      "debrief": "The reply came back across the street. The client can reach the other block."
+      "debrief": "The reply came back across the street. The client can reach the other block.",
+      "evidence": ["r", "srv"]
+,
+      "predict": {"prompt": "With a gateway set, does the ping get a reply?", "options": [
+        {"label": "Yes — the reply comes back across the street", "claim": {"kind": "replies", "app": "ping"}},
+        {"label": "No — it is dropped at the router", "claim": {"kind": "fails_at", "node": "r"}}
+      ]}
     },
     {
       "id": "route",
@@ -567,7 +603,13 @@
         "answer": 0,
         "why": "A router always knows the blocks it is directly attached to. Routes are only needed for blocks it cannot see directly."
       },
-      "debrief": "A route now leads to the market. Both directions of the exchange are visible on the map."
+      "debrief": "A route now leads to the market. Both directions of the exchange are visible on the map.",
+      "evidence": ["r1", "srv"]
+,
+      "predict": {"prompt": "With the route added, does the ping reach the market and back?", "options": [
+        {"label": "Yes — both directions complete", "claim": {"kind": "replies", "app": "ping"}},
+        {"label": "The near router has nowhere to send it", "claim": {"kind": "fails_at", "node": "r1"}}
+      ]}
     },
     {
       "id": "ttl",
@@ -629,7 +671,13 @@
         "answer": 0,
         "why": "The hop count is the safety net: a misconfigured loop still ends, because every router subtracts one and the packet dies at zero."
       },
-      "debrief": "The request has a path out of town. The repeated trip through the middle is over."
+      "debrief": "The request has a path out of town. The repeated trip through the middle is over.",
+      "evidence": ["r1", "r2"]
+,
+      "predict": {"prompt": "Where does the looping request end up?", "options": [
+        {"label": "It escapes the loop and reaches the server", "claim": {"kind": "replies", "app": "ping"}},
+        {"label": "It runs out of hops between the routers", "claim": {"kind": "expires_at", "node": "r2"}}
+      ]}
     },
     {
       "id": "point",
@@ -698,7 +746,13 @@
         "answer": 0,
         "why": "A router always knows the blocks it is wired to. Signposts (routes) are only for blocks it cannot see directly — like the near router needed for the server's block."
       },
-      "debrief": "The riverside answered. Both missing settings are now accounted for."
+      "debrief": "The riverside answered. Both missing settings are now accounted for.",
+      "evidence": ["pc", "r1"]
+,
+      "predict": {"prompt": "With both settings fixed, does the riverside answer?", "options": [
+        {"label": "Yes — the reply returns", "claim": {"kind": "replies", "app": "ping"}},
+        {"label": "The packet stops at the first router", "claim": {"kind": "fails_at", "node": "r1"}}
+      ]}
     },
     {
       "id": "roads",
@@ -775,7 +829,13 @@
         "answer": 0,
         "why": "A router only knows the blocks it is wired to and the signposts it was given. Sent the wrong way, a packet reaches a router that cannot deliver it, and there the journey ends."
       },
-      "debrief": "Both neighborhoods answered. No message took the wrong road."
+      "debrief": "Both neighborhoods answered. No message took the wrong road.",
+      "evidence": ["r1", "sb", "sc"]
+,
+      "predict": {"prompt": "With both roads signed, do the market and harbour both reply?", "options": [
+        {"label": "Yes — each message takes its own road", "claim": {"kind": "replies", "app": "pm"}},
+        {"label": "One road is missing and a reply never comes", "claim": {"kind": "fails_at", "node": "r1"}}
+      ]}
     },
     {
       "id": "across",
@@ -859,7 +919,13 @@
         "answer": 0,
         "why": "The hop count is a safety limit, not an address. Each of the three routers decrements it; start with only two and the packet dies in transit, however perfect the routes are."
       },
-      "debrief": "The archive confirmed the report. The city route is ready for heavier work."
+      "debrief": "The archive confirmed the report. The city route is ready for heavier work.",
+      "evidence": ["r1", "r2", "srv"]
+,
+      "predict": {"prompt": "With the routes and hop limit set, does it cross town and back?", "options": [
+        {"label": "Yes — it survives every hop", "claim": {"kind": "replies", "app": "ping"}},
+        {"label": "It runs out of hops on the way", "claim": {"kind": "expires_at", "node": "r3"}}
+      ]}
     },
     {
       "id": "arp",
@@ -914,7 +980,13 @@
         "answer": 0,
         "why": "A broadcast reaches all, but only the owner of that address recognises it and sends its MAC back."
       },
-      "debrief": "The printer was identified. The computer has the local address it needed."
+      "debrief": "The printer was identified. The computer has the local address it needed.",
+      "evidence": ["prn", "pc2"]
+,
+      "predict": {"prompt": "When the computer asks for the printer's address, who answers?", "options": [
+        {"label": "The printer replies with its address", "claim": {"kind": "replies", "app": "ask"}},
+        {"label": "No one answers the question", "claim": {"kind": "not_delivered", "app": "ask"}}
+      ]}
     },
     {
       "id": "handshake",
@@ -978,7 +1050,13 @@
         "answer": 0,
         "why": "TCP acknowledges by naming the next sequence number it wants, so hearing y means asking for y + 1."
       },
-      "debrief": "The connection is open. The client can now ask for the service record."
+      "debrief": "The connection is open. The client can now ask for the service record.",
+      "evidence": ["pc", "srv"]
+,
+      "predict": {"prompt": "With the right SYN and ACK, does the connection open?", "options": [
+        {"label": "Yes — the handshake completes and the page returns", "claim": {"kind": "served", "app": "conn"}},
+        {"label": "The server resets the connection", "claim": {"kind": "not_delivered", "app": "conn"}}
+      ]}
     },
     {
       "id": "transfer",
@@ -1044,7 +1122,13 @@
         "answer": 0,
         "why": "Go-back-N resends everything from the oldest unacknowledged segment onward, since the receiver dropped the ones that arrived out of order."
       },
-      "debrief": "The document arrived intact. The delivery record shows the cost of the lost parts."
+      "debrief": "The document arrived intact. The delivery record shows the cost of the lost parts.",
+      "evidence": ["srv", "sw"]
+,
+      "predict": {"prompt": "With this window and timeout, does the file arrive complete?", "options": [
+        {"label": "Yes — every part arrives, with some resends", "claim": {"kind": "transferred", "app": "dl"}},
+        {"label": "It never finishes the whole file", "claim": {"kind": "not_delivered", "app": "dl"}}
+      ]}
     },
     {
       "id": "window",
@@ -1110,7 +1194,13 @@
         "answer": 0,
         "why": "A window keeps the line busy, but on a lossy link every loss forces a resend of the whole run behind it. The sweet spot keeps the pipe full without making each loss expensive."
       },
-      "debrief": "The catalogue reached the shop. The record shows how much work the line repeated."
+      "debrief": "The catalogue reached the shop. The record shows how much work the line repeated.",
+      "evidence": ["srv", "sw"]
+,
+      "predict": {"prompt": "With your window and timeout, does the catalogue arrive complete?", "options": [
+        {"label": "Yes — the whole catalogue arrives", "claim": {"kind": "transferred", "app": "dl"}},
+        {"label": "It stalls and never completes", "claim": {"kind": "not_delivered", "app": "dl"}}
+      ]}
     },
     {
       "id": "connect",
@@ -1186,7 +1276,13 @@
         "answer": 0,
         "why": "Routers forward packets; they do not take part in the connection. The handshake is strictly between the two ends, so crossing a network changes nothing about it."
       },
-      "debrief": "The page returned across town. The router forwarded it without joining the conversation."
+      "debrief": "The page returned across town. The router forwarded it without joining the conversation.",
+      "evidence": ["pc", "srv"]
+,
+      "predict": {"prompt": "With the destination and handshake set, does the page return across town?", "options": [
+        {"label": "Yes — the connection opens through the router", "claim": {"kind": "served", "app": "conn"}},
+        {"label": "The connection is reset", "claim": {"kind": "not_delivered", "app": "conn"}}
+      ]}
     },
     {
       "id": "reliable",
@@ -1268,7 +1364,13 @@
         "answer": 0,
         "why": "Routing is about reachability, reliability is about coping with loss. Get the signpost wrong and nothing arrives; get the window wrong and it arrives too slowly. A real transfer needs both."
       },
-      "debrief": "The full report reached the market. The town is ready for the night."
+      "debrief": "The full report reached the market. The town is ready for the night.",
+      "evidence": ["r1", "srv"]
+,
+      "predict": {"prompt": "With the route and transfer plan set, does the full report arrive?", "options": [
+        {"label": "Yes — the whole report arrives over the lossy line", "claim": {"kind": "transferred", "app": "dl"}},
+        {"label": "It never completes before the deadline", "claim": {"kind": "not_delivered", "app": "dl"}}
+      ]}
     },
     {
       "id": "flood",
@@ -1323,7 +1425,13 @@
         "answer": 0,
         "why": "No address is wrong and nothing is broken. The server's one link has a fixed capacity; five senders at once exceed it, the switch's queue for that cable fills, and every frame past the limit is dropped. More senders would only drop more — which is exactly how a flood denies service."
       },
-      "debrief": "The rush is over. Some requests were served, and some were lost. The log shows where capacity ran out."
+      "debrief": "The rush is over. Some requests were served, and some were lost. The log shows where capacity ran out.",
+      "evidence": ["sw", "srv"]
+,
+      "predict": {"prompt": "What happens at the server's link during the rush?", "options": [
+        {"label": "It fills and sheds the extra requests", "claim": {"kind": "queue_full", "node": "sw"}},
+        {"label": "Every request is served", "claim": {"kind": "no_loss"}}
+      ]}
     },
     {
       "id": "demo_block", "chapter": "block", "scene": true,

@@ -162,23 +162,39 @@ fn a_practice_variant_changes_the_numbers_and_awards_nothing() {
 }
 
 #[test]
-fn an_unmigrated_level_keeps_its_quiz_and_bonus_layout() {
-    // A level with no `predict` block plays exactly as before: the quiz is
-    // offered on a pass and the bonus takes the third star.
-    let shipped = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data/levels.json");
-    let levels = fs::read_to_string(&shipped).unwrap();
-    let mut g = Game::new(&levels, &copy(), "").expect("shipped data loads");
+fn a_level_without_a_prediction_keeps_its_quiz_and_bonus_layout() {
+    // The evidence-first flow is opt-in per level: a level with no `predict`
+    // block plays exactly as before — the quiz is offered on a pass, the bonus
+    // takes the third star, and the run reports no prediction. (All shipped
+    // levels are migrated now, so this guards the fallback with a custom one.)
+    let plain = r#"{
+      "chapters":[{"id":"block","title":"B","layer":"L","blurb":"b","backdrop":"block"}],
+      "levels":[{
+        "id":"plain","chapter":"block","title":"Plain","story":"s","concept":["c"],"task":"t","ticks":20,
+        "nodes":[
+          {"id":"pc","kind":"host","name":"PC","x":180,"y":300,"ip":"10.0.0.10/24"},
+          {"id":"sw","kind":"switch","name":"SW","x":500,"y":300},
+          {"id":"prn","kind":"printer","name":"PRN","x":820,"y":300,"ip":"10.0.0.20/24"}],
+        "links":[{"id":"a","a":"pc","b":"sw"},{"id":"b","a":"sw","b":"prn"}],
+        "apps":[{"id":"order","kind":"udp","from":"pc","to":"10.0.0.10","at":1,"count":1,"every":3,"label":"order"}],
+        "edits":[{"id":"dest","prompt":"Where?","target":{"app":"order","field":"to"},
+                  "options":[{"label":"itself","value":"10.0.0.10"},{"label":"printer","value":"10.0.0.20"}],"start":0}],
+        "goal":[{"kind":"delivered","app":"order","n":1,"text":"delivered"}],
+        "bonus":{"kind":"no_drops","text":"no loss"},
+        "quiz":{"question":"q","options":["a","b"],"answer":0,"why":"w"},
+        "debrief":"d"
+      }]}"#;
+    let mut g = Game::new(plain, &copy(), "").expect("plain level loads");
     g.set_teacher(true);
-    // "hub" is not migrated to the evidence-first flow yet.
-    g.open("hub").unwrap();
+    g.open("plain").unwrap();
     g.choose(0, 1).unwrap();
     let out = g.run().unwrap();
     assert!(has(&out, "\"passed\":true"));
     assert!(
         has(&out, "\"quiz\":{"),
-        "an unmigrated level still shows its quiz"
+        "a level with no prediction still shows its quiz"
     );
-    assert!(has(&out, "\"predict\":null"), "and has no prediction");
+    assert!(has(&out, "\"predict\":null"), "and reports no prediction");
 }
 
 #[test]

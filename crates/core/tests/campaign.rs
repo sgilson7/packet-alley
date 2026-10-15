@@ -59,6 +59,23 @@ fn correct() -> Vec<(&'static str, Vec<usize>)> {
 fn predict_of(id: &str) -> Option<(&'static str, usize)> {
     match id {
         "address" => Some(("prn", 0)),
+        "hub" => Some(("dev", 0)),
+        "loop" => Some(("prn", 0)),
+        "crowd" => Some(("box1", 0)),
+        "backbone" => Some(("prn", 0)),
+        "floor" => Some(("srv", 0)),
+        "gateway" => Some(("r", 0)),
+        "route" => Some(("r1", 0)),
+        "ttl" => Some(("r1", 0)),
+        "point" => Some(("pc", 0)),
+        "roads" => Some(("r1", 0)),
+        "across" => Some(("r1", 0)),
+        "arp" => Some(("prn", 0)),
+        "handshake" => Some(("pc", 0)),
+        "transfer" => Some(("srv", 0)),
+        "window" => Some(("srv", 0)),
+        "connect" => Some(("pc", 0)),
+        "reliable" => Some(("r1", 0)),
         _ => None,
     }
 }
@@ -119,6 +136,9 @@ fn the_explainer_passes_by_being_watched_and_its_quiz_scores() {
     let mut g = game();
     g.set_teacher(true);
     g.open("flood").expect("open flood");
+    // flood is migrated to the evidence-first flow: inspect, then predict.
+    g.inspect("sw").expect("inspect flood switch");
+    g.predict(0).expect("predict flood");
     let out = g.run().expect("run flood");
     println!("flood: {}", if passed(&out) { "PASS" } else { "FAIL" });
     assert!(passed(&out), "the explainer should pass just by running: {out}");
@@ -129,9 +149,11 @@ fn the_explainer_passes_by_being_watched_and_its_quiz_scores() {
         !out.contains("\"0 frames were lost.\""),
         "the flood should drop frames, but none were lost: {out}"
     );
-    // The quiz answer is option 0.
-    assert!(g.answer(1).unwrap().contains("\"correct\":false"));
-    assert!(g.answer(0).unwrap().contains("\"correct\":true"));
+    // The prediction (the link fills and sheds requests) is graded right.
+    assert!(
+        out.contains("\"right\":true"),
+        "the flood prediction should be right: {out}"
+    );
 }
 
 #[test]
