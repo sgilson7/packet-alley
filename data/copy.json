@@ -279,5 +279,6 @@
   "err_build_obstacle": "You cannot put a machine on a wall or a counter.",
   "err_build_too_long": "That cable would be longer than the reel allows.",
   "err_build_wired": "Those two are already joined by a cable.",
+  "err_build_crosses": "A cable cannot run through the kitchen — route it around.",
   "err_load": "The game data could not be loaded."
 }

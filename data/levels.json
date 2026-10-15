@@ -1684,7 +1684,7 @@
         "A switch sends a frame out the one port its destination is on — the table has to say which.",
         "Cable costs money and a reel only runs so far, so where a switch sits changes the bill."
       ],
-      "task": "Place a switch, run the cables, give each register an address on the shop's block, and fill the switch's table so all three registers reach the back-room server — for as little as you can spend.",
+      "task": "Place your switches, run the cables, give each register an address on the shop's block, and fill each switch's table so all three registers reach the back-room server — for as little as you can spend. Cable cannot run through the kitchen, so one switch in the middle will not reach everyone: route around it.",
       "ticks": 40,
       "nodes": [
         {"id": "reg1", "kind": "host", "name": "Front register", "x": 120, "y": 110},
@@ -1706,18 +1706,18 @@
       ],
       "bonus": {"kind": "no_drops", "text": "No frame is dropped on the way."},
       "quiz": {"question": "—", "options": ["ok"], "answer": 0, "why": ""},
-      "debrief": "Every register reached the back-room server across one switched block — and you set the whole shop up for the least cable you could run.",
+      "debrief": "Every register reached the back-room server across your switched block — routed around the kitchen with the least cable you could run. Two switches near the counters beat one marooned in the middle.",
       "build": {
         "subnet": "10.0.0.0/24",
         "wire_cost": 1,
         "max_wire": 560,
         "costs": [{"kind": "server", "cost": 0}, {"kind": "host", "cost": 0}, {"kind": "switch", "cost": 90}],
-        "palette": [{"kind": "switch", "name": "Switch", "max": 3, "ports": 8}],
-        "obstacles": [{"x": 420, "y": 230, "w": 160, "h": 150, "label": "Kitchen"}],
+        "palette": [{"kind": "switch", "name": "Switch", "max": 4, "ports": 8}],
+        "obstacles": [{"x": 390, "y": 210, "w": 220, "h": 190, "label": "Kitchen"}],
         "needs_addr": ["reg1", "reg2", "reg3"],
         "addr_choices": ["10.0.0.11/24", "10.0.0.12/24", "10.0.0.13/24", "10.0.0.14/24", "10.0.1.50/24"],
-        "star_cost": [1793, 1825],
-        "gold_cost": 1776
+        "star_cost": [1823, 1916],
+        "gold_cost": 1697
       }
     }
   ]

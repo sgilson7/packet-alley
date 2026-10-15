@@ -1,9 +1,9 @@
 //! The end-of-zone "super" build levels: the student places machines, draws
-//! the cables, assigns the addresses and fills the switch table from scratch,
-//! under a cable budget. These tests drive the real shipped restaurant level
-//! (`newspot`) through the core exactly as the page would, and prove it can be
-//! solved, that the bill is what the geometry says, and that a wrong table or
-//! an off-block address is caught.
+//! the cables, assigns the addresses and fills the switch tables from scratch,
+//! under a cable budget — and a cable may not run through the kitchen, so one
+//! switch in the middle cannot reach everyone. These tests drive the real
+//! shipped restaurant level (`newspot`) through the core exactly as the page
+//! would.
 
 use std::fs;
 use std::path::PathBuf;
@@ -28,118 +28,114 @@ fn has(j: &str, needle: &str) -> bool {
     j.contains(needle)
 }
 
-/// Places one switch below the kitchen, wires the four machines to it in a
-/// star, addresses the three registers, and fills the switch table.
-fn solve(g: &mut Game) -> String {
-    g.place("switch", 500, 420).expect("place the switch");
-    // the switch is the only placed machine, so its id is m1
-    for other in ["srv", "reg1", "reg2", "reg3"] {
-        g.wire("m1", other)
-            .unwrap_or_else(|e| panic!("wire m1-{other}: {e}"));
+/// Two switches above the kitchen, each by one pair of counters, joined to each
+/// other: m1 by the left registers, m2 by the bar and the server. Every cable
+/// routes around the kitchen. This is a near-optimal (gold) layout.
+fn two_switch(g: &mut Game) {
+    g.place("switch", 260, 150).expect("place switch 1"); // m1
+    g.place("switch", 720, 150).expect("place switch 2"); // m2
+    for (a, b) in [
+        ("m1", "reg1"),
+        ("m1", "reg2"),
+        ("m1", "m2"),
+        ("m2", "srv"),
+        ("m2", "reg3"),
+    ] {
+        g.wire(a, b).unwrap_or_else(|e| panic!("wire {a}-{b}: {e}"));
     }
     g.set_addr("reg1", "10.0.0.11/24").unwrap();
     g.set_addr("reg2", "10.0.0.12/24").unwrap();
     g.set_addr("reg3", "10.0.0.13/24").unwrap();
-    // in a star every destination is the neighbour on its own cable
-    for dst in ["srv", "reg1", "reg2", "reg3"] {
-        g.set_port("m1", dst, dst)
-            .unwrap_or_else(|e| panic!("table row {dst}: {e}"));
+    // m1 reaches the left registers directly, the rest across the link to m2.
+    for (dst, via) in [("reg1", "reg1"), ("reg2", "reg2"), ("srv", "m2"), ("reg3", "m2")] {
+        g.set_port("m1", dst, via).unwrap();
     }
-    g.run().expect("the restaurant runs")
+    // m2 reaches the server and the bar directly, the left registers via m1.
+    for (dst, via) in [("srv", "srv"), ("reg3", "reg3"), ("reg1", "m1"), ("reg2", "m1")] {
+        g.set_port("m2", dst, via).unwrap();
+    }
 }
 
 #[test]
 fn the_restaurant_can_be_wired_and_passes() {
     let mut g = game();
-    let out = solve(&mut g);
-    assert!(has(&out, "\"passed\":true"), "a correct build delivers: {out}");
-    // every register got its approval back
+    two_switch(&mut g);
+    let out = g.run().expect("the restaurant runs");
+    assert!(
+        has(&out, "\"passed\":true"),
+        "a correct two-switch build delivers: {out}"
+    );
     assert!(has(&out, "\"met\":true"), "the goals are met: {out}");
 }
 
 #[test]
-fn the_bill_is_what_the_geometry_costs() {
+fn the_tight_layout_is_cheap_and_earns_the_gold() {
     let mut g = game();
-    // before any wiring: the three registers + server are bought, no cable yet.
-    let s0 = g.build_state();
-    assert!(has(&s0, "\"wire\":0"), "no cable laid yet: {s0}");
-    assert!(has(&s0, "\"machines\":0"), "the fixed machines are free: {s0}");
-    let out = solve(&mut g);
-    // only the placed switch costs (90); cable 475+490+388+368 = 1721.
+    two_switch(&mut g);
+    let out = g.run().expect("runs");
+    // two switches ($90 each) = $180; cable 145+376+460+145+376 = 1502.
+    assert!(has(&out, "\"machines\":180"), "two switches cost 180: {out}");
     assert!(
-        has(&out, "\"machines\":90"),
-        "only the switch costs, at 90: {out}"
+        has(&out, "\"wire\":1502"),
+        "the cable bill matches the routes: {out}"
     );
     assert!(
-        has(&out, "\"wire\":1721"),
-        "the cable bill matches the distances: {out}"
-    );
-    assert!(
-        has(&out, "\"total\":1811"),
+        has(&out, "\"total\":1682"),
         "the total is machines plus cable: {out}"
     );
-    // 1811 sits in the middle third (<= 1825 but > 1793): two stars, no gold.
-    assert!(
-        has(&out, "\"stars\":[true,true,false]"),
-        "a fair build earns two stars: {out}"
-    );
-    assert!(has(&out, "\"gold\":false"), "a fair build is not gold: {out}");
-}
-
-#[test]
-fn a_tight_placement_earns_three_stars_and_the_gold() {
-    // Tucked against the kitchen wall, near the geometric best the walls allow:
-    // the cheapest few per cent of builds, so every visible star and the hidden
-    // gold one.
-    let mut g = game();
-    g.place("switch", 416, 300).unwrap();
-    for other in ["srv", "reg1", "reg2", "reg3"] {
-        g.wire("m1", other).unwrap();
-    }
-    g.set_addr("reg1", "10.0.0.11/24").unwrap();
-    g.set_addr("reg2", "10.0.0.12/24").unwrap();
-    g.set_addr("reg3", "10.0.0.13/24").unwrap();
-    for dst in ["srv", "reg1", "reg2", "reg3"] {
-        g.set_port("m1", dst, dst).unwrap();
-    }
-    let out = g.run().unwrap();
-    assert!(has(&out, "\"passed\":true"), "the tight build delivers: {out}");
     assert!(
         has(&out, "\"stars\":[true,true,true]"),
         "a tight build earns every visible star: {out}"
     );
+    assert!(has(&out, "\"gold\":true"), "and the hidden gold star: {out}");
+}
+
+#[test]
+fn a_single_central_switch_cannot_reach_both_sides() {
+    // One switch cannot serve everyone: a cable to the far side runs through the
+    // kitchen and is refused. (That no spot at all works is proven in the sweep.)
+    let mut g = game();
+    g.place("switch", 300, 300).unwrap();
+    g.wire("m1", "reg1").expect("the near register wires fine");
+    let err = g.wire("m1", "srv").unwrap_err();
     assert!(
-        has(&out, "\"gold\":true"),
-        "a tight build earns the gold star: {out}"
+        !err.is_empty(),
+        "a cable across the kitchen to the far side is refused"
+    );
+}
+
+#[test]
+fn a_cable_through_the_kitchen_is_refused() {
+    // A cable whose straight line crosses the kitchen is rejected — even when it
+    // is well within the reel, so this isolates the no-cross rule.
+    let mut g = game();
+    g.place("switch", 450, 150).unwrap(); // above the kitchen, within reach of reg2
+    let err = g.wire("m1", "reg2").unwrap_err();
+    assert!(
+        err.contains("kitchen"),
+        "a cable that cuts through the kitchen is refused: {err}"
+    );
+    // routing one around it (to a same-side register) is fine
+    assert!(
+        g.wire("m1", "reg1").is_ok(),
+        "a cable that clears the kitchen is allowed"
     );
 }
 
 #[test]
 fn a_cable_that_overshoots_the_reel_is_refused() {
     let mut g = game();
-    g.place("switch", 500, 420).unwrap();
-    // reg1 is far; a switch dropped in the far corner cannot reach it within 560
-    g.unplace("m1").unwrap();
-    g.place("switch", 860, 110).unwrap(); // in the back-room corner
-    let err = g.wire("m2", "reg2").unwrap_err();
-    assert!(!err.is_empty(), "an over-long cable is refused");
+    g.place("switch", 20, 300).unwrap();
+    // the far corner is well past the reel's reach
+    assert!(g.wire("m1", "reg3").is_err(), "an over-long cable is refused");
 }
 
 #[test]
 fn a_wrong_table_row_drops_the_frame() {
     let mut g = game();
-    g.place("switch", 500, 420).unwrap();
-    for other in ["srv", "reg1", "reg2", "reg3"] {
-        g.wire("m1", other).unwrap();
-    }
-    g.set_addr("reg1", "10.0.0.11/24").unwrap();
-    g.set_addr("reg2", "10.0.0.12/24").unwrap();
-    g.set_addr("reg3", "10.0.0.13/24").unwrap();
-    // point "to reach the server" at the wrong cable (toward reg1)
+    two_switch(&mut g);
+    // point m1's "to reach the server" at a left register instead of m2
     g.set_port("m1", "srv", "reg1").unwrap();
-    g.set_port("m1", "reg1", "reg1").unwrap();
-    g.set_port("m1", "reg2", "reg2").unwrap();
-    g.set_port("m1", "reg3", "reg3").unwrap();
     let out = g.run().unwrap();
     assert!(
         has(&out, "\"passed\":false"),
@@ -148,45 +144,42 @@ fn a_wrong_table_row_drops_the_frame() {
 }
 
 #[test]
+fn a_missing_table_row_drops_the_frame() {
+    let mut g = game();
+    two_switch(&mut g);
+    // clear m2's row for the server: the far requests can no longer be forwarded
+    g.set_port("m2", "srv", "").unwrap();
+    let out = g.run().unwrap();
+    assert!(
+        has(&out, "\"passed\":false"),
+        "an unfilled row leaves a machine unreachable: {out}"
+    );
+}
+
+#[test]
 fn an_off_block_address_cannot_reach_the_server() {
     let mut g = game();
-    g.place("switch", 500, 420).unwrap();
-    for other in ["srv", "reg1", "reg2", "reg3"] {
-        g.wire("m1", other).unwrap();
-    }
-    // reg1 is put on the wrong block
-    g.set_addr("reg1", "10.0.1.50/24").unwrap();
-    g.set_addr("reg2", "10.0.0.12/24").unwrap();
-    g.set_addr("reg3", "10.0.0.13/24").unwrap();
-    for dst in ["srv", "reg1", "reg2", "reg3"] {
-        g.set_port("m1", dst, dst).unwrap();
-    }
+    two_switch(&mut g);
+    g.set_addr("reg1", "10.0.1.50/24").unwrap(); // off the shop's block
     let out = g.run().unwrap();
     assert!(
         has(&out, "\"passed\":false"),
         "a register off the block cannot reach the server: {out}"
     );
 }
-// temp debug appended
+
 #[test]
-fn a_missing_table_row_drops_the_frame() {
-    // A build switch forwards only by its table and floods nothing, so a row
-    // the student never filled means that machine is unreachable.
+fn a_switch_inspector_shows_a_structured_mac_table_and_mac() {
+    // Every build machine reports its MAC in build_state, and a placed switch's
+    // inspector draws a titled MAC table.
     let mut g = game();
-    g.place("switch", 500, 420).unwrap();
-    for other in ["srv", "reg1", "reg2", "reg3"] {
-        g.wire("m1", other).unwrap();
-    }
-    g.set_addr("reg1", "10.0.0.11/24").unwrap();
-    g.set_addr("reg2", "10.0.0.12/24").unwrap();
-    g.set_addr("reg3", "10.0.0.13/24").unwrap();
-    // fill every row but the server's: the requests cannot be forwarded to it
-    g.set_port("m1", "reg1", "reg1").unwrap();
-    g.set_port("m1", "reg2", "reg2").unwrap();
-    g.set_port("m1", "reg3", "reg3").unwrap();
-    let out = g.run().unwrap();
+    two_switch(&mut g);
+    let st = g.build_state();
+    assert!(has(&st, "\"mac\":\"02:"), "machines report a MAC: {st}");
+    // node index 4 is the first placed switch (reg1..srv are 0..3)
+    let node = g.node(4, 0, 1).expect("the switch inspects");
     assert!(
-        out.contains("\"passed\":false"),
-        "an unfilled row leaves the server unreachable: {out}"
+        has(&node, "\"title\":\"MAC address table\""),
+        "the switch shows a MAC table: {node}"
     );
 }

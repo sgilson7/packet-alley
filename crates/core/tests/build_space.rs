@@ -1,10 +1,10 @@
 //! Permutation / property sweep over the restaurant build level, in the spirit
 //! of a survivors-like's "rig space": enumerate the networks a student could
 //! build, play each through the real deterministic engine, and hold every one
-//! to the same rules — nothing panics, a sound build always delivers, the
-//! star tiers really are the cost percentiles of all tried builds, an
-//! identical build is byte-identical twice, and no random sequence of edits
-//! can wedge the core. The point is that the level is not buggy for students.
+//! to the same rules. Because a cable may not cross the kitchen, no single
+//! switch can serve the whole shop — so the sweep proves that, exercises
+//! two-switch builds, checks the star tiers sit sensibly in the cost
+//! distribution, and hammers the API so nothing a student clicks can wedge it.
 
 use std::fs;
 use std::path::PathBuf;
@@ -12,17 +12,12 @@ use std::path::PathBuf;
 use pa_core::game::Game;
 
 const LEVEL: &str = "newspot";
-const OTHERS: [&str; 4] = ["srv", "reg1", "reg2", "reg3"];
-const ADDRS: [(&str, &str); 3] = [
-    ("reg1", "10.0.0.11/24"),
-    ("reg2", "10.0.0.12/24"),
-    ("reg3", "10.0.0.13/24"),
+const MACHINES: [(&str, i32, i32); 4] = [
+    ("reg1", 120, 110),
+    ("reg2", 120, 500),
+    ("reg3", 860, 500),
+    ("srv", 860, 110),
 ];
-// The floor the sweep walks, matching the map's coordinate range and the grid
-// the star tiers were derived from.
-const STEP: i32 = 20;
-const MAX_X: i32 = 1000;
-const MAX_Y: i32 = 600;
 
 fn data(name: &str) -> String {
     let p = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -37,7 +32,6 @@ fn game() -> Game {
     g
 }
 
-/// Reads the integer that follows `"key":` in a flat JSON string.
 fn num(json: &str, key: &str) -> Option<i64> {
     let at = json.find(&format!("\"{key}\":"))? + key.len() + 3;
     let rest = &json[at..];
@@ -47,137 +41,25 @@ fn num(json: &str, key: &str) -> Option<i64> {
     rest[..end].parse().ok()
 }
 
-/// Opens the level, places one switch at (x,y), wires it to the four fixed
-/// machines in a star, addresses the registers and fills the table correctly,
-/// then runs. `None` if the switch cannot be placed there or a cable overshoots
-/// the reel — i.e. not a buildable spot.
-fn solve_single(g: &mut Game, x: i32, y: i32) -> Option<String> {
-    g.open(LEVEL).expect("the restaurant opens");
-    if g.place("switch", x, y).is_err() {
-        return None;
+fn isqrt(v: i64) -> i64 {
+    if v <= 0 {
+        return 0;
     }
-    for other in OTHERS {
-        if g.wire("m1", other).is_err() {
-            return None;
-        }
+    let mut x = v;
+    let mut y = (x + 1) / 2;
+    while y < x {
+        x = y;
+        y = (x + v / x) / 2;
     }
-    for (host, ip) in ADDRS {
-        g.set_addr(host, ip).unwrap();
-    }
-    for dst in OTHERS {
-        g.set_port("m1", dst, dst).unwrap();
-    }
-    Some(g.run().expect("a configured build runs"))
+    x
 }
 
-/// Every single-switch placement on the floor grid that can be wired within
-/// the reel, as (x, y, total-cost), using the real engine's own cost.
-fn single_switch_builds(g: &mut Game) -> Vec<(i32, i32, i64)> {
-    let mut out = Vec::new();
-    let mut x = 0;
-    while x <= MAX_X {
-        let mut y = 0;
-        while y <= MAX_Y {
-            if let Some(run) = solve_single(g, x, y) {
-                out.push((x, y, num(&run, "total").expect("a build reports its cost")));
-            }
-            y += STEP;
-        }
-        x += STEP;
-    }
-    out
+fn clen(ax: i32, ay: i32, bx: i32, by: i32) -> i64 {
+    let (dx, dy) = ((ax - bx) as i64, (ay - by) as i64);
+    isqrt(dx * dx + dy * dy)
 }
 
-#[test]
-fn every_buildable_single_switch_spot_delivers() {
-    // Wherever the switch can legally sit and reach all four, a correct build
-    // must pass — no dead spot silently fails a student who did everything
-    // right, and nothing panics along the way.
-    let mut g = game();
-    let builds = single_switch_builds(&mut g);
-    assert!(
-        builds.len() > 100,
-        "the floor offers many buildable spots: {}",
-        builds.len()
-    );
-    for (x, y, _) in &builds {
-        let run = solve_single(&mut g, *x, *y).expect("a buildable spot");
-        assert!(
-            run.contains("\"passed\":true"),
-            "a correct build at ({x},{y}) should deliver: {run}"
-        );
-    }
-}
-
-#[test]
-fn the_star_tiers_are_the_cost_percentiles_of_every_tried_build() {
-    // The three visible stars and the hidden gold star are the 66th, 33rd and
-    // 5th percentiles of the cost of every buildable network — so the level's
-    // own thresholds have to equal those percentiles. If the geometry changes,
-    // this is what catches a stale threshold.
-    let mut g = game();
-    let mut costs: Vec<i64> = single_switch_builds(&mut g).iter().map(|b| b.2).collect();
-    costs.sort_unstable();
-    let n = costs.len();
-    let pct = |p: f64| costs[(p * (n as f64 - 1.0)) as usize];
-    let (p5, p33, p66) = (pct(0.05), pct(0.33), pct(0.66));
-
-    g.open(LEVEL).unwrap();
-    let st = g.build_state();
-    // star_cost is an array "[a,b]"; grab both numbers.
-    let arr_at = st.find("\"star_cost\":[").unwrap() + "\"star_cost\":[".len();
-    let arr = &st[arr_at..st[arr_at..].find(']').unwrap() + arr_at];
-    let mut it = arr.split(',').map(|s| s.trim().parse::<i64>().unwrap());
-    let s3 = it.next().unwrap();
-    let s2 = it.next().unwrap();
-    let gold = num(&st, "gold_cost").expect("gold_cost");
-    assert_eq!(
-        (gold, s3, s2),
-        (p5, p33, p66),
-        "tiers must match the distribution: p5={p5} p33={p33} p66={p66}"
-    );
-}
-
-#[test]
-fn the_tiers_actually_award_the_right_stars() {
-    // Spot-check that a build at each tier earns exactly the stars its cost
-    // deserves: a cheapest-few build is gold, a top-third build is three stars,
-    // a middling build two, and an expensive-but-working build just one.
-    // A fresh game each time, so the result's stars are this build's alone and
-    // not the accumulated best (stars only ever add up within one game).
-    let star_of = |x, y| {
-        let mut g = game();
-        let run = solve_single(&mut g, x, y).expect("a buildable spot");
-        let stars = run[run.find("\"stars\":[").unwrap() + 9..]
-            .split(']')
-            .next()
-            .unwrap()
-            .to_string();
-        let gold = run.contains("\"gold\":true");
-        (stars, gold, run.contains("\"passed\":true"))
-    };
-    // near-optimal against the kitchen wall → gold + three stars
-    let (s, gold, passed) = star_of(416, 300);
-    assert!(
-        passed && gold && s == "true,true,true",
-        "tight build: {s} gold={gold}"
-    );
-    // a plain central-ish build sits in the middle third → two stars, no gold
-    let (s, gold, _) = star_of(500, 420);
-    assert!(!gold && s == "true,true,false", "fair build: {s} gold={gold}");
-}
-
-#[test]
-fn an_identical_build_runs_byte_for_byte_the_same() {
-    // The engine is deterministic: the same build played twice gives the same
-    // result, down to the JSON.
-    let mut g = game();
-    let a = solve_single(&mut g, 500, 420).unwrap();
-    let b = solve_single(&mut g, 500, 420).unwrap();
-    assert_eq!(a, b, "the same build is deterministic");
-}
-
-// A small reproducible mixer (SplitMix64), so the fuzz below is deterministic.
+// A reproducible SplitMix64 mixer, so the sampling below is deterministic.
 struct Mix(u64);
 impl Mix {
     fn next(&mut self) -> u64 {
@@ -192,13 +74,214 @@ impl Mix {
     }
 }
 
+/// How many of the four machines a single switch at (x,y) can be wired to
+/// (each cable within the reel and clear of the kitchen).
+fn single_switch_reach(g: &mut Game, x: i32, y: i32) -> Option<usize> {
+    g.open(LEVEL).unwrap();
+    if g.place("switch", x, y).is_err() {
+        return None; // on a wall
+    }
+    Some(
+        MACHINES
+            .iter()
+            .filter(|(m, _, _)| g.wire("m1", m).is_ok())
+            .count(),
+    )
+}
+
+/// Builds a two-switch network: switches at s1 and s2, each machine wired to
+/// the nearer switch it can legally reach, the two switches joined. Returns the
+/// total cost if it is a valid, connected build; None otherwise.
+fn two_switch_cost(g: &mut Game, s1: (i32, i32), s2: (i32, i32)) -> Option<i64> {
+    g.open(LEVEL).unwrap();
+    if g.place("switch", s1.0, s1.1).is_err() || g.place("switch", s2.0, s2.1).is_err() {
+        return None;
+    }
+    if g.wire("m1", "m2").is_err() {
+        return None;
+    }
+    let (mut u1, mut u2) = (0, 0);
+    for (m, mx, my) in MACHINES {
+        let near_first = clen(mx, my, s1.0, s1.1) <= clen(mx, my, s2.0, s2.1);
+        let order = if near_first { ["m1", "m2"] } else { ["m2", "m1"] };
+        let mut wired = false;
+        for sw in order {
+            if g.wire(sw, m).is_ok() {
+                u1 += (sw == "m1") as i32;
+                u2 += (sw == "m2") as i32;
+                wired = true;
+                break;
+            }
+        }
+        if !wired {
+            return None;
+        }
+    }
+    if u1 == 0 || u2 == 0 {
+        return None;
+    }
+    num(&g.build_state(), "total")
+}
+
+#[test]
+fn no_single_switch_can_serve_the_whole_shop() {
+    // The heart of the level: because cable cannot cross the kitchen, there is
+    // nowhere to drop one switch that reaches all four machines. The student
+    // must use more than one.
+    let mut g = game();
+    let mut spots = 0;
+    let mut x = 0;
+    while x <= 1000 {
+        let mut y = 0;
+        while y <= 600 {
+            if let Some(reach) = single_switch_reach(&mut g, x, y) {
+                spots += 1;
+                assert!(
+                    reach < MACHINES.len(),
+                    "one switch at ({x},{y}) must not reach all four"
+                );
+            }
+            y += 20;
+        }
+        x += 20;
+    }
+    assert!(spots > 100, "the floor still offers many spots to try: {spots}");
+}
+
+#[test]
+fn a_two_switch_build_carries_the_whole_shop() {
+    // Two switches, each by a pair of counters, joined to each other: each
+    // forwards by its own table and sends far traffic across the link. A clean
+    // routed-around-the-kitchen layout delivers.
+    let mut g = game();
+    g.open(LEVEL).unwrap();
+    g.place("switch", 260, 150).unwrap(); // m1
+    g.place("switch", 720, 150).unwrap(); // m2
+    for (a, b) in [
+        ("m1", "reg1"),
+        ("m1", "reg2"),
+        ("m1", "m2"),
+        ("m2", "srv"),
+        ("m2", "reg3"),
+    ] {
+        g.wire(a, b).unwrap_or_else(|e| panic!("wire {a}-{b}: {e}"));
+    }
+    for (h, ip) in [
+        ("reg1", "10.0.0.11/24"),
+        ("reg2", "10.0.0.12/24"),
+        ("reg3", "10.0.0.13/24"),
+    ] {
+        g.set_addr(h, ip).unwrap();
+    }
+    for (dst, via) in [("reg1", "reg1"), ("reg2", "reg2"), ("srv", "m2"), ("reg3", "m2")] {
+        g.set_port("m1", dst, via).unwrap();
+    }
+    for (dst, via) in [("srv", "srv"), ("reg3", "reg3"), ("reg1", "m1"), ("reg2", "m1")] {
+        g.set_port("m2", dst, via).unwrap();
+    }
+    let run = g.run().unwrap();
+    assert!(
+        run.contains("\"passed\":true"),
+        "two switches carry the shop: {run}"
+    );
+}
+
+#[test]
+fn the_star_tiers_sit_sensibly_in_the_cost_distribution() {
+    // Sample many valid two-switch builds and check the tiers partition their
+    // cost the way the stars claim: the gold tier is the cheap tail, the third
+    // star the cheap third, the second star about two-thirds, all within range.
+    let mut g = game();
+    g.open(LEVEL).unwrap();
+    let st = g.build_state();
+    let arr_at = st.find("\"star_cost\":[").unwrap() + "\"star_cost\":[".len();
+    let arr = &st[arr_at..st[arr_at..].find(']').unwrap() + arr_at];
+    let mut it = arr.split(',').map(|s| s.trim().parse::<i64>().unwrap());
+    let s3 = it.next().unwrap();
+    let s2 = it.next().unwrap();
+    let gold = num(&st, "gold_cost").unwrap();
+
+    let mut m = Mix(0x5a17_c0de);
+    let mut costs: Vec<i64> = Vec::new();
+    let mut tries = 0;
+    while costs.len() < 300 && tries < 6000 {
+        tries += 1;
+        let p = |mix: &mut Mix| ((mix.upto(1040)) as i32 - 20, (mix.upto(640)) as i32 - 20);
+        let (s1, s2) = (p(&mut m), p(&mut m));
+        if let Some(c) = two_switch_cost(&mut g, s1, s2) {
+            costs.push(c);
+        }
+    }
+    costs.sort_unstable();
+    let n = costs.len() as f64;
+    assert!(
+        costs.len() > 150,
+        "enough valid builds were sampled: {}",
+        costs.len()
+    );
+    let frac = |thr: i64| costs.iter().filter(|&&c| c <= thr).count() as f64 / n;
+    assert!(
+        costs[0] <= gold,
+        "the cheapest sampled build reaches the gold tier"
+    );
+    assert!(
+        *costs.last().unwrap() >= s2,
+        "some sampled builds miss the second star"
+    );
+    assert!(frac(gold) <= 0.20, "gold is a cheap tail: {}", frac(gold));
+    assert!(
+        (0.15..=0.55).contains(&frac(s3)),
+        "third star is about a third: {}",
+        frac(s3)
+    );
+    assert!(
+        (0.45..=0.85).contains(&frac(s2)),
+        "second star is about two-thirds: {}",
+        frac(s2)
+    );
+}
+
+#[test]
+fn an_identical_build_runs_byte_for_byte_the_same() {
+    let once = || {
+        let mut g = game();
+        g.open(LEVEL).unwrap();
+        g.place("switch", 260, 150).unwrap();
+        g.place("switch", 720, 150).unwrap();
+        for (a, b) in [
+            ("m1", "reg1"),
+            ("m1", "reg2"),
+            ("m1", "m2"),
+            ("m2", "srv"),
+            ("m2", "reg3"),
+        ] {
+            g.wire(a, b).unwrap();
+        }
+        for (h, ip) in [
+            ("reg1", "10.0.0.11/24"),
+            ("reg2", "10.0.0.12/24"),
+            ("reg3", "10.0.0.13/24"),
+        ] {
+            g.set_addr(h, ip).unwrap();
+        }
+        for (dst, via) in [("reg1", "reg1"), ("reg2", "reg2"), ("srv", "m2"), ("reg3", "m2")] {
+            g.set_port("m1", dst, via).unwrap();
+        }
+        for (dst, via) in [("srv", "srv"), ("reg3", "reg3"), ("reg1", "m1"), ("reg2", "m1")] {
+            g.set_port("m2", dst, via).unwrap();
+        }
+        g.run().unwrap()
+    };
+    assert_eq!(once(), once(), "the same build is deterministic");
+}
+
 #[test]
 fn random_edit_sequences_never_wedge_the_core() {
-    // Hammer the build API with thousands of arbitrary edits across many
-    // seeds. Whatever the student clicks, every call returns valid JSON (an
-    // ok state or a refusal), the invariants hold (cost = machines + wire, no
-    // cable beats the reel, no more switches than the palette allows), and a
-    // run never panics.
+    // Hammer the build API with arbitrary edits across many seeds. Whatever the
+    // student clicks, every call returns valid JSON, the invariants hold (cost
+    // = machines + wire, no cable beats the reel — over-long and kitchen-
+    // crossing cables are refused — no more switches than the palette allows),
+    // and a run never panics.
     let max_wire: i64 = {
         let mut g = game();
         g.open(LEVEL).unwrap();
@@ -208,7 +291,7 @@ fn random_edit_sequences_never_wedge_the_core() {
     for seed in 0..40u64 {
         g.open(LEVEL).unwrap();
         let mut m = Mix(seed.wrapping_mul(0x1000_0001).wrapping_add(1));
-        let names = ["srv", "reg1", "reg2", "reg3", "m1", "m2", "m3"];
+        let names = ["srv", "reg1", "reg2", "reg3", "m1", "m2", "m3", "m4"];
         let ips = [
             "10.0.0.11/24",
             "10.0.0.12/24",
@@ -240,24 +323,22 @@ fn random_edit_sequences_never_wedge_the_core() {
                     let _ = g.set_addr(host, ip);
                 }
                 4 => {
-                    let sw = ["m1", "m2", "m3"][m.upto(3) as usize];
+                    let sw = ["m1", "m2", "m3", "m4"][m.upto(4) as usize];
                     let dst = names[m.upto(names.len() as u64) as usize];
                     let via = names[m.upto(names.len() as u64) as usize];
                     let _ = g.set_port(sw, dst, via);
                 }
                 _ => {
-                    let id = ["m1", "m2", "m3", "reg1"][m.upto(4) as usize];
+                    let id = ["m1", "m2", "m3", "m4", "reg1"][m.upto(5) as usize];
                     let _ = g.unplace(id);
                 }
             }
-            // The state is always well-formed and obeys the invariants.
             let st = g.build_state();
             assert!(st.contains("\"build\":true"), "state stays well-formed: {st}");
             let machines = num(&st, "machines").unwrap();
             let wire = num(&st, "wire").unwrap();
             let total = num(&st, "total").unwrap();
             assert_eq!(machines + wire, total, "cost is machines plus wire: {st}");
-            // every cable at or under the reel
             let mut rest = st.as_str();
             while let Some(p) = rest.find("\"len\":") {
                 rest = &rest[p + 6..];
@@ -265,17 +346,12 @@ fn random_edit_sequences_never_wedge_the_core() {
                 let len: i64 = rest[..end].parse().unwrap();
                 assert!(len <= max_wire, "no cable beats the reel: len={len} > {max_wire}");
             }
-            // never more than three switches (the palette's max)
             let switches = st.matches("\"kind\":\"switch\"").count();
             assert!(
-                switches <= 4,
+                switches <= 5,
                 "at most the palette max of switches (plus palette entry): {switches}"
             );
         }
-        // A run on whatever got built never panics. If the build is complete
-        // enough to assemble, it reports pass or fail; if a host is still
-        // unaddressed it is refused with a message — both are fine, neither
-        // wedges the core.
         match g.run() {
             Ok(run) => assert!(run.contains("\"passed\":"), "a run reports pass or fail: {run}"),
             Err(msg) => assert!(!msg.is_empty(), "a refusal carries a message"),
@@ -285,21 +361,33 @@ fn random_edit_sequences_never_wedge_the_core() {
 
 #[test]
 fn an_off_block_or_duplicate_address_cannot_deliver() {
-    // For each register in turn, putting it off the shop's block breaks its
-    // approval; so does giving two registers the same address.
-    let mut g = game();
     for bad in ["reg1", "reg2", "reg3"] {
+        let mut g = game();
         g.open(LEVEL).unwrap();
-        g.place("switch", 416, 300).unwrap();
-        for other in OTHERS {
-            g.wire("m1", other).unwrap();
+        g.place("switch", 260, 150).unwrap();
+        g.place("switch", 720, 150).unwrap();
+        for (a, b) in [
+            ("m1", "reg1"),
+            ("m1", "reg2"),
+            ("m1", "m2"),
+            ("m2", "srv"),
+            ("m2", "reg3"),
+        ] {
+            g.wire(a, b).unwrap();
         }
-        for (host, ip) in ADDRS {
-            let ip = if host == bad { "10.0.1.50/24" } else { ip };
-            g.set_addr(host, ip).unwrap();
+        for (h, ip) in [
+            ("reg1", "10.0.0.11/24"),
+            ("reg2", "10.0.0.12/24"),
+            ("reg3", "10.0.0.13/24"),
+        ] {
+            let ip = if h == bad { "10.0.1.50/24" } else { ip };
+            g.set_addr(h, ip).unwrap();
         }
-        for dst in OTHERS {
-            g.set_port("m1", dst, dst).unwrap();
+        for (dst, via) in [("reg1", "reg1"), ("reg2", "reg2"), ("srv", "m2"), ("reg3", "m2")] {
+            g.set_port("m1", dst, via).unwrap();
+        }
+        for (dst, via) in [("srv", "srv"), ("reg3", "reg3"), ("reg1", "m1"), ("reg2", "m1")] {
+            g.set_port("m2", dst, via).unwrap();
         }
         let run = g.run().unwrap();
         assert!(
@@ -307,68 +395,4 @@ fn an_off_block_or_duplicate_address_cannot_deliver() {
             "{bad} off the block must fail: {run}"
         );
     }
-}
-
-#[test]
-fn every_single_missing_table_row_fails() {
-    // A build switch forwards only by its table, so leaving out any one of the
-    // four rows leaves that machine unreachable and the level unsolved.
-    let mut g = game();
-    for missing in OTHERS {
-        g.open(LEVEL).unwrap();
-        g.place("switch", 416, 300).unwrap();
-        for other in OTHERS {
-            g.wire("m1", other).unwrap();
-        }
-        for (host, ip) in ADDRS {
-            g.set_addr(host, ip).unwrap();
-        }
-        for dst in OTHERS {
-            if dst != missing {
-                g.set_port("m1", dst, dst).unwrap();
-            }
-        }
-        let run = g.run().unwrap();
-        assert!(
-            run.contains("\"passed\":false"),
-            "missing the {missing} row must fail: {run}"
-        );
-    }
-}
-
-#[test]
-fn a_two_switch_build_also_delivers() {
-    // Two switches near the two clusters, joined by one cable, must carry the
-    // traffic across each other — each forwards by its own filled table, and a
-    // frame for a far machine is sent toward the other switch. Here it even
-    // beats a single central switch, which is a fair reward to discover.
-    let mut g = game();
-    g.open(LEVEL).unwrap();
-    g.place("switch", 300, 305).unwrap(); // m1, by the left-hand registers
-    g.place("switch", 600, 305).unwrap(); // m2, by the bar and the server
-    for (a, b) in [
-        ("m1", "reg1"),
-        ("m1", "reg2"),
-        ("m2", "reg3"),
-        ("m2", "srv"),
-        ("m1", "m2"),
-    ] {
-        g.wire(a, b).unwrap_or_else(|e| panic!("wire {a}-{b}: {e}"));
-    }
-    for (host, ip) in ADDRS {
-        g.set_addr(host, ip).unwrap();
-    }
-    // m1 reaches reg1/reg2 directly; everything else is across the link to m2.
-    for (dst, via) in [("reg1", "reg1"), ("reg2", "reg2"), ("srv", "m2"), ("reg3", "m2")] {
-        g.set_port("m1", dst, via).unwrap();
-    }
-    // m2 reaches reg3/srv directly; the two left registers are back across m1.
-    for (dst, via) in [("reg3", "reg3"), ("srv", "srv"), ("reg1", "m1"), ("reg2", "m1")] {
-        g.set_port("m2", dst, via).unwrap();
-    }
-    let run = g.run().unwrap();
-    assert!(
-        run.contains("\"passed\":true"),
-        "two switches carry the traffic across each other: {run}"
-    );
 }

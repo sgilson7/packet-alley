@@ -220,6 +220,7 @@ const OTHER_KEYS: &[&str] = &[
     "err_build_obstacle",
     "err_build_too_long",
     "err_build_wired",
+    "err_build_crosses",
 ];
 
 /// The action category a log line belongs to, so the page can filter the log
@@ -447,6 +448,42 @@ fn check_cond(l: &Level, c: &Cond) -> Result<(), String> {
 
 fn app_index(l: &Level, id: &str) -> usize {
     l.apps.iter().position(|a| a.id == id).unwrap_or(0)
+}
+
+/// Does the segment (ax,ay)-(bx,by) touch the axis-aligned obstacle rectangle?
+/// All integer: the cross product orders points around a turn, and two
+/// segments cross when each straddles the other (plus collinear-overlap cases).
+fn seg_hits_rect(ax: i32, ay: i32, bx: i32, by: i32, o: &level::Obstacle) -> bool {
+    let (ox, oy, rx, ry) = (o.x as i64, o.y as i64, (o.x + o.w) as i64, (o.y + o.h) as i64);
+    let inside = |x: i64, y: i64| x >= ox && x <= rx && y >= oy && y <= ry;
+    let (ax, ay, bx, by) = (ax as i64, ay as i64, bx as i64, by as i64);
+    if inside(ax, ay) || inside(bx, by) {
+        return true;
+    }
+    let orient =
+        |px: i64, py: i64, qx: i64, qy: i64, cx: i64, cy: i64| (qx - px) * (cy - py) - (qy - py) * (cx - px);
+    let on = |px: i64, py: i64, qx: i64, qy: i64, cx: i64, cy: i64| {
+        cx >= px.min(qx) && cx <= px.max(qx) && cy >= py.min(qy) && cy <= py.max(qy)
+    };
+    let cross = |cx: i64, cy: i64, dx: i64, dy: i64| {
+        let o1 = orient(ax, ay, bx, by, cx, cy);
+        let o2 = orient(ax, ay, bx, by, dx, dy);
+        let o3 = orient(cx, cy, dx, dy, ax, ay);
+        let o4 = orient(cx, cy, dx, dy, bx, by);
+        if (o1 > 0) != (o2 > 0) && (o3 > 0) != (o4 > 0) {
+            return true;
+        }
+        (o1 == 0 && on(ax, ay, bx, by, cx, cy))
+            || (o2 == 0 && on(ax, ay, bx, by, dx, dy))
+            || (o3 == 0 && on(cx, cy, dx, dy, ax, ay))
+            || (o4 == 0 && on(cx, cy, dx, dy, bx, by))
+    };
+    let c = [(ox, oy), (rx, oy), (rx, ry), (ox, ry)];
+    (0..c.len()).any(|i| {
+        let (cx, cy) = c[i];
+        let (dx, dy) = c[(i + 1) % c.len()];
+        cross(cx, cy, dx, dy)
+    })
 }
 
 /// Checks a build level's own rules: the subnet and every offered address
@@ -965,6 +1002,13 @@ impl Game {
             .any(|o| x >= o.x && x <= o.x + o.w && y >= o.y && y <= o.y + o.h)
     }
 
+    /// Whether the straight cable between two points runs into any fixture — a
+    /// cable may not cross the kitchen, which forces the layout around it. True
+    /// if the segment touches an obstacle's rectangle at all.
+    fn cable_blocked(def: &level::BuildDef, ax: i32, ay: i32, bx: i32, by: i32) -> bool {
+        def.obstacles.iter().any(|o| seg_hits_rect(ax, ay, bx, by, o))
+    }
+
     /// Places one machine from the palette at a point on the floor.
     pub fn place(&mut self, kind: &str, x: i32, y: i32) -> Result<String, String> {
         let def = self.build_def()?.clone();
@@ -1024,6 +1068,12 @@ impl Game {
         }
         if def.max_wire > 0 && self.cable_len(a, b) > def.max_wire {
             return Err(self.t("err_build_too_long"));
+        }
+        let ends = |id: &str| nodes.iter().find(|n| n.0 == id).map(|n| (n.3, n.4));
+        if let (Some((ax, ay)), Some((bx, by))) = (ends(a), ends(b)) {
+            if Self::cable_blocked(&def, ax, ay, bx, by) {
+                return Err(self.t("err_build_crosses"));
+            }
         }
         let play = self.play.as_mut().expect("level open");
         let st = play.build.as_mut().expect("build level");

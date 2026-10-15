@@ -130,8 +130,8 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
     <p><b>Place</b> machines from a palette · <b>wire</b> them cable by cable within a reel limit · <b>address</b> each machine on the one block · <b>fill</b> the switch's forwarding table. Each one is a real decision the engine then lives or dies by.</p>
   </div>
   <figure>
-    <img src="img/winning-run.gif" alt="A recording: opening the card-auth server to read its MAC and IP, then running a winning layout — ping requests cross the switch to the server and the replies come back, ending on a four-star gold result.">
-    <figcaption><b>A winning run, start to finish.</b> Reading a machine's MAC and address, then opening for business: the card-auth requests cross the switch to the server and the approvals come back, ending on the hidden gold star.</figcaption>
+    <img src="img/winning-run.gif" alt="A recording: reading a switch's MAC, then running a winning two-switch layout — ping requests cross the two switches to the server and the replies come back, ending on a four-star gold result.">
+    <figcaption><b>A winning run, start to finish.</b> Reading a machine's MAC and address, then opening for business: the card-auth requests cross the two switches to the back-room server and the approvals come back, ending on the hidden gold star.</figcaption>
   </figure>
 </section>
 
@@ -150,22 +150,22 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
     </li>
 
     <li class="step">
-      <h3>Place a switch</h3>
+      <h3>Place your switches</h3>
       <p class="what">action: pick Switch from the palette, click an open spot</p>
-      <p>A switch costs $90 and the palette says how many are left. Click it to arm it, then click the floor to set it down. Where it sits is the whole optimisation: the closer it is to the four machines, the less cable each run needs — but the geometric sweet spot in the middle is exactly where the kitchen is.</p>
+      <p>A switch costs $90 and the palette says how many are left. Click it to arm it, then click the floor to set it down. And one switch is never enough here: because cable cannot cross the kitchen, there is nowhere in the middle that reaches all four counters. The real planning is where to put <em>two</em> switches so they route around the kitchen for the least cable.</p>
       <figure>
-        <img src="img/03-switch-placed.png" alt="A single switch placed just below the kitchen box, labelled Switch 1, with the four machines still unwired around it.">
-        <figcaption><b>One switch down.</b> Placement is one click; dropping it on the kitchen is refused with a message. A second or third switch is allowed — sometimes two cheap ones near the clusters beat one in the middle.</figcaption>
+        <img src="img/03-switch-placed.png" alt="The first switch placed above the left registers, labelled Switch 1, with the kitchen box in the centre and the four machines still unwired.">
+        <figcaption><b>The first of two.</b> Placement is one click; dropping a switch on the kitchen is refused. One switch here is a dead end — you will add a second by the other pair of counters.</figcaption>
       </figure>
     </li>
 
     <li class="step">
       <h3>Run the cables</h3>
       <p class="what">action: turn on Draw a cable, click two machines</p>
-      <p>Each cable is clicked machine-to-machine and priced the instant it lands — the number on the line is its dollars. A cable longer than the reel allows is refused. The bill updates with every run, so the student sees a straight trade between a tidy layout and a sprawling one.</p>
+      <p>Each cable is clicked machine-to-machine and priced the instant it lands — the number on the line is its dollars. A cable longer than the reel <em>or one whose line would cut through the kitchen</em> is refused, so every run has to go around. The bill updates with each cable, a straight trade between a tidy layout and a sprawling one.</p>
       <figure>
-        <img src="img/04-wired.png" alt="The switch wired to all four machines in a star, each cable labelled with its cost: $350, $483, $356, $488. The brief shows the machines and the running bill.">
-        <figcaption><b>Four cables, four prices.</b> A star from the switch to each machine. The cable labels ($350–$488) are the live cost; the brief's bill adds them up under "Cable".</figcaption>
+        <img src="img/04-wired.png" alt="Two switches above the kitchen, each by a pair of counters and joined to each other; five cables route around the kitchen, each labelled with its cost.">
+        <figcaption><b>Five cables, routed around the kitchen.</b> Switch 1 by the left registers, Switch 2 by the server and the bar, a link between them along the top. Every cable clears the kitchen; the brief's bill adds them up under "Cable".</figcaption>
       </figure>
     </li>
 
@@ -194,7 +194,7 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
       <p class="what">action: run it on the real engine, watch the packets</p>
       <p>Each register sends a card-auth request to the server and waits for the approval to come back. The same deterministic simulation that runs every other level carries it, step by step, in the searchable log. If every register gets its reply, the shop is open.</p>
       <figure>
-        <img src="img/07-result-gold.png" alt="A result sheet reading Delivered!, four stars (three plus a gold one), Set up for $1,767, a note Hidden gold star — one of the cheapest shops anyone has wired, three green goals met, and the lesson recap.">
+        <img src="img/07-result-gold.png" alt="A result sheet reading Delivered!, four stars (three plus a gold one), Set up for $1,685, a note Hidden gold star — one of the cheapest shops anyone has wired, three green goals met, and the lesson recap.">
         <figcaption><b>A clean build.</b> Three stars for the cost tier, and the fourth — gold — for landing in the cheapest few per cent. The bill, the goals, and the lesson are all on the result.</figcaption>
       </figure>
     </li>
@@ -212,22 +212,22 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
 
 <section>
   <div class="section-head"><div class="eyebrow">Part 2</div><h2>How it's graded: stars from the cost of every build</h2></div>
-  <p>Passing is simple — all three registers get their approvals back. The stars are about money, and they're set against the <em>distribution</em> of every network a student could reasonably build, not against a hand-picked number. I enumerated every single-switch placement on the floor, priced each one through the engine's own cost, and read the percentiles off that distribution.</p>
+  <p>Passing is simple — all three registers get their approvals back. The stars are about money, and they're set against the <em>distribution</em> of every network a student could reasonably build, not against a hand-picked number. I sampled many valid two-switch layouts, priced each one through the engine's own cost, and read the percentiles off that distribution.</p>
   <div class="table-scroll">
     <table>
       <thead><tr><th>Stars</th><th>Among all buildable networks</th><th>Total at most</th></tr></thead>
       <tbody>
         <tr><td>★</td><td>it works at all</td><td class="num">— (any passing build)</td></tr>
-        <tr><td>★★</td><td>cheapest two-thirds (≤ 66th percentile)</td><td class="num">$1,825</td></tr>
-        <tr><td>★★★</td><td>cheapest third (≤ 33rd percentile)</td><td class="num">$1,793</td></tr>
-        <tr><td class="gold-cell">★★★★ gold</td><td class="gold-cell">cheapest ~5% (≤ 5th percentile) — hidden</td><td class="num gold-cell">$1,776</td></tr>
+        <tr><td>★★</td><td>cheapest two-thirds (≤ 66th percentile)</td><td class="num">$1,916</td></tr>
+        <tr><td>★★★</td><td>cheapest third (≤ 33rd percentile)</td><td class="num">$1,823</td></tr>
+        <tr><td class="gold-cell">★★★★ gold</td><td class="gold-cell">cheapest ~5% (≤ 5th percentile) — hidden</td><td class="num gold-cell">$1,697</td></tr>
       </tbody>
     </table>
   </div>
-  <p>The prices are meant to feel real and to keep the focus on the layout: the registers and the server are already yours, so they cost nothing to the bill; a small switch is $90, and cable is a dollar a unit. With the machines free, the stars reward exactly one thing — a short, clever run of cable (plus not buying a switch you didn't need).</p>
+  <p>The prices are meant to feel real and to keep the focus on the layout: the registers and the server are already yours, so they cost nothing to the bill; a small switch is $90, and cable is a dollar a unit. You have to buy at least two switches, so the stars reward placing them well — short cable runs that hug the counters and clear the kitchen, rather than a sprawling detour.</p>
   <div class="note gold">
     <strong>The kitchen is the whole puzzle</strong>
-    <p>The cheapest place for one switch is the geometric centre of the four machines — which sits dead inside the kitchen. So the true optimum is walled off, and the best a student can do is tuck the switch against a kitchen wall. That one obstacle turns "drop it in the middle" into an actual decision.</p>
+    <p>The kitchen sits in the centre and no cable may cross it, so there is no single spot that reaches all four counters — I sized and placed it so that is provably true (a test sweeps every spot and confirms none works). That forces the student past "one switch in the middle" into the real question: where do two switches go, and how do their cables route around, for the least money.</p>
   </div>
 </section>
 
@@ -251,8 +251,8 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
       <p class="verdict"><b>Rule</b>The address list includes an address on a different block. Choosing it is a clean, self-explaining failure — the register simply can't find the server — which teaches the one-subnet rule by letting the student break it.</p>
     </div></li>
     <li class="insight"><div class="num">5</div><div>
-      <h3>Clever can beat tidy</h3>
-      <p class="verdict"><b>Later</b>Two cheap switches near the two clusters can cost less than one central switch, and the engine forwards across them correctly. The current distribution only samples single-switch builds, so a two-switch find is simply rewarded as gold — a nice thing to discover. A future pass could fold multi-switch builds into the distribution.</p>
+      <h3>No cable through the kitchen</h3>
+      <p class="verdict"><b>Rule</b>A cable's straight line may not touch the kitchen rectangle (an integer segment-vs-rectangle test), and the kitchen is sized so no single switch can reach everyone around it. That is what lifts the level past "drop one switch" into planning two switches and their routes — and the engine forwards correctly across the link between them.</p>
     </div></li>
   </ol>
 </section>
@@ -261,8 +261,8 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
   <div class="section-head"><div class="eyebrow">Part 4</div><h2>How Builder carries it: the tests</h2></div>
   <p>The core owns every decision and does no I/O, so the whole level is testable headlessly — and because students will poke at it in ways I won't predict, the suite is a permutation sweep in the spirit of a survivors-like's "rig space": enumerate the networks a student could build, play each through the real engine, and hold every one to the same rules.</p>
   <ul>
-    <li><b>Every buildable spot delivers.</b> Every place a switch can legally sit and reach all four, wired and configured correctly, passes — no dead spot silently fails a student who did everything right, and nothing panics.</li>
-    <li><b>The tiers are the real percentiles.</b> The suite recomputes the cost distribution from the engine and asserts the level's thresholds equal the 5th/33rd/66th percentiles. A stale threshold fails the build.</li>
+    <li><b>No single switch can serve the shop.</b> The sweep walks every spot on the floor and confirms not one can reach all four counters without a cable crossing the kitchen — so the level really does demand more than one switch. A sound two-switch build then delivers, and nothing panics.</li>
+    <li><b>The tiers sit in the distribution.</b> The suite samples hundreds of valid two-switch builds, prices them through the engine, and checks the gold / three-star / two-star thresholds land in the cheap tail, the cheap third, and about two-thirds of that distribution. A badly-set threshold fails.</li>
     <li><b>Nothing wedges the core.</b> Thousands of random edit sequences across many deterministic seeds — place, wire, unwire, address, fill, remove — always return valid state, keep the invariants (bill = machines + cable, no cable beats the reel, no more switches than allowed), and never panic.</li>
     <li><b>The failure modes really fail.</b> An off-block or duplicate address can't deliver; every single missing table row leaves the server unreachable; a wrong row misdelivers. Each is its own test.</li>
     <li><b>It's deterministic, and it works across engines.</b> The same build runs byte-for-byte the same twice, and a full place-wire-address-fill-run flow passes in Chromium, Firefox and WebKit on every check.</li>
@@ -275,7 +275,7 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
   <ul>
     <li><b>Static switch vs. "switches learn."</b> The block zone teaches that a switch learns its table automatically; this level asks the student to fill a static one. It's a defensible deepening ("be the table"), and static entries are real, but it is a slight reframing — worth a read from Ally. Routers in later zones will use the same table-as-input mechanic more naturally.</li>
     <li><b>Placement is partial.</b> For this first MVP the endpoints are fixed and only the switch and cables are the student's. A fuller version could let the student place and even hand-connect everything on a blank floor.</li>
-    <li><b>The distribution is single-switch.</b> The star tiers are read from single-switch builds; a two-switch build that beats them is just rewarded as gold. Folding multi-switch networks into the distribution would make the tiers exact.</li>
+    <li><b>The distribution is sampled, not exhaustive.</b> The two-switch space is large, so the tiers are read from a deterministic sample of valid builds rather than an exhaustive enumeration. It's reproducible and the test checks the tiers partition it sensibly, but the exact percentiles could drift a little if the sampling changed.</li>
     <li><b>Supers sit outside the 57-star total for now.</b> Like the demonstration scenes, super levels are tracked but kept out of the headline star count until the whole set of zone finales is built.</li>
   </ul>
   <p>Next zones get their own super levels on the same bones: routers whose forwarding tables and signposts the student sets by hand, and a transport-layer build where the handshake and the windows are theirs to configure.</p>

@@ -154,18 +154,22 @@ def build_flow(page, check):
     check(page.locator("#l-build:not([hidden])").count() == 1, "the build panel is shown")
     check(images_loaded(page, "#map-wrap"), "the restaurant floor loaded")
 
-    # place one switch near the kitchen (the cheapest few per cent of builds)
+    # A cable cannot cross the kitchen, so one switch can't reach everyone — the
+    # student places two, one by each pair of counters, and joins them. (index 4
+    # is the first placed switch, "Switch 1"; index 5 is "Switch 2".)
     page.locator(".palette-item").first.click()
-    mapclick(page, 416, 300)
+    mapclick(page, 260, 150)
+    page.locator(".palette-item").first.click()
+    mapclick(page, 720, 150)
     page.wait_for_selector("#map .build-machine", timeout=5000)
-    check(page.locator(".build-machine").count() == 5, "the switch joins the four fixed machines")
+    check(page.locator(".build-machine").count() == 6, "two switches join the four fixed machines")
 
-    # draw a cable from the switch (index 4) to each of the four others
+    # draw the cables: m1 to the left registers and to m2; m2 to the server and bar
     page.locator(".build-tool").filter(has_text=re.compile("cable", re.I)).first.click()
-    for i in [3, 0, 1, 2]:
-        machine_img(page, 4).click()
-        machine_img(page, i).click()
-    check(page.locator(".build-cable").count() == 4, "four cables were run")
+    for a, b in [(4, 0), (4, 1), (4, 5), (5, 3), (5, 2)]:
+        machine_img(page, a).click()
+        machine_img(page, b).click()
+    check(page.locator(".build-cable").count() == 5, "five cables were run around the kitchen")
 
     # leave drawing mode; give each register an address
     page.locator(".build-tool").filter(has_text=re.compile("Drawing", re.I)).first.click()
@@ -176,14 +180,20 @@ def build_flow(page, check):
         page.keyboard.press("Escape")
         page.wait_for_selector("#chooser[hidden]", state="attached", timeout=5000)
 
-    # fill the switch's table: each machine is reached down its own cable
-    machine_img(page, 4).click()
-    page.wait_for_selector("#chooser .switch-table", timeout=5000)
-    rows = page.locator("#chooser .switch-table .build-select")
-    for i in range(rows.count()):
-        name = page.locator("#chooser .switch-table td.st-dst").nth(i).inner_text()
-        rows.nth(i).select_option(label=name)
-    page.keyboard.press("Escape")
+    # fill each switch's table: a machine on this switch's own cables is reached
+    # directly; anything on the far side goes across the link to the other switch.
+    local = {4: ["Front register", "Patio register"], 5: ["Card-auth server", "Bar register"]}
+    other = {4: "Switch 2", 5: "Switch 1"}
+    for sw in (4, 5):
+        machine_img(page, sw).click()
+        page.wait_for_selector("#chooser .switch-table", timeout=5000)
+        rows = page.locator("#chooser .switch-table .build-select")
+        for i in range(rows.count()):
+            name = page.locator("#chooser .switch-table td.st-dst").nth(i).inner_text()
+            via = name if name in local[sw] else other[sw]
+            rows.nth(i).select_option(label=via)
+        page.keyboard.press("Escape")
+        page.wait_for_selector("#chooser[hidden]", state="attached", timeout=5000)
 
     # open for business
     page.click("#run-btn")
