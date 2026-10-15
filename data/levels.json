@@ -266,9 +266,9 @@
           {"target": {"app": "job", "field": "to"}, "value": "10.0.7.20"}
         ]}
       ],
-      "predict": {"prompt": "Once you block one path, how does the job reach the printer?", "options": [
-        {"label": "It arrives cleanly, no repeats", "claim": {"kind": "no_loss"}},
-        {"label": "The printer is flooded with copies", "claim": {"kind": "fails_at", "node": "prn"}}
+      "predict": {"prompt": "When the job is sent, how does it reach the printer?", "options": [
+        {"label": "Once, by a single clean path", "claim": {"kind": "no_loss"}},
+        {"label": "Many times — a storm of copies", "claim": {"kind": "fails_at", "node": "prn"}}
       ]}
     },
     {
@@ -373,9 +373,9 @@
           {"target": {"app": "sd", "field": "to"}, "value": "10.0.7.30"}
         ]}
       ],
-      "predict": {"prompt": "With the right devices in place, do all registers report?", "options": [
-        {"label": "Yes — every sale arrives, nothing collides", "claim": {"kind": "no_loss"}},
-        {"label": "They still collide on the shared boxes", "claim": {"kind": "fails_at", "node": "box1"}}
+      "predict": {"prompt": "When all four registers send at once, what happens?", "options": [
+        {"label": "Every sale gets through, nothing collides", "claim": {"kind": "no_loss"}},
+        {"label": "They collide on the shared boxes", "claim": {"kind": "fails_at", "node": "box1"}}
       ]}
     },
     {
@@ -460,9 +460,9 @@
           {"target": {"app": "job", "field": "to"}, "value": "10.0.7.20"}
         ]}
       ],
-      "predict": {"prompt": "Once the loops are cut, how does the job travel?", "options": [
+      "predict": {"prompt": "When the job crosses the backbone, how does it travel?", "options": [
         {"label": "One clean path to the printer", "claim": {"kind": "no_loss"}},
-        {"label": "It storms around the backbone", "claim": {"kind": "fails_at", "node": "prn"}}
+        {"label": "It storms around the loops", "claim": {"kind": "fails_at", "node": "prn"}}
       ]}
     },
     {
@@ -574,8 +574,8 @@
           {"target": {"app": "s3", "field": "to"}, "value": "10.0.7.30"}
         ]}
       ],
-      "predict": {"prompt": "With the floor commissioned, do all desks reach the server?", "options": [
-        {"label": "Yes — every desk served, nothing lost", "claim": {"kind": "no_loss"}},
+      "predict": {"prompt": "When every desk sends, what reaches the server?", "options": [
+        {"label": "Every desk, with nothing lost", "claim": {"kind": "no_loss"}},
         {"label": "Some desks collide or are dropped", "claim": {"kind": "fails_at", "node": "srv"}}
       ]}
     },
@@ -634,9 +634,9 @@
       "debrief": "The reply came back across the street. The client can reach the other block.",
       "evidence": ["r", "srv"]
 ,
-      "predict": {"prompt": "With a gateway set, does the ping get a reply?", "options": [
-        {"label": "Yes — the reply comes back across the street", "claim": {"kind": "replies", "app": "ping"}},
-        {"label": "No — it is dropped at the router", "claim": {"kind": "fails_at", "node": "r"}}
+      "predict": {"prompt": "When the computer pings across the street, what happens?", "options": [
+        {"label": "A reply comes back", "claim": {"kind": "replies", "app": "ping"}},
+        {"label": "It is dropped at the router", "claim": {"kind": "fails_at", "node": "r"}}
       ]}
     },
     {
@@ -698,8 +698,8 @@
       "debrief": "A route now leads to the market. Both directions of the exchange are visible on the map.",
       "evidence": ["r1", "srv"]
 ,
-      "predict": {"prompt": "With the route added, does the ping reach the market and back?", "options": [
-        {"label": "Yes — both directions complete", "claim": {"kind": "replies", "app": "ping"}},
+      "predict": {"prompt": "When the shop pings the market, how far does it get?", "options": [
+        {"label": "All the way there and back", "claim": {"kind": "replies", "app": "ping"}},
         {"label": "The near router has nowhere to send it", "claim": {"kind": "fails_at", "node": "r1"}}
       ]}
     },
@@ -841,8 +841,8 @@
       "debrief": "The riverside answered. Both missing settings are now accounted for.",
       "evidence": ["pc", "r1"]
 ,
-      "predict": {"prompt": "With both settings fixed, does the riverside answer?", "options": [
-        {"label": "Yes — the reply returns", "claim": {"kind": "replies", "app": "ping"}},
+      "predict": {"prompt": "When the shop pings the riverside, what happens?", "options": [
+        {"label": "The reply returns", "claim": {"kind": "replies", "app": "ping"}},
         {"label": "The packet stops at the first router", "claim": {"kind": "fails_at", "node": "r1"}}
       ]}
     },
@@ -924,9 +924,9 @@
       "debrief": "Both neighborhoods answered. No message took the wrong road.",
       "evidence": ["r1", "sb", "sc"]
 ,
-      "predict": {"prompt": "With both roads signed, do the market and harbour both reply?", "options": [
-        {"label": "Yes — each message takes its own road", "claim": {"kind": "replies", "app": "pm"}},
-        {"label": "One road is missing and a reply never comes", "claim": {"kind": "fails_at", "node": "r1"}}
+      "predict": {"prompt": "Where do the receipts and the orders end up?", "options": [
+        {"label": "Each takes its own road and is answered", "claim": {"kind": "replies", "app": "pm"}},
+        {"label": "A road is missing and a reply never comes", "claim": {"kind": "fails_at", "node": "r1"}}
       ]}
     },
     {
@@ -1014,9 +1014,9 @@
       "debrief": "The archive confirmed the report. The city route is ready for heavier work.",
       "evidence": ["r1", "r2", "srv"]
 ,
-      "predict": {"prompt": "With the routes and hop limit set, does it cross town and back?", "options": [
-        {"label": "Yes — it survives every hop", "claim": {"kind": "replies", "app": "ping"}},
-        {"label": "It runs out of hops on the way", "claim": {"kind": "expires_at", "node": "r3"}}
+      "predict": {"prompt": "Does the report survive the trip across town?", "options": [
+        {"label": "Yes — it reaches the archive and returns", "claim": {"kind": "replies", "app": "ping"}},
+        {"label": "No — it runs out of hops on the way", "claim": {"kind": "expires_at", "node": "r3"}}
       ]}
     },
     {
@@ -1157,9 +1157,9 @@
           {"target": {"app": "conn", "field": "to"}, "value": "10.0.7.80"}
         ]}
       ],
-      "predict": {"prompt": "With the right SYN and ACK, does the connection open?", "options": [
-        {"label": "Yes — the handshake completes and the page returns", "claim": {"kind": "served", "app": "conn"}},
-        {"label": "The server resets the connection", "claim": {"kind": "not_delivered", "app": "conn"}}
+      "predict": {"prompt": "When the client tries to open the connection, what does the server do?", "options": [
+        {"label": "Completes the handshake and sends the page", "claim": {"kind": "served", "app": "conn"}},
+        {"label": "Resets the connection", "claim": {"kind": "not_delivered", "app": "conn"}}
       ]}
     },
     {
@@ -1242,8 +1242,8 @@
         ]}
       ],
       "note": "Simplified teaching model: this level models Go-Back-N retransmission, not TCP's full congestion control.",
-      "predict": {"prompt": "With this window and timeout, does the file arrive complete?", "options": [
-        {"label": "Yes — every part arrives, with some resends", "claim": {"kind": "transferred", "app": "dl"}},
+      "predict": {"prompt": "On this lossy line, how does the transfer end?", "options": [
+        {"label": "Every part arrives, with some resends", "claim": {"kind": "transferred", "app": "dl"}},
         {"label": "It never finishes the whole file", "claim": {"kind": "not_delivered", "app": "dl"}}
       ]}
     },
@@ -1327,8 +1327,8 @@
         ]}
       ],
       "note": "Simplified teaching model: this level models Go-Back-N retransmission, not TCP's full congestion control.",
-      "predict": {"prompt": "With your window and timeout, does the catalogue arrive complete?", "options": [
-        {"label": "Yes — the whole catalogue arrives", "claim": {"kind": "transferred", "app": "dl"}},
+      "predict": {"prompt": "Does the whole catalogue get through, and at what cost?", "options": [
+        {"label": "It all arrives, after repeating the lost parts", "claim": {"kind": "transferred", "app": "dl"}},
         {"label": "It stalls and never completes", "claim": {"kind": "not_delivered", "app": "dl"}}
       ]}
     },
@@ -1409,9 +1409,9 @@
       "debrief": "The page returned across town. The router forwarded it without joining the conversation.",
       "evidence": ["pc", "srv"]
 ,
-      "predict": {"prompt": "With the destination and handshake set, does the page return across town?", "options": [
-        {"label": "Yes — the connection opens through the router", "claim": {"kind": "served", "app": "conn"}},
-        {"label": "The connection is reset", "claim": {"kind": "not_delivered", "app": "conn"}}
+      "predict": {"prompt": "When the browser reaches across town, what does the server do?", "options": [
+        {"label": "Opens the connection and returns the page", "claim": {"kind": "served", "app": "conn"}},
+        {"label": "Resets the connection", "claim": {"kind": "not_delivered", "app": "conn"}}
       ]}
     },
     {
@@ -1498,9 +1498,9 @@
       "evidence": ["r1", "srv"]
 ,
       "note": "Simplified teaching model: this level models Go-Back-N retransmission, not TCP's full congestion control.",
-      "predict": {"prompt": "With the route and transfer plan set, does the full report arrive?", "options": [
-        {"label": "Yes — the whole report arrives over the lossy line", "claim": {"kind": "transferred", "app": "dl"}},
-        {"label": "It never completes before the deadline", "claim": {"kind": "not_delivered", "app": "dl"}}
+      "predict": {"prompt": "Over the lossy last mile, does the whole report arrive?", "options": [
+        {"label": "Yes — every part, with resends", "claim": {"kind": "transferred", "app": "dl"}},
+        {"label": "No — it never completes in time", "claim": {"kind": "not_delivered", "app": "dl"}}
       ]}
     },
     {
