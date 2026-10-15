@@ -238,6 +238,9 @@ pub struct Node {
     pub routes: Vec<(Cidr, Ip)>,
     pub blocked: Vec<bool>,
     pub ttl: u32,
+    /// A switch on a build level forwards only by the table the student filled
+    /// and does not learn, so the table the student wrote is what decides.
+    static_fwd: bool,
     mac_table: Vec<(u32, usize)>,
     outq: Vec<VecDeque<Frame>>,
     pending: Vec<(u32, usize, Frame)>,
@@ -375,6 +378,7 @@ impl Sim {
                 routes: Vec::new(),
                 blocked: Vec::new(),
                 ttl: if d.ttl == 0 { 64 } else { d.ttl },
+                static_fwd: d.static_fwd,
                 mac_table: Vec::new(),
                 outq: Vec::new(),
                 pending: Vec::new(),
@@ -426,6 +430,28 @@ impl Sim {
                 let p = parse_cidr(&r.prefix).ok_or_else(|| format!("{}: bad route {}", d.id, r.prefix))?;
                 let v = parse_ip(&r.via).ok_or_else(|| format!("{}: bad next hop {}", d.id, r.via))?;
                 nodes[i].routes.push((p.network(), v));
+            }
+            // A build-level switch is pre-loaded with the student's table: each
+            // hint names a machine and the neighbour the switch should send its
+            // frames toward. Resolve that neighbour to a port and the machine to
+            // its MAC, which is what the forwarding loop matches on.
+            for h in &d.mac_hints {
+                let dst = nodes
+                    .iter()
+                    .position(|o| o.id == h.dst)
+                    .ok_or_else(|| format!("{}: table names no machine {}", d.id, h.dst))?;
+                let via = nodes
+                    .iter()
+                    .position(|o| o.id == h.via)
+                    .ok_or_else(|| format!("{}: table names no machine {}", d.id, h.via))?;
+                let port = nodes[i].ports.iter().position(|&li| {
+                    let l = &links[li];
+                    let other = if l.a.0 == i { l.b.0 } else { l.a.0 };
+                    other == via
+                });
+                let port = port.ok_or_else(|| format!("{}: no cable toward {}", d.id, h.via))?;
+                let mac = nodes[dst].mac;
+                nodes[i].mac_table.push((mac, port));
             }
         }
         let mut apps = Vec::new();
@@ -874,17 +900,20 @@ impl Sim {
         if self.nodes[n].blocked[port] {
             return;
         }
-        let known = self.nodes[n].mac_table.iter().position(|e| e.0 == f.src_mac);
-        let args = vec![self.name(n), show_mac(f.src_mac), (port + 1).to_string()];
-        match known {
-            Some(i) if self.nodes[n].mac_table[i].1 == port => {}
-            Some(i) => {
-                self.nodes[n].mac_table[i].1 = port;
-                self.event(n, "ev_moved", args, "learn");
-            }
-            None => {
-                self.nodes[n].mac_table.push((f.src_mac, port));
-                self.event(n, "ev_learn", args, "learn");
+        // A build-level switch does not learn: the student's table decides.
+        if !self.nodes[n].static_fwd {
+            let known = self.nodes[n].mac_table.iter().position(|e| e.0 == f.src_mac);
+            let args = vec![self.name(n), show_mac(f.src_mac), (port + 1).to_string()];
+            match known {
+                Some(i) if self.nodes[n].mac_table[i].1 == port => {}
+                Some(i) => {
+                    self.nodes[n].mac_table[i].1 = port;
+                    self.event(n, "ev_moved", args, "learn");
+                }
+                None => {
+                    self.nodes[n].mac_table.push((f.src_mac, port));
+                    self.event(n, "ev_learn", args, "learn");
+                }
             }
         }
         let out = self.nodes[n]
@@ -895,6 +924,14 @@ impl Sim {
         match out {
             Some(p) if p == port => {}
             Some(p) => self.enqueue(n, p, f),
+            // A learning switch floods an unknown unicast so it still arrives.
+            // A build-level switch forwards only by the student's table, so an
+            // address the table does not cover is dropped — the table has to be
+            // right and complete. Broadcasts always flood.
+            None if self.nodes[n].static_fwd && f.dst_mac != BROADCAST_MAC => {
+                let args = vec![self.name(n), show_mac(f.dst_mac)];
+                self.event(n, "ev_no_entry", args, "drop");
+            }
             None => {
                 for p in self.flood_ports(n, port) {
                     self.enqueue(n, p, f.clone());

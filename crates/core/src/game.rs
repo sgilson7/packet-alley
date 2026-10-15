@@ -8,7 +8,7 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
-use crate::ip::{show_ip, show_mac, BROADCAST_MAC};
+use crate::ip::{parse_cidr, show_ip, show_mac, BROADCAST_MAC};
 use crate::level::{self, Claim, Cond, Level, LevelFile};
 use crate::sim::{Body, FactVal, Proto, Record, Sim};
 
@@ -53,6 +53,31 @@ struct Play {
     evidence_seen: Vec<String>,
     prediction: Option<usize>,
     variant: Option<usize>,
+    /// A build level's working state (`None` on an ordinary level): the
+    /// machines the student has placed, the cables drawn, the addresses
+    /// assigned, and each switch's hand-filled table.
+    build: Option<BuildState>,
+}
+
+/// What the student has built so far on a build level.
+#[derive(Default)]
+struct BuildState {
+    placed: Vec<Placed>,
+    next: u32,
+    /// Each cable as a pair of node ids (fixed or placed).
+    cables: Vec<(String, String)>,
+    /// Host id → the CIDR address the student chose for it.
+    addrs: BTreeMap<String, String>,
+    /// Switch id → its table: (destination host id, the neighbour to send toward).
+    tables: BTreeMap<String, Vec<(String, String)>>,
+}
+
+struct Placed {
+    id: String,
+    kind: String,
+    name: String,
+    x: i32,
+    y: i32,
 }
 
 pub struct Game {
@@ -97,6 +122,7 @@ pub const EVENT_KEYS: &[&str] = &[
     "ev_was_reset",
     "ev_served",
     "ev_lost",
+    "ev_no_entry",
 ];
 
 /// The packet classes the page draws. Each has a letter and a name in the
@@ -187,6 +213,10 @@ const OTHER_KEYS: &[&str] = &[
     "tbl_col_block",
     "tbl_col_dest",
     "tbl_col_via",
+    "err_build_max",
+    "err_build_obstacle",
+    "err_build_too_long",
+    "err_build_wired",
 ];
 
 /// The action category a log line belongs to, so the page can filter the log
@@ -276,6 +306,12 @@ pub fn validate(file: &LevelFile) -> Result<(), String> {
         }
         for c in l.goal.iter().chain(std::iter::once(&l.bonus)) {
             check_cond(l, c)?;
+        }
+        // A build level starts empty (the student lays the cables), so it is
+        // not built from its starting edits; its own rules are checked instead.
+        if let Some(b) = &l.build {
+            check_build(l, b)?;
+            continue;
         }
         let mut start = l.clone();
         for e in &l.edits {
@@ -410,6 +446,45 @@ fn app_index(l: &Level, id: &str) -> usize {
     l.apps.iter().position(|a| a.id == id).unwrap_or(0)
 }
 
+/// Checks a build level's own rules: the subnet and every offered address
+/// parse and sit on that block, the palette and the costs name real machine
+/// kinds, the machines that need an address exist, and the budget thresholds
+/// go cheapest first.
+fn check_build(l: &Level, b: &level::BuildDef) -> Result<(), String> {
+    let kinds = ["host", "printer", "server", "hub", "switch", "router"];
+    parse_cidr(&b.subnet).ok_or_else(|| format!("{}: bad subnet {}", l.id, b.subnet))?;
+    // Choices may sit off the block on purpose (a distractor that teaches the
+    // one-subnet rule), so only that they parse is checked here.
+    for a in &b.addr_choices {
+        parse_cidr(a).ok_or_else(|| format!("{}: bad address {a}", l.id))?;
+    }
+    for p in &b.palette {
+        if !kinds.contains(&p.kind.as_str()) {
+            return Err(format!("{}: palette has unknown kind {}", l.id, p.kind));
+        }
+    }
+    // Every machine kind that can appear (fixed endpoint or placed) needs a price.
+    for kind in l
+        .nodes
+        .iter()
+        .map(|n| &n.kind)
+        .chain(b.palette.iter().map(|p| &p.kind))
+    {
+        if !b.costs.iter().any(|c| &c.kind == kind) {
+            return Err(format!("{}: no cost for a {kind}", l.id));
+        }
+    }
+    for id in &b.needs_addr {
+        if !l.nodes.iter().any(|n| &n.id == id) {
+            return Err(format!("{}: needs_addr names no machine {id}", l.id));
+        }
+    }
+    if b.star_cost.windows(2).any(|w| w[0] > w[1]) {
+        return Err(format!("{}: star_cost must go cheapest first", l.id));
+    }
+    Ok(())
+}
+
 /// Whether one condition holds for a finished run. `max_ticks` asks that
 /// every other goal condition already held by that tick.
 pub fn met(l: &Level, c: &Cond, rec: &Record) -> bool {
@@ -523,6 +598,17 @@ impl Game {
         if self.progress.teacher || i == 0 {
             return true;
         }
+        let l = &self.file.levels[i];
+        // A "super" build level opens once its whole zone is passed, wherever
+        // it sits in the file; an ordinary level opens after the one before it.
+        if l.build.is_some() {
+            return self
+                .file
+                .levels
+                .iter()
+                .filter(|o| o.chapter == l.chapter && !o.scene && o.build.is_none())
+                .all(|o| self.stars_of(&o.id)[0]);
+        }
         let prev = &self.file.levels[i - 1].id;
         self.progress.stars.get(prev).map(|s| s[0]).unwrap_or(false)
     }
@@ -552,7 +638,7 @@ impl Game {
                     .levels
                     .iter()
                     .enumerate()
-                    .filter(|(_, l)| l.chapter == c.id && !l.scene)
+                    .filter(|(_, l)| l.chapter == c.id && !l.scene && l.build.is_none())
                     .map(|(i, l)| {
                         let s = self.stars_of(&l.id);
                         total += s.iter().filter(|b| **b).count();
@@ -574,11 +660,31 @@ impl Game {
                     "id": scene.map(|l| l.id.clone()),
                     "seen": self.progress.scenes_seen.get(&c.id).copied().unwrap_or(false),
                 });
+                // The end-of-zone "super" build level, if the chapter has one.
+                let sup = self
+                    .file
+                    .levels
+                    .iter()
+                    .position(|l| l.build.is_some() && l.chapter == c.id);
+                let super_info = sup.map(|i| {
+                    let l = &self.file.levels[i];
+                    let s = self.stars_of(&l.id);
+                    json!({"id": l.id, "title": l.title, "stars": s,
+                           "stars_text": self.stars_text(s),
+                           "locked": !self.unlocked(i), "passed": s[0]})
+                });
                 json!({"id": c.id, "title": c.title, "layer": c.layer, "blurb": c.blurb,
-                       "backdrop": c.backdrop, "levels": levels, "scene": scene_info})
+                       "backdrop": c.backdrop, "levels": levels, "scene": scene_info,
+                       "super": super_info})
             })
             .collect();
-        let max = self.file.levels.iter().filter(|l| !l.scene).count() * 3;
+        let max = self
+            .file
+            .levels
+            .iter()
+            .filter(|l| !l.scene && l.build.is_none())
+            .count()
+            * 3;
         json!({
             "chapters": chapters,
             "stars": fill(&self.t("total_stars"), &[total.to_string(), max.to_string()]),
@@ -613,6 +719,10 @@ impl Game {
             return Err(self.t("err_locked"));
         }
         let choice = self.file.levels[i].edits.iter().map(|e| e.start).collect();
+        let build = self.file.levels[i].build.as_ref().map(|_| BuildState {
+            next: 1,
+            ..BuildState::default()
+        });
         self.play = Some(Play {
             level: i,
             choice,
@@ -621,6 +731,7 @@ impl Game {
             evidence_seen: Vec::new(),
             prediction: None,
             variant: None,
+            build,
         });
         Ok(self.view())
     }
@@ -643,6 +754,7 @@ impl Game {
             evidence_seen: Vec::new(),
             prediction: None,
             variant: None,
+            build: None,
         });
         Ok(self.view())
     }
@@ -754,6 +866,349 @@ impl Game {
         play.prediction = None;
         play.evidence_seen.clear();
         Ok(self.view())
+    }
+
+    // ---------- build levels (end-of-zone "super" levels) ----------
+
+    fn build_def(&self) -> Result<&level::BuildDef, String> {
+        let play = self.play.as_ref().ok_or_else(|| self.t("err_no_level"))?;
+        self.file.levels[play.level]
+            .build
+            .as_ref()
+            .ok_or_else(|| self.t("err_bad_choice"))
+    }
+
+    /// Every node id on a build level, fixed endpoints then placed machines,
+    /// with its kind, name and position.
+    fn build_nodes(&self) -> Vec<(String, String, String, i32, i32)> {
+        let play = self.play.as_ref().expect("a level is open");
+        let base = &self.file.levels[play.level];
+        let mut out: Vec<(String, String, String, i32, i32)> = base
+            .nodes
+            .iter()
+            .map(|n| (n.id.clone(), n.kind.clone(), n.name.clone(), n.x, n.y))
+            .collect();
+        if let Some(b) = play.build.as_ref() {
+            for p in &b.placed {
+                out.push((p.id.clone(), p.kind.clone(), p.name.clone(), p.x, p.y));
+            }
+        }
+        out
+    }
+
+    fn cost_of_kind(&self, def: &level::BuildDef, kind: &str) -> u32 {
+        def.costs
+            .iter()
+            .find(|c| c.kind == kind)
+            .map(|c| c.cost)
+            .unwrap_or(0)
+    }
+
+    /// The length of a cable between two node ids (integer, like the map).
+    fn cable_len(&self, a: &str, b: &str) -> u32 {
+        let nodes = self.build_nodes();
+        let find = |id: &str| nodes.iter().find(|n| n.0 == id).map(|n| (n.3, n.4));
+        match (find(a), find(b)) {
+            (Some((ax, ay)), Some((bx, by))) => {
+                let (dx, dy) = ((ax - bx) as i64, (ay - by) as i64);
+                isqrt(dx * dx + dy * dy) as u32
+            }
+            _ => 0,
+        }
+    }
+
+    /// The running bill: machines bought, cable laid, and the sum.
+    fn build_cost(&self) -> (u32, u32, u32) {
+        let def = match self.build_def() {
+            Ok(d) => d,
+            Err(_) => return (0, 0, 0),
+        };
+        let machines: u32 = self
+            .build_nodes()
+            .iter()
+            .map(|n| self.cost_of_kind(def, &n.1))
+            .sum();
+        let play = self.play.as_ref().expect("level open");
+        let wire: u32 = play
+            .build
+            .as_ref()
+            .map(|b| {
+                b.cables
+                    .iter()
+                    .map(|(a, c)| self.cable_len(a, c) * def.wire_cost)
+                    .sum()
+            })
+            .unwrap_or(0);
+        (machines, wire, machines + wire)
+    }
+
+    fn in_obstacle(def: &level::BuildDef, x: i32, y: i32) -> bool {
+        def.obstacles
+            .iter()
+            .any(|o| x >= o.x && x <= o.x + o.w && y >= o.y && y <= o.y + o.h)
+    }
+
+    /// Places one machine from the palette at a point on the floor.
+    pub fn place(&mut self, kind: &str, x: i32, y: i32) -> Result<String, String> {
+        let def = self.build_def()?.clone();
+        let item = def
+            .palette
+            .iter()
+            .find(|p| p.kind == kind)
+            .ok_or_else(|| self.t("err_bad_choice"))?;
+        let play = self.play.as_mut().expect("level open");
+        let b = play.build.as_mut().expect("build level");
+        let have = b.placed.iter().filter(|p| p.kind == kind).count() as u32;
+        if have >= item.max {
+            return Err(self.t("err_build_max"));
+        }
+        if Self::in_obstacle(&def, x, y) {
+            return Err(self.t("err_build_obstacle"));
+        }
+        let n = b.placed.iter().filter(|p| p.kind == kind).count() as u32 + 1;
+        b.placed.push(Placed {
+            id: format!("m{}", b.next),
+            kind: kind.to_string(),
+            name: format!("{} {}", item.name, n),
+            x,
+            y,
+        });
+        b.next += 1;
+        Ok(self.build_state())
+    }
+
+    /// Removes a placed machine and anything that depended on it.
+    pub fn unplace(&mut self, id: &str) -> Result<String, String> {
+        self.build_def()?;
+        let play = self.play.as_mut().expect("level open");
+        let b = play.build.as_mut().expect("build level");
+        if !b.placed.iter().any(|p| p.id == id) {
+            return Err(self.t("err_bad_choice"));
+        }
+        b.placed.retain(|p| p.id != id);
+        b.cables.retain(|(a, c)| a != id && c != id);
+        b.tables.remove(id);
+        for rows in b.tables.values_mut() {
+            rows.retain(|(dst, via)| dst != id && via != id);
+        }
+        Ok(self.build_state())
+    }
+
+    /// Lays a cable between two machines.
+    pub fn wire(&mut self, a: &str, b: &str) -> Result<String, String> {
+        let def = self.build_def()?.clone();
+        if a == b {
+            return Err(self.t("err_bad_choice"));
+        }
+        let nodes = self.build_nodes();
+        let known = |id: &str| nodes.iter().any(|n| n.0 == id);
+        if !known(a) || !known(b) {
+            return Err(self.t("err_bad_choice"));
+        }
+        if def.max_wire > 0 && self.cable_len(a, b) > def.max_wire {
+            return Err(self.t("err_build_too_long"));
+        }
+        let play = self.play.as_mut().expect("level open");
+        let st = play.build.as_mut().expect("build level");
+        let exists = st
+            .cables
+            .iter()
+            .any(|(x, y)| (x == a && y == b) || (x == b && y == a));
+        if exists {
+            return Err(self.t("err_build_wired"));
+        }
+        st.cables.push((a.to_string(), b.to_string()));
+        Ok(self.build_state())
+    }
+
+    /// Removes a cable between two machines.
+    pub fn unwire(&mut self, a: &str, b: &str) -> Result<String, String> {
+        self.build_def()?;
+        let play = self.play.as_mut().expect("level open");
+        let st = play.build.as_mut().expect("build level");
+        let before = st.cables.len();
+        st.cables
+            .retain(|(x, y)| !((x == a && y == b) || (x == b && y == a)));
+        if st.cables.len() == before {
+            return Err(self.t("err_bad_choice"));
+        }
+        Ok(self.build_state())
+    }
+
+    /// Gives a host an address (empty clears it).
+    pub fn set_addr(&mut self, node: &str, ip: &str) -> Result<String, String> {
+        let def = self.build_def()?.clone();
+        if !def.needs_addr.iter().any(|n| n == node) {
+            return Err(self.t("err_bad_choice"));
+        }
+        if !ip.is_empty() && !def.addr_choices.iter().any(|c| c == ip) {
+            return Err(self.t("err_bad_choice"));
+        }
+        let play = self.play.as_mut().expect("level open");
+        let st = play.build.as_mut().expect("build level");
+        if ip.is_empty() {
+            st.addrs.remove(node);
+        } else {
+            st.addrs.insert(node.to_string(), ip.to_string());
+        }
+        Ok(self.build_state())
+    }
+
+    /// Sets one row of a switch's table: to reach `dst`, send toward `via`
+    /// (empty `via` clears the row).
+    pub fn set_port(&mut self, switch: &str, dst: &str, via: &str) -> Result<String, String> {
+        self.build_def()?;
+        let play = self.play.as_mut().expect("level open");
+        let st = play.build.as_mut().expect("build level");
+        if !st.placed.iter().any(|p| p.id == switch && p.kind == "switch") {
+            return Err(self.t("err_bad_choice"));
+        }
+        let rows = st.tables.entry(switch.to_string()).or_default();
+        rows.retain(|(d, _)| d != dst);
+        if !via.is_empty() {
+            rows.push((dst.to_string(), via.to_string()));
+        }
+        Ok(self.build_state())
+    }
+
+    /// Assembles the student's work into a concrete level the simulation runs.
+    fn assembled(&self) -> Result<Level, String> {
+        let play = self.play.as_ref().expect("level open");
+        let def = self.build_def()?;
+        let mut l = self.file.levels[play.level].clone();
+        l.edits = Vec::new();
+        let st = play.build.as_ref().expect("build level");
+        // Addresses onto the fixed hosts/servers.
+        for n in l.nodes.iter_mut() {
+            if let Some(ip) = st.addrs.get(&n.id) {
+                n.ip = ip.clone();
+            }
+        }
+        // Placed machines, switches pre-loaded with the student's table.
+        for p in &st.placed {
+            let mut node = level::NodeDef {
+                id: p.id.clone(),
+                kind: p.kind.clone(),
+                name: p.name.clone(),
+                x: p.x,
+                y: p.y,
+                ip: st.addrs.get(&p.id).cloned().unwrap_or_default(),
+                gateway: String::new(),
+                ifaces: Vec::new(),
+                routes: Vec::new(),
+                block: String::new(),
+                ttl: 0,
+                static_fwd: false,
+                mac_hints: Vec::new(),
+            };
+            if p.kind == "switch" {
+                node.static_fwd = true;
+                if let Some(rows) = st.tables.get(&p.id) {
+                    node.mac_hints = rows
+                        .iter()
+                        .map(|(dst, via)| level::MacHint {
+                            dst: dst.clone(),
+                            via: via.clone(),
+                        })
+                        .collect();
+                }
+            }
+            l.nodes.push(node);
+        }
+        // Cables.
+        l.links = st
+            .cables
+            .iter()
+            .enumerate()
+            .map(|(i, (a, b))| level::LinkDef {
+                id: format!("c{}", i + 1),
+                a: a.clone(),
+                b: b.clone(),
+                down: false,
+                lose_every: 0,
+                delay: 1,
+            })
+            .collect();
+        let _ = def;
+        Ok(l)
+    }
+
+    /// The whole build canvas as JSON: the bill so far, the palette with how
+    /// many of each the student has placed, the fixed endpoints and the placed
+    /// machines, the cables with their length and price, and the addresses and
+    /// switch tables filled in.
+    pub fn build_state(&self) -> String {
+        let def = match self.build_def() {
+            Ok(d) => d.clone(),
+            Err(e) => return json!({"error": e}).to_string(),
+        };
+        let play = self.play.as_ref().expect("level open");
+        let base = &self.file.levels[play.level];
+        let st = play.build.as_ref().expect("build level");
+        let (machines, wire, total) = self.build_cost();
+        let placed_count = |kind: &str| st.placed.iter().filter(|p| p.kind == kind).count() as u32;
+        let palette: Vec<Value> = def
+            .palette
+            .iter()
+            .map(|p| {
+                json!({"kind": p.kind, "name": p.name, "max": p.max, "ports": p.ports,
+                       "placed": placed_count(&p.kind), "cost": self.cost_of_kind(&def, &p.kind)})
+            })
+            .collect();
+        let fixed: Vec<Value> = base
+            .nodes
+            .iter()
+            .map(|n| {
+                json!({"id": n.id, "kind": n.kind, "name": n.name, "x": n.x, "y": n.y,
+                       "cost": self.cost_of_kind(&def, &n.kind), "addr": st.addrs.get(&n.id)})
+            })
+            .collect();
+        let placed: Vec<Value> = st
+            .placed
+            .iter()
+            .map(|p| {
+                json!({"id": p.id, "kind": p.kind, "name": p.name, "x": p.x, "y": p.y,
+                       "cost": self.cost_of_kind(&def, &p.kind), "addr": st.addrs.get(&p.id)})
+            })
+            .collect();
+        let cables: Vec<Value> = st
+            .cables
+            .iter()
+            .map(|(a, b)| {
+                let len = self.cable_len(a, b);
+                json!({"a": a, "b": b, "len": len, "cost": len * def.wire_cost})
+            })
+            .collect();
+        let tables: BTreeMap<&String, Vec<Value>> = st
+            .tables
+            .iter()
+            .map(|(sw, rows)| {
+                (
+                    sw,
+                    rows.iter()
+                        .map(|(dst, via)| json!({"dst": dst, "via": via}))
+                        .collect(),
+                )
+            })
+            .collect();
+        json!({
+            "build": true,
+            "subnet": def.subnet,
+            "wire_cost": def.wire_cost,
+            "max_wire": def.max_wire,
+            "cost": {"machines": machines, "wire": wire, "total": total},
+            "star_cost": def.star_cost,
+            "palette": palette,
+            "obstacles": def.obstacles.iter().map(|o| json!({"x": o.x, "y": o.y, "w": o.w, "h": o.h, "label": o.label})).collect::<Vec<_>>(),
+            "fixed": fixed,
+            "placed": placed,
+            "cables": cables,
+            "needs_addr": def.needs_addr,
+            "addr_choices": def.addr_choices,
+            "addrs": st.addrs,
+            "tables": tables,
+        })
+        .to_string()
     }
 
     fn view(&self) -> String {
@@ -940,7 +1395,16 @@ impl Game {
         {
             return Err(self.t("err_predict_first"));
         }
-        let l = self.edited();
+        // A build level assembles the student's placed machines, cables,
+        // addresses and switch tables into the network that runs; an ordinary
+        // level applies its edits.
+        let is_build = self.file.levels[i].build.is_some();
+        let build_cost = if is_build { self.build_cost() } else { (0, 0, 0) };
+        let l = if is_build {
+            self.assembled()?
+        } else {
+            self.edited()
+        };
         let rec = Sim::build(&l)?.run(l.ticks);
         let goals: Vec<(String, bool)> = l
             .goal
@@ -961,6 +1425,17 @@ impl Game {
             })
             .map(|o| graded(&l, &o.claim, &rec))
             .unwrap_or(false);
+        // A build level earns its bonus stars by coming in under budget: the
+        // middle star for the looser threshold, the final star for the tighter.
+        let under = |k: usize| {
+            self.file.levels[i]
+                .build
+                .as_ref()
+                .and_then(|b| b.star_cost.get(k))
+                .map(|&t| passed && build_cost.2 <= t)
+                .unwrap_or(false)
+        };
+        let (cheap_enough, cheapest) = (under(1), under(0));
         let on_variant = self.play.as_ref().map(|p| p.variant.is_some()).unwrap_or(false);
         let is_scene = self.file.levels[i].scene;
         if on_variant || is_scene {
@@ -968,7 +1443,10 @@ impl Game {
         } else {
             let entry = self.progress.stars.entry(l.id.clone()).or_insert([false; 3]);
             entry[0] |= passed;
-            if has_predict {
+            if is_build {
+                entry[1] |= cheap_enough;
+                entry[2] |= cheapest;
+            } else if has_predict {
                 // The prediction gates the final star — earned only when the
                 // level is passed and the committed prediction came true, so a
                 // correct guess about an unfixed network earns nothing. The
@@ -989,7 +1467,7 @@ impl Game {
             fill(&self.t("sum_retransmits"), &[s.retransmits.to_string()]),
         ];
         let base = &self.file.levels[i];
-        let quiz = if passed && base.predict.is_none() {
+        let quiz = if passed && base.predict.is_none() && base.build.is_none() {
             json!({"question": base.quiz.question, "options": base.quiz.options})
         } else {
             Value::Null
@@ -1023,6 +1501,7 @@ impl Game {
             "stars": stars,
             "stars_text": self.stars_text(stars),
             "ticks": rec.ticks,
+            "cost": if is_build { json!({"machines": build_cost.0, "wire": build_cost.1, "total": build_cost.2}) } else { Value::Null },
         });
         let play = self.play.as_mut().expect("checked");
         play.record = Some(rec);

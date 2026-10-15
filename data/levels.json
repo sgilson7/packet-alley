@@ -1675,6 +1675,49 @@
         {"label": "It fills and sheds the extra requests", "claim": {"kind": "queue_full", "node": "sw"}},
         {"label": "Every request is served", "claim": {"kind": "no_loss"}}
       ]}
+    },
+    {
+      "id": "newspot", "chapter": "block", "title": "Your own restaurant",
+      "story": "You have moved out and opened your own noodle shop. The three registers are in, the card-auth server is bolted into the back room, and a reel of cable is on the counter. Now wire it up yourself — and the cable is not free.",
+      "concept": [
+        "On one network every machine shares a block and a switch carries the frames between them.",
+        "A switch sends a frame out the one port its destination is on — the table has to say which.",
+        "Cable costs money and a reel only runs so far, so where a switch sits changes the bill."
+      ],
+      "task": "Place a switch, run the cables, give each register an address on the shop's block, and fill the switch's table so all three registers reach the back-room server — for as little as you can spend.",
+      "ticks": 40,
+      "nodes": [
+        {"id": "reg1", "kind": "host", "name": "Front register", "x": 120, "y": 110},
+        {"id": "reg2", "kind": "host", "name": "Patio register", "x": 120, "y": 500},
+        {"id": "reg3", "kind": "host", "name": "Bar register", "x": 860, "y": 500},
+        {"id": "srv", "kind": "server", "name": "Card-auth server", "x": 860, "y": 110, "ip": "10.0.0.2/24"}
+      ],
+      "links": [],
+      "apps": [
+        {"id": "p1", "kind": "ping", "from": "reg1", "to": "10.0.0.2", "at": 1, "count": 1, "label": "card auth"},
+        {"id": "p2", "kind": "ping", "from": "reg2", "to": "10.0.0.2", "at": 1, "count": 1, "label": "card auth"},
+        {"id": "p3", "kind": "ping", "from": "reg3", "to": "10.0.0.2", "at": 1, "count": 1, "label": "card auth"}
+      ],
+      "edits": [],
+      "goal": [
+        {"kind": "replies", "app": "p1", "n": 1, "text": "The front register gets its card approved."},
+        {"kind": "replies", "app": "p2", "n": 1, "text": "The patio register gets its card approved."},
+        {"kind": "replies", "app": "p3", "n": 1, "text": "The bar register gets its card approved."}
+      ],
+      "bonus": {"kind": "no_drops", "text": "No frame is dropped on the way."},
+      "quiz": {"question": "—", "options": ["ok"], "answer": 0, "why": ""},
+      "debrief": "Every register reached the back-room server across one switched block — and you set the whole shop up for the least cable you could run.",
+      "build": {
+        "subnet": "10.0.0.0/24",
+        "wire_cost": 1,
+        "max_wire": 560,
+        "costs": [{"kind": "server", "cost": 600}, {"kind": "host", "cost": 300}, {"kind": "switch", "cost": 90}],
+        "palette": [{"kind": "switch", "name": "Switch", "max": 3, "ports": 8}],
+        "obstacles": [{"x": 420, "y": 230, "w": 160, "h": 150, "label": "Kitchen"}],
+        "needs_addr": ["reg1", "reg2", "reg3"],
+        "addr_choices": ["10.0.0.11/24", "10.0.0.12/24", "10.0.0.13/24", "10.0.0.14/24", "10.0.1.50/24"],
+        "star_cost": [3360, 3550]
+      }
     }
   ]
 }

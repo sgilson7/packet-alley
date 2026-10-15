@@ -71,6 +71,77 @@ pub struct Level {
     /// numbers change but the lesson does not. Never re-awards the star.
     #[serde(default)]
     pub variants: Vec<Variant>,
+    /// A "super" build level (the end-of-zone finale): the student places
+    /// machines, draws the cables, assigns the addresses and fills the tables
+    /// from scratch, under a wiring budget. `None` for an ordinary level, which
+    /// keeps its fixed topology and `edits`.
+    #[serde(default)]
+    pub build: Option<BuildDef>,
+}
+
+/// An end-of-zone build level. The level's `nodes` are the fixed endpoints
+/// (the registers in the corners, the server in the back room) already on the
+/// map; `apps` is the traffic that must succeed (each register reaches the
+/// server). The student adds everything in between.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildDef {
+    /// The one block every machine shares, e.g. `10.0.0.0/24` (addresses are
+    /// checked against it).
+    pub subnet: String,
+    /// Dollars per unit of cable length.
+    pub wire_cost: u32,
+    /// The longest a single cable may be (map units); 0 means no limit.
+    #[serde(default)]
+    pub max_wire: u32,
+    /// What each machine kind costs to buy (fixed endpoints and placed ones).
+    pub costs: Vec<KindCost>,
+    /// The machines the student may place, and how many of each.
+    pub palette: Vec<PaletteItem>,
+    /// Walls and fixtures the cables must route around (for the map and for
+    /// placement); a machine may not be dropped on one.
+    #[serde(default)]
+    pub obstacles: Vec<Obstacle>,
+    /// The nodes (fixed or placed hosts/servers) the student must address.
+    #[serde(default)]
+    pub needs_addr: Vec<String>,
+    /// The addresses offered in the dropdown for each host.
+    #[serde(default)]
+    pub addr_choices: Vec<String>,
+    /// Total-cost thresholds for the bonus stars, cheapest first.
+    #[serde(default)]
+    pub star_cost: Vec<u32>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct KindCost {
+    pub kind: String,
+    pub cost: u32,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct PaletteItem {
+    pub kind: String,
+    pub name: String,
+    /// How many of this machine the student may place.
+    #[serde(default = "one")]
+    pub max: u32,
+    /// Switches/hubs: how many cables may attach.
+    #[serde(default = "eight")]
+    pub ports: u32,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct Obstacle {
+    pub x: i32,
+    pub y: i32,
+    pub w: i32,
+    pub h: i32,
+    #[serde(default)]
+    pub label: String,
 }
 
 /// The prediction step: a prompt and the outcomes the student may claim. Every
@@ -151,6 +222,10 @@ fn one() -> u32 {
     1
 }
 
+fn eight() -> u32 {
+    8
+}
+
 #[derive(Debug, Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct NodeDef {
@@ -177,6 +252,21 @@ pub struct NodeDef {
     /// Hosts: the TTL its packets start with.
     #[serde(default)]
     pub ttl: u32,
+    /// Build levels: a switch that forwards only by its given table (`mac_hints`)
+    /// and never learns — the table the student filled is what decides.
+    #[serde(default)]
+    pub static_fwd: bool,
+    /// Build levels: the switch's table as the student filled it — "to reach
+    /// `dst`, send out the cable toward `via`".
+    #[serde(default)]
+    pub mac_hints: Vec<MacHint>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct MacHint {
+    pub dst: String,
+    pub via: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
