@@ -20,6 +20,12 @@ pub struct Chapter {
     pub layer: String,
     pub blurb: String,
     pub backdrop: String,
+    /// A short verbatim passage from the open networking textbook (Phase 2),
+    /// shown in the brief with its attribution (`textbook_src`). CC BY-SA 3.0.
+    #[serde(default)]
+    pub textbook: String,
+    #[serde(default)]
+    pub textbook_src: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -42,6 +48,10 @@ pub struct Level {
     pub bonus: Cond,
     pub quiz: Quiz,
     pub debrief: String,
+    /// A short on-screen caveat shown as a badge (Phase 2), e.g. that a level
+    /// models a simplified Go-Back-N, not full TCP (PA11).
+    #[serde(default)]
+    pub note: String,
     /// A chapter's demonstration scene (Phase 2): a watch-only lesson on
     /// TEST-NET addresses, shown before the chapter's levels. Not a scored
     /// level — kept out of the level cards, the progression and the star total.

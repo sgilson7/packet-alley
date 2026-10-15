@@ -5,28 +5,36 @@
       "title": "Frames on the Block",
       "layer": "Link layer — one network",
       "blurb": "It is opening morning in Packet Alley. The noodle shop, its printers, and the nearby desks share one local network. Before anyone can depend on it, you need to find out what each device knows.",
-      "backdrop": "block"
+      "backdrop": "block",
+      "textbook": "An Ethernet switch understands the format of the Ethernet frames and can selectively forward frames over each interface. For this, each Ethernet switch maintains a MAC address table.",
+      "textbook_src": "Computer Networking: Principles, Protocols and Practice (Bonaventure) · CC BY-SA 3.0"
     },
     {
       "id": "town",
       "title": "Routes Across Town",
       "layer": "Network layer — between networks",
       "blurb": "The local network is running. Now the shop needs services on the other side of the city. Each router makes its own forwarding decision. Your job is to read those decisions before changing them.",
-      "backdrop": "town"
+      "backdrop": "town",
+      "textbook": "With the datagram organization, routers use hop-by-hop forwarding. This means that when a router receives a packet that is not destined to itself, it looks up the destination address of the packet in its forwarding table.",
+      "textbook_src": "Computer Networking: Principles, Protocols and Practice (Bonaventure) · CC BY-SA 3.0"
     },
     {
       "id": "wires",
       "title": "Handshakes and Delivery",
       "layer": "Transport layer — reliable streams",
       "blurb": "Messages can cross the city. The remaining problem is keeping a conversation open long enough to finish the work. The service desk needs a connection, and the shop needs complete files.",
-      "backdrop": "wires"
+      "backdrop": "wires",
+      "textbook": "A TCP connection is established by using a three-way handshake. The connection establishment phase uses the sequence number, the acknowledgment number and the SYN flag.",
+      "textbook_src": "Computer Networking: Principles, Protocols and Practice (Bonaventure) · CC BY-SA 3.0"
     },
     {
       "id": "storm",
       "title": "When Too Much Arrives",
       "layer": "Availability — a service overwhelmed",
       "blurb": "The night market is open. The city is busy, and a small server receives more requests than its link can carry. Your assignment is to observe what fails and explain the evidence.",
-      "backdrop": "town"
+      "backdrop": "town",
+      "textbook": "Besides the link bandwidth, the buffers on the network nodes are the second type of resource that needs to be shared inside the network. The node buffers play an important role in the operation of the network because that can be used to absorb transient traffic peaks.",
+      "textbook_src": "Computer Networking: Principles, Protocols and Practice (Bonaventure) · CC BY-SA 3.0"
     }
   ],
   "levels": [
@@ -1233,6 +1241,7 @@
           {"target": {"app": "dl", "field": "to"}, "value": "10.0.7.80"}
         ]}
       ],
+      "note": "Simplified teaching model: this level models Go-Back-N retransmission, not TCP's full congestion control.",
       "predict": {"prompt": "With this window and timeout, does the file arrive complete?", "options": [
         {"label": "Yes — every part arrives, with some resends", "claim": {"kind": "transferred", "app": "dl"}},
         {"label": "It never finishes the whole file", "claim": {"kind": "not_delivered", "app": "dl"}}
@@ -1317,6 +1326,7 @@
           {"target": {"app": "dl", "field": "to"}, "value": "10.0.7.80"}
         ]}
       ],
+      "note": "Simplified teaching model: this level models Go-Back-N retransmission, not TCP's full congestion control.",
       "predict": {"prompt": "With your window and timeout, does the catalogue arrive complete?", "options": [
         {"label": "Yes — the whole catalogue arrives", "claim": {"kind": "transferred", "app": "dl"}},
         {"label": "It stalls and never completes", "claim": {"kind": "not_delivered", "app": "dl"}}
@@ -1487,6 +1497,7 @@
       "debrief": "The full report reached the market. The town is ready for the night.",
       "evidence": ["r1", "srv"]
 ,
+      "note": "Simplified teaching model: this level models Go-Back-N retransmission, not TCP's full congestion control.",
       "predict": {"prompt": "With the route and transfer plan set, does the full report arrive?", "options": [
         {"label": "Yes — the whole report arrives over the lossy line", "claim": {"kind": "transferred", "app": "dl"}},
         {"label": "It never completes before the deadline", "claim": {"kind": "not_delivered", "app": "dl"}}

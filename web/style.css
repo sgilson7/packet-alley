@@ -167,6 +167,14 @@ button.ghost.small { padding: 3px 9px; font-size: 0.8rem; border-width: 2px; }
    glow, distinct from the blue "point at me" of a destination pick. */
 .node-hit.evidence image { filter: drop-shadow(0 0 7px var(--oi-orange)) drop-shadow(0 0 4px var(--oi-orange)); }
 
+/* A simplified-model caveat badge (Phase 2). */
+.note-badge { margin: 6px 0 0; padding: 6px 10px; border-left: 4px solid var(--oi-orange); background: var(--cream); font-size: 0.82rem; color: var(--muted); border-radius: 4px; }
+/* A verbatim textbook passage with attribution (Phase 2, CC BY-SA 3.0). */
+.textbook { margin-top: 12px; padding: 10px; border-left: 4px solid var(--oi-blue); background: var(--cream); border-radius: 4px; }
+.textbook h3 { margin: 0 0 6px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); }
+.textbook p { margin: 0; font-size: 0.88rem; }
+.textbook-src { margin-top: 6px !important; font-size: 0.74rem; color: var(--muted); font-style: italic; }
+
 /* The prediction step (Phase 2). */
 .predict { margin-top: 16px; border: 2px solid var(--oi-blue); border-radius: 10px; padding: 10px; }
 .predict h3 { margin: 0; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); }

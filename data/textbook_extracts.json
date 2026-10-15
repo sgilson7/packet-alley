@@ -5,7 +5,7 @@
   "book": "beta.computer-networking.info/syllabus/default/",
   "license": "CC BY-SA 3.0 Unported (per cnp3/ebook README: all repository files)",
   "license_url": "creativecommons.org/licenses/by-sa/3.0/",
-  "extracted_utc": "2026-10-15T05:38:17.534211+00:00",
+  "extracted_utc": "2026-10-15T15:16:18.288504+00:00",
   "note": "Short verbatim excerpts quoted under CC BY-SA 3.0 with attribution; not covered by the game's MIT license. Used only for the 9 device/mechanism explainers referenced by the interface routes; further passages are generated when the evidence-first concept panel ships.",
   "passages": {
     "LAN_IP_VS_MAC": {
@@ -78,6 +78,38 @@
       "verbatim": "A TCP connection is established by using a three-way handshake. The connection establishment phase uses the sequence number, the acknowledgment number and the SYN flag.",
       "source_url": "https://beta.computer-networking.info/syllabus/default/protocols/tcp.html",
       "sha256": "642acbeae7c820cdd8d3918b33ed875565dc71f675c1340d38b5ecead807b4b6",
+      "extraction_method": "HTML paragraph-start anchor; whitespace-normalized; first N sentences"
+    },
+    "CONGESTION_QUEUE": {
+      "id": "CONGESTION_QUEUE",
+      "zone": "storm",
+      "verbatim": "Besides the link bandwidth, the buffers on the network nodes are the second type of resource that needs to be shared inside the network. The node buffers play an important role in the operation of the network because that can be used to absorb transient traffic peaks.",
+      "source_url": "https://beta.computer-networking.info/syllabus/default/principles/sharing.html",
+      "sha256": "f0d112371667ea32658a140dabefb3185653aee5edb10c08d2303291f2a7ca3e",
+      "extraction_method": "HTML paragraph-start anchor; whitespace-normalized; first N sentences"
+    },
+    "GBN_MODEL": {
+      "id": "GBN_MODEL",
+      "zone": "wires",
+      "verbatim": "The simplest sliding window protocol uses the go-back-n recovery. Intuitively, go-back-n operates as follows. A go-back-n receiver is as simple as possible.",
+      "source_url": "https://beta.computer-networking.info/syllabus/default/principles/reliability.html",
+      "sha256": "f0e875a65439754cbef96c2b1e29fbd37729609a0b42fdf75160636625af54d1",
+      "extraction_method": "HTML paragraph-start anchor; whitespace-normalized; first N sentences"
+    },
+    "TCP_BYTE_STREAM": {
+      "id": "TCP_BYTE_STREAM",
+      "zone": "wires",
+      "verbatim": "TCP provides a reliable bytestream, connection-oriented transport service on top of the unreliable connectionless network service provided by IP.",
+      "source_url": "https://beta.computer-networking.info/syllabus/default/protocols/tcp.html",
+      "sha256": "b1a2443176c18dad9837cbb8fc1f4e25a190c18a48cf6bf16a82066e7969ff1b",
+      "extraction_method": "HTML paragraph-start anchor; whitespace-normalized; first N sentences"
+    },
+    "LAN_LOOP": {
+      "id": "LAN_LOOP",
+      "zone": "block",
+      "verbatim": "The MAC address learning algorithm combined with the forwarding algorithm work well in a tree-shaped network such as the one shown above. However, to deal with link and switch failures, network administrators often add redundant links to ensure that their network remains connected even after a failure.",
+      "source_url": "https://beta.computer-networking.info/syllabus/default/protocols/lan.html",
+      "sha256": "e096662bac90beaea14ce55495020fdde90d4056b8cb337d53ffab7616c339a8",
       "extraction_method": "HTML paragraph-start anchor; whitespace-normalized; first N sentences"
     }
   }

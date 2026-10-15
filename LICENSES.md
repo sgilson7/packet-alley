@@ -13,7 +13,8 @@ Packet Alley is MIT licensed; see `LICENSE`.
 ## Textbook excerpts (CC BY-SA 3.0)
 
 The device and mechanism explanations shown in the game (the hub, switch and
-router inspectors) quote short passages **verbatim** from *Computer Networking:
+router inspectors) and the "From the networking textbook" passage in each
+chapter's brief quote short passages **verbatim** from *Computer Networking:
 Principles, Protocols and Practice*, 3rd edition, by Olivier Bonaventure and
 contributors (`github.com/cnp3/ebook`, book at
 `beta.computer-networking.info`). That work is licensed **Creative Commons

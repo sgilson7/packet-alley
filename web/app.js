@@ -191,11 +191,25 @@ function renderLevel() {
   el("l-story").textContent = v.story;
   el("task-h").textContent = t("panel_task");
   el("l-task").textContent = v.task;
+  // A simplified-model caveat (e.g. Go-Back-N, not full TCP).
+  const note = el("l-note");
+  note.hidden = !v.note;
+  if (v.note) {
+    note.textContent = v.note;
+  }
   el("concept-h").textContent = t("panel_concept");
   const cl = el("l-concept");
   clear(cl);
   for (const c of v.concept) {
     cl.appendChild(tag("li", null, c));
+  }
+  // A verbatim passage from the open networking textbook, with attribution.
+  const tb = el("l-textbook");
+  tb.hidden = !v.textbook;
+  if (v.textbook) {
+    el("textbook-h").textContent = t("panel_textbook");
+    el("l-textbook-text").textContent = v.textbook;
+    el("l-textbook-src").textContent = v.textbook_src;
   }
   // A demonstration scene has no goals, bonus or edits — just inspect, predict
   // and watch. A scored level shows them as before.

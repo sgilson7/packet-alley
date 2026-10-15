@@ -72,6 +72,8 @@ def run(page, check, engine):
     check(page.locator("#map image").count() == 3, "the first level's map has three devices")
     check(page.locator("#l-edits .edit").count() == 1, "it offers one change")
     check(page.locator("#legend .item").count() >= 1, "the packet legend is shown")
+    check(page.locator("#l-textbook:not([hidden])").count() == 1, "the textbook excerpt is shown")
+    check("CC BY-SA" in page.inner_text("#l-textbook-src"), "with its CC BY-SA attribution")
 
     # inspect a device — on this evidence-first level, opening a glowing device
     # also records it as evidence for the prediction.

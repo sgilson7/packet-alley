@@ -882,6 +882,9 @@ impl Game {
             "evidence_seen": play.evidence_seen,
             "variant": play.variant,
             "scene": base.scene,
+            "note": base.note,
+            "textbook": chapter.textbook,
+            "textbook_src": chapter.textbook_src,
         })
         .to_string()
     }
