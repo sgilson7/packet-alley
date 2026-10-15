@@ -198,6 +198,38 @@ fn a_level_without_a_prediction_keeps_its_quiz_and_bonus_layout() {
 }
 
 #[test]
+fn a_shipped_practice_variant_is_winnable_with_the_same_logic() {
+    // The practice variants on the simple-edit levels only shift the addresses,
+    // so the same choice and the same prediction still solve them — and still
+    // award nothing, because practice is for learning.
+    let shipped = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data/levels.json");
+    let levels = fs::read_to_string(&shipped).unwrap();
+    let mut g = Game::new(&levels, &copy(), "").expect("shipped data loads");
+    g.set_teacher(true);
+    g.open("hub").unwrap();
+    let view = g.practice().unwrap();
+    assert!(has(&view, "10.0.5."), "the practice case uses a shifted subnet");
+    // swap the hub for a switch (option 1), inspect, predict no collision
+    g.choose(0, 1).unwrap();
+    g.inspect("dev").unwrap();
+    g.predict(0).unwrap();
+    let out = g.run().unwrap();
+    assert!(has(&out, "\"on_variant\":true"));
+    assert!(
+        has(&out, "\"passed\":true"),
+        "the variant solves the same way: {out}"
+    );
+    assert!(
+        has(&out, "\"right\":true"),
+        "and the prediction still grades: {out}"
+    );
+    assert!(
+        has(&out, "\"stars\":[false,false,false]"),
+        "practice awards nothing: {out}"
+    );
+}
+
+#[test]
 fn each_chapter_scene_watches_and_its_prediction_grades() {
     // Every chapter's demonstration scene: it passes by being watched (observe
     // goal), its intended prediction (option 0) is graded right against the

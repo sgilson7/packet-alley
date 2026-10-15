@@ -168,6 +168,22 @@
       "debrief": "The totals arrived. The owner has a working shop and a reason for the change.",
       "evidence": ["dev", "srv"]
 ,
+      "variants": [
+        {"seed": 2, "overrides": [
+          {"target": {"node": "a", "field": "ip"}, "value": "10.0.5.11/24"},
+          {"target": {"node": "b", "field": "ip"}, "value": "10.0.5.12/24"},
+          {"target": {"node": "srv", "field": "ip"}, "value": "10.0.5.30/24"},
+          {"target": {"app": "sa", "field": "to"}, "value": "10.0.5.30"},
+          {"target": {"app": "sb", "field": "to"}, "value": "10.0.5.30"}
+        ]},
+        {"seed": 3, "overrides": [
+          {"target": {"node": "a", "field": "ip"}, "value": "10.0.7.11/24"},
+          {"target": {"node": "b", "field": "ip"}, "value": "10.0.7.12/24"},
+          {"target": {"node": "srv", "field": "ip"}, "value": "10.0.7.30/24"},
+          {"target": {"app": "sa", "field": "to"}, "value": "10.0.7.30"},
+          {"target": {"app": "sb", "field": "to"}, "value": "10.0.7.30"}
+        ]}
+      ],
       "predict": {"prompt": "When both tills send at once, what happens?", "options": [
         {"label": "Both totals arrive with no collision", "claim": {"kind": "no_loss"}},
         {"label": "They collide and some are lost", "claim": {"kind": "fails_at", "node": "dev"}}
@@ -230,6 +246,18 @@
       "debrief": "The repeated traffic stopped. One route remains open to the printer.",
       "evidence": ["prn", "sw2"]
 ,
+      "variants": [
+        {"seed": 2, "overrides": [
+          {"target": {"node": "pc", "field": "ip"}, "value": "10.0.5.10/24"},
+          {"target": {"node": "prn", "field": "ip"}, "value": "10.0.5.20/24"},
+          {"target": {"app": "job", "field": "to"}, "value": "10.0.5.20"}
+        ]},
+        {"seed": 3, "overrides": [
+          {"target": {"node": "pc", "field": "ip"}, "value": "10.0.7.10/24"},
+          {"target": {"node": "prn", "field": "ip"}, "value": "10.0.7.20/24"},
+          {"target": {"app": "job", "field": "to"}, "value": "10.0.7.20"}
+        ]}
+      ],
       "predict": {"prompt": "Once you block one path, how does the job reach the printer?", "options": [
         {"label": "It arrives cleanly, no repeats", "claim": {"kind": "no_loss"}},
         {"label": "The printer is flooded with copies", "claim": {"kind": "fails_at", "node": "prn"}}
@@ -313,6 +341,30 @@
       "debrief": "Every register reported its sales. There is enough room to serve the queue.",
       "evidence": ["box1", "box2", "srv"]
 ,
+      "variants": [
+        {"seed": 2, "overrides": [
+          {"target": {"node": "a", "field": "ip"}, "value": "10.0.5.41/24"},
+          {"target": {"node": "b", "field": "ip"}, "value": "10.0.5.42/24"},
+          {"target": {"node": "c", "field": "ip"}, "value": "10.0.5.43/24"},
+          {"target": {"node": "d", "field": "ip"}, "value": "10.0.5.44/24"},
+          {"target": {"node": "srv", "field": "ip"}, "value": "10.0.5.30/24"},
+          {"target": {"app": "sa", "field": "to"}, "value": "10.0.5.30"},
+          {"target": {"app": "sb", "field": "to"}, "value": "10.0.5.30"},
+          {"target": {"app": "sc", "field": "to"}, "value": "10.0.5.30"},
+          {"target": {"app": "sd", "field": "to"}, "value": "10.0.5.30"}
+        ]},
+        {"seed": 3, "overrides": [
+          {"target": {"node": "a", "field": "ip"}, "value": "10.0.7.41/24"},
+          {"target": {"node": "b", "field": "ip"}, "value": "10.0.7.42/24"},
+          {"target": {"node": "c", "field": "ip"}, "value": "10.0.7.43/24"},
+          {"target": {"node": "d", "field": "ip"}, "value": "10.0.7.44/24"},
+          {"target": {"node": "srv", "field": "ip"}, "value": "10.0.7.30/24"},
+          {"target": {"app": "sa", "field": "to"}, "value": "10.0.7.30"},
+          {"target": {"app": "sb", "field": "to"}, "value": "10.0.7.30"},
+          {"target": {"app": "sc", "field": "to"}, "value": "10.0.7.30"},
+          {"target": {"app": "sd", "field": "to"}, "value": "10.0.7.30"}
+        ]}
+      ],
       "predict": {"prompt": "With the right devices in place, do all registers report?", "options": [
         {"label": "Yes — every sale arrives, nothing collides", "claim": {"kind": "no_loss"}},
         {"label": "They still collide on the shared boxes", "claim": {"kind": "fails_at", "node": "box1"}}
@@ -388,6 +440,18 @@
       "debrief": "The backbone is stable. The backup cables are still there, ready for a failed primary link.",
       "evidence": ["prn", "sw2"]
 ,
+      "variants": [
+        {"seed": 2, "overrides": [
+          {"target": {"node": "pc", "field": "ip"}, "value": "10.0.5.10/24"},
+          {"target": {"node": "prn", "field": "ip"}, "value": "10.0.5.20/24"},
+          {"target": {"app": "job", "field": "to"}, "value": "10.0.5.20"}
+        ]},
+        {"seed": 3, "overrides": [
+          {"target": {"node": "pc", "field": "ip"}, "value": "10.0.7.10/24"},
+          {"target": {"node": "prn", "field": "ip"}, "value": "10.0.7.20/24"},
+          {"target": {"app": "job", "field": "to"}, "value": "10.0.7.20"}
+        ]}
+      ],
       "predict": {"prompt": "Once the loops are cut, how does the job travel?", "options": [
         {"label": "One clean path to the printer", "claim": {"kind": "no_loss"}},
         {"label": "It storms around the backbone", "claim": {"kind": "fails_at", "node": "prn"}}
@@ -482,6 +546,26 @@
       "debrief": "The new floor is ready. You can hear the printers working above the shop.",
       "evidence": ["srv", "b1", "b3"]
 ,
+      "variants": [
+        {"seed": 2, "overrides": [
+          {"target": {"node": "h1", "field": "ip"}, "value": "10.0.5.51/24"},
+          {"target": {"node": "h2", "field": "ip"}, "value": "10.0.5.52/24"},
+          {"target": {"node": "h3", "field": "ip"}, "value": "10.0.5.53/24"},
+          {"target": {"node": "srv", "field": "ip"}, "value": "10.0.5.30/24"},
+          {"target": {"app": "s1", "field": "to"}, "value": "10.0.5.30"},
+          {"target": {"app": "s2", "field": "to"}, "value": "10.0.5.30"},
+          {"target": {"app": "s3", "field": "to"}, "value": "10.0.5.30"}
+        ]},
+        {"seed": 3, "overrides": [
+          {"target": {"node": "h1", "field": "ip"}, "value": "10.0.7.51/24"},
+          {"target": {"node": "h2", "field": "ip"}, "value": "10.0.7.52/24"},
+          {"target": {"node": "h3", "field": "ip"}, "value": "10.0.7.53/24"},
+          {"target": {"node": "srv", "field": "ip"}, "value": "10.0.7.30/24"},
+          {"target": {"app": "s1", "field": "to"}, "value": "10.0.7.30"},
+          {"target": {"app": "s2", "field": "to"}, "value": "10.0.7.30"},
+          {"target": {"app": "s3", "field": "to"}, "value": "10.0.7.30"}
+        ]}
+      ],
       "predict": {"prompt": "With the floor commissioned, do all desks reach the server?", "options": [
         {"label": "Yes — every desk served, nothing lost", "claim": {"kind": "no_loss"}},
         {"label": "Some desks collide or are dropped", "claim": {"kind": "fails_at", "node": "srv"}}
@@ -1053,6 +1137,18 @@
       "debrief": "The connection is open. The client can now ask for the service record.",
       "evidence": ["pc", "srv"]
 ,
+      "variants": [
+        {"seed": 2, "overrides": [
+          {"target": {"node": "pc", "field": "ip"}, "value": "10.0.5.10/24"},
+          {"target": {"node": "srv", "field": "ip"}, "value": "10.0.5.80/24"},
+          {"target": {"app": "conn", "field": "to"}, "value": "10.0.5.80"}
+        ]},
+        {"seed": 3, "overrides": [
+          {"target": {"node": "pc", "field": "ip"}, "value": "10.0.7.10/24"},
+          {"target": {"node": "srv", "field": "ip"}, "value": "10.0.7.80/24"},
+          {"target": {"app": "conn", "field": "to"}, "value": "10.0.7.80"}
+        ]}
+      ],
       "predict": {"prompt": "With the right SYN and ACK, does the connection open?", "options": [
         {"label": "Yes — the handshake completes and the page returns", "claim": {"kind": "served", "app": "conn"}},
         {"label": "The server resets the connection", "claim": {"kind": "not_delivered", "app": "conn"}}
@@ -1125,6 +1221,18 @@
       "debrief": "The document arrived intact. The delivery record shows the cost of the lost parts.",
       "evidence": ["srv", "sw"]
 ,
+      "variants": [
+        {"seed": 2, "overrides": [
+          {"target": {"node": "pc", "field": "ip"}, "value": "10.0.5.10/24"},
+          {"target": {"node": "srv", "field": "ip"}, "value": "10.0.5.80/24"},
+          {"target": {"app": "dl", "field": "to"}, "value": "10.0.5.80"}
+        ]},
+        {"seed": 3, "overrides": [
+          {"target": {"node": "pc", "field": "ip"}, "value": "10.0.7.10/24"},
+          {"target": {"node": "srv", "field": "ip"}, "value": "10.0.7.80/24"},
+          {"target": {"app": "dl", "field": "to"}, "value": "10.0.7.80"}
+        ]}
+      ],
       "predict": {"prompt": "With this window and timeout, does the file arrive complete?", "options": [
         {"label": "Yes — every part arrives, with some resends", "claim": {"kind": "transferred", "app": "dl"}},
         {"label": "It never finishes the whole file", "claim": {"kind": "not_delivered", "app": "dl"}}
@@ -1197,6 +1305,18 @@
       "debrief": "The catalogue reached the shop. The record shows how much work the line repeated.",
       "evidence": ["srv", "sw"]
 ,
+      "variants": [
+        {"seed": 2, "overrides": [
+          {"target": {"node": "pc", "field": "ip"}, "value": "10.0.5.10/24"},
+          {"target": {"node": "srv", "field": "ip"}, "value": "10.0.5.80/24"},
+          {"target": {"app": "dl", "field": "to"}, "value": "10.0.5.80"}
+        ]},
+        {"seed": 3, "overrides": [
+          {"target": {"node": "pc", "field": "ip"}, "value": "10.0.7.10/24"},
+          {"target": {"node": "srv", "field": "ip"}, "value": "10.0.7.80/24"},
+          {"target": {"app": "dl", "field": "to"}, "value": "10.0.7.80"}
+        ]}
+      ],
       "predict": {"prompt": "With your window and timeout, does the catalogue arrive complete?", "options": [
         {"label": "Yes — the whole catalogue arrives", "claim": {"kind": "transferred", "app": "dl"}},
         {"label": "It stalls and never completes", "claim": {"kind": "not_delivered", "app": "dl"}}
