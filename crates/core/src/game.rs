@@ -17,7 +17,7 @@ use crate::sim::{Body, FactVal, Proto, Record, Sim};
 pub const MAP_W: i32 = 1000;
 pub const MAP_H: i32 = 600;
 /// A node's icon, in map units, and the gaps between icon and its two labels.
-pub const ICON: i32 = 76;
+pub const ICON: i32 = 100;
 const LABEL_GAP: i32 = 16;
 const LINE_GAP: i32 = 18;
 /// How far a frame rides to the right of its cable, so the two directions of

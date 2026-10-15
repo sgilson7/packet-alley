@@ -1711,13 +1711,13 @@
         "subnet": "10.0.0.0/24",
         "wire_cost": 1,
         "max_wire": 560,
-        "costs": [{"kind": "server", "cost": 600}, {"kind": "host", "cost": 300}, {"kind": "switch", "cost": 90}],
+        "costs": [{"kind": "server", "cost": 0}, {"kind": "host", "cost": 0}, {"kind": "switch", "cost": 90}],
         "palette": [{"kind": "switch", "name": "Switch", "max": 3, "ports": 8}],
         "obstacles": [{"x": 420, "y": 230, "w": 160, "h": 150, "label": "Kitchen"}],
         "needs_addr": ["reg1", "reg2", "reg3"],
         "addr_choices": ["10.0.0.11/24", "10.0.0.12/24", "10.0.0.13/24", "10.0.0.14/24", "10.0.1.50/24"],
-        "star_cost": [3293, 3325],
-        "gold_cost": 3276
+        "star_cost": [1793, 1825],
+        "gold_cost": 1776
       }
     }
   ]

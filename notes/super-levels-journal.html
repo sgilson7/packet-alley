@@ -141,7 +141,7 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
       <p>The floor opens with only the fixed endpoints in place and glowing, each one asking for an address. The dashed box is the kitchen — a wall you cannot drop a machine on and must route cable around. Nothing is wired yet, so nothing works yet.</p>
       <figure>
         <img src="img/02-empty-floor.png" alt="The restaurant floor: front and patio registers on the left, a bar register bottom-right, a card-auth server top-right, and a dashed KITCHEN box in the middle. Each machine glows orange and reads needs an address.">
-        <figcaption><b>The empty floor.</b> The bill already reads $1,500 — the registers and server are bought; what's left is the connective gear and the cable.</figcaption>
+        <figcaption><b>The empty floor.</b> The bill starts at $0 — the registers and the server are already yours, so the only thing you spend on is the connective gear and the cable.</figcaption>
       </figure>
     </li>
 
@@ -190,7 +190,7 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
       <p class="what">action: run it on the real engine, watch the packets</p>
       <p>Each register sends a card-auth request to the server and waits for the approval to come back. The same deterministic simulation that runs every other level carries it, step by step, in the searchable log. If every register gets its reply, the shop is open.</p>
       <figure>
-        <img src="img/07-result-gold.png" alt="A result sheet reading Delivered!, four stars (three plus a gold one), Set up for $3,267, a note Hidden gold star — one of the cheapest shops anyone has wired, three green goals met, and the lesson recap.">
+        <img src="img/07-result-gold.png" alt="A result sheet reading Delivered!, four stars (three plus a gold one), Set up for $1,767, a note Hidden gold star — one of the cheapest shops anyone has wired, three green goals met, and the lesson recap.">
         <figcaption><b>A clean build.</b> Three stars for the cost tier, and the fourth — gold — for landing in the cheapest few per cent. The bill, the goals, and the lesson are all on the result.</figcaption>
       </figure>
     </li>
@@ -214,13 +214,13 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
       <thead><tr><th>Stars</th><th>Among all buildable networks</th><th>Total at most</th></tr></thead>
       <tbody>
         <tr><td>★</td><td>it works at all</td><td class="num">— (any passing build)</td></tr>
-        <tr><td>★★</td><td>cheapest two-thirds (≤ 66th percentile)</td><td class="num">$3,325</td></tr>
-        <tr><td>★★★</td><td>cheapest third (≤ 33rd percentile)</td><td class="num">$3,293</td></tr>
-        <tr><td class="gold-cell">★★★★ gold</td><td class="gold-cell">cheapest ~5% (≤ 5th percentile) — hidden</td><td class="num gold-cell">$3,276</td></tr>
+        <tr><td>★★</td><td>cheapest two-thirds (≤ 66th percentile)</td><td class="num">$1,825</td></tr>
+        <tr><td>★★★</td><td>cheapest third (≤ 33rd percentile)</td><td class="num">$1,793</td></tr>
+        <tr><td class="gold-cell">★★★★ gold</td><td class="gold-cell">cheapest ~5% (≤ 5th percentile) — hidden</td><td class="num gold-cell">$1,776</td></tr>
       </tbody>
     </table>
   </div>
-  <p>The prices that feed this are meant to feel real: a point-of-sale register and the server are the sunk cost of the shop ($1,500 together), a small switch is $90, and cable is a dollar a unit. Because the machines are fixed, the only thing the stars really reward is a short, clever run of cable.</p>
+  <p>The prices are meant to feel real and to keep the focus on the layout: the registers and the server are already yours, so they cost nothing to the bill; a small switch is $90, and cable is a dollar a unit. With the machines free, the stars reward exactly one thing — a short, clever run of cable (plus not buying a switch you didn't need).</p>
   <div class="note gold">
     <strong>The kitchen is the whole puzzle</strong>
     <p>The cheapest place for one switch is the geometric centre of the four machines — which sits dead inside the kitchen. So the true optimum is walled off, and the best a student can do is tuck the switch against a kitchen wall. That one obstacle turns "drop it in the middle" into an actual decision.</p>

@@ -1627,7 +1627,48 @@ function showHow() {
 
 // ---------- wiring ----------
 
+// Drag the map to pan it when zoomed in. A drag only starts on empty map —
+// grabbing a device, an edit badge, a cable or the chooser is left to its own
+// click, so inspecting still works. No numbers: the scroll follows the pointer.
+function setupPan() {
+  const wrap = el("map-wrap");
+  const drag = { on: false, sx: 0, sy: 0, sl: 0, st: 0 };
+  wrap.addEventListener("pointerdown", (ev) => {
+    if (
+      ev.target.closest(".node-hit") ||
+      ev.target.closest(".edit-badge") ||
+      ev.target.closest(".build-cable-hit") ||
+      ev.target.closest("#chooser")
+    ) {
+      return;
+    }
+    drag.on = true;
+    drag.sx = ev.clientX;
+    drag.sy = ev.clientY;
+    drag.sl = wrap.scrollLeft;
+    drag.st = wrap.scrollTop;
+    wrap.classList.add("grabbing");
+  });
+  // No pointer capture, so a plain click on the empty floor still reaches the
+  // map (placing a machine); the drag just follows the pointer while it is down.
+  wrap.addEventListener("pointermove", (ev) => {
+    if (!drag.on) {
+      return;
+    }
+    wrap.scrollLeft = drag.sl - (ev.clientX - drag.sx);
+    wrap.scrollTop = drag.st - (ev.clientY - drag.sy);
+  });
+  const end = () => {
+    drag.on = false;
+    wrap.classList.remove("grabbing");
+  };
+  wrap.addEventListener("pointerup", end);
+  wrap.addEventListener("pointercancel", end);
+  wrap.addEventListener("pointerleave", end);
+}
+
 function wire() {
+  setupPan();
   el("home-btn").addEventListener("click", renderMenu);
   el("how-btn").addEventListener("click", showHow);
   el("overlay-close").addEventListener("click", closeOverlay);

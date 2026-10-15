@@ -63,22 +63,22 @@ fn the_bill_is_what_the_geometry_costs() {
     // before any wiring: the three registers + server are bought, no cable yet.
     let s0 = g.build_state();
     assert!(has(&s0, "\"wire\":0"), "no cable laid yet: {s0}");
-    assert!(
-        has(&s0, "\"machines\":1500"),
-        "the fixed machines cost 1500: {s0}"
-    );
+    assert!(has(&s0, "\"machines\":0"), "the fixed machines are free: {s0}");
     let out = solve(&mut g);
-    // switch (90) + fixed (1500) = 1590 machines; cable 475+490+388+368 = 1721.
-    assert!(has(&out, "\"machines\":1590"), "a switch adds 90: {out}");
+    // only the placed switch costs (90); cable 475+490+388+368 = 1721.
+    assert!(
+        has(&out, "\"machines\":90"),
+        "only the switch costs, at 90: {out}"
+    );
     assert!(
         has(&out, "\"wire\":1721"),
         "the cable bill matches the distances: {out}"
     );
     assert!(
-        has(&out, "\"total\":3311"),
+        has(&out, "\"total\":1811"),
         "the total is machines plus cable: {out}"
     );
-    // 3311 sits in the middle third (<= 3325 but > 3293): two stars, no gold.
+    // 1811 sits in the middle third (<= 1825 but > 1793): two stars, no gold.
     assert!(
         has(&out, "\"stars\":[true,true,false]"),
         "a fair build earns two stars: {out}"
