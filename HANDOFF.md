@@ -56,6 +56,7 @@ examples — are built.
 | `cargo test -p pa_core --test campaign` | every level passes with its intended choices; none passes before a change; the quiz scores |
 | `./scripts/check.sh` final local run | BUILDER CHECK PASSED: browser check in Chromium, Firefox and WebKit |
 | `./scripts/check.sh` after the advanced-mission tier + map zoom | BUILDER CHECK PASSED in Chromium, Firefox and WebKit (19-level campaign probe green; zoom verified by screenshot at 3×) |
+| `./scripts/check.sh` after v2 (edit on the map, curved cables, wider palette, rewritten prose) | BUILDER CHECK PASSED in Chromium, Firefox and WebKit; campaign green (choices unchanged); the browser check now drives the on-map pointing gesture (SECOND-ORDER rows 20–23) |
 | CI on `main` (Chromium) | check: success, deploy: success |
 | `BUILDER_ORIGIN=https://sgilson7.github.io/packet-alley tests/browser/check.py` | PASSED in Chromium against the live site |
 | Website `make check`, `make packet`, `make gate`, `make deploy` | all passed; the listing is live and filed as a classroom tool |

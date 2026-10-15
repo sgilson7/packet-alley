@@ -6,9 +6,11 @@ server, hubs, switches and routers — and a job: address a packet so it arrives
 swap a hub for a switch to stop collisions, break a switching loop, give a host
 its gateway, fix a routing table, point a packet away from a loop before its
 hops run out, find a neighbour's hardware address, open a connection the TCP
-way, and finish a transfer over a line that drops frames. You make a change,
-press Run, and the fight plays out on the map: every frame rides its cable, and
-a log in words says what each device did and why anything was lost.
+way, and finish a transfer over a line that drops frames. You change the network
+on the map itself — click a device to swap it, click a waiting packet and point
+at the machine to send it to, click a cable to block it — then press Run, and
+the fight plays out: every frame rides its cable, and a log in words says what
+each device did and why anything was lost.
 
 **Play:** https://sgilson7.github.io/packet-alley/
 
@@ -43,8 +45,11 @@ each chapter gets genuinely technical.
   of ordinary requests overwhelms a single server's link, most are dropped, and
   a question draws out why — and what actually defends against it. See below.
 
-Every choice is a click, never typed text, so no one has to hand-enter an
-address. Every packet is labelled with a letter and named in a list beside the
+Every change is made on the map — click an edit badge to open a chooser right
+there, or point at a glowing machine to send a packet to it — with the same
+choices mirrored in a side panel you can hide. Every choice is a click, never
+typed text, so no one has to hand-enter an address, and no one can pass by
+guessing a two-button menu. Every packet is labelled with a letter and named in a list beside the
 map, and every map mark is a symbol, so nothing is told apart by colour alone;
 the status colours are the Okabe–Ito set, which stay distinct for colour-blind
 readers. The map has a zoom slider (with `+`/`−` and reset) and scrolls when
