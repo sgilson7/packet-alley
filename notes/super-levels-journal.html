@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Packet Alley — Super Levels Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #fbefd0;
+  --surface: #ffffff;
+  --fg: #3b2340;
+  --muted: #7a6a74;
+  --rule: #d8c3a4;
+  --accent: #0072b2;
+  --accent-soft: #e4eef6;
+  --good: #0a7f58;
+  --good-soft: #e1f2ea;
+  --warn: #a15c00;
+  --warn-soft: #f8ecd6;
+  --gold: #b8860b;
+  --gold-soft: #f6edcf;
+  --font-display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #171019; --surface: #211826; --fg: #f1e7d8; --muted: #a99fa8; --rule: #3a2d3c;
+    --accent: #64b5e6; --accent-soft: #1d2b38; --good: #6fd3a3; --good-soft: #15291f;
+    --warn: #e2a14e; --warn-soft: #30230f; --gold: #e3bb4e; --gold-soft: #2c2410;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #171019; --surface: #211826; --fg: #f1e7d8; --muted: #a99fa8; --rule: #3a2d3c;
+  --accent: #64b5e6; --accent-soft: #1d2b38; --good: #6fd3a3; --good-soft: #15291f;
+  --warn: #e2a14e; --warn-soft: #30230f; --gold: #e3bb4e; --gold-soft: #2c2410;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body);
+  font-size: 16px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap {
+  max-width: 980px; margin: 0 auto; display: grid; gap: 52px;
+  padding: 48px max(16px, env(safe-area-inset-left)) 96px;
+}
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; }
+h1 { font-size: clamp(32px, 6vw, 52px); font-weight: 700; margin: 0 0 8px; letter-spacing: -0.01em; }
+h2 { font-size: clamp(23px, 4vw, 31px); font-weight: 700; margin: 0; }
+h3 { font-size: 19px; font-weight: 700; margin: 24px 0 4px; }
+p { max-width: 70ch; }
+a { color: var(--accent); }
+code { font-family: var(--font-mono); font-size: 0.88em; background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); font-weight: 500; }
+.lede { font-size: 18px; color: var(--muted); max-width: 66ch; }
+
+header.top { border-bottom: 3px solid var(--fg); padding-bottom: 20px; }
+.section-head { display: flex; flex-direction: column; gap: 4px; border-top: 2px solid var(--rule); padding-top: 14px; margin-bottom: 8px; }
+
+.note { background: var(--accent-soft); border-radius: 10px; padding: 16px 18px; margin: 18px 0; }
+.note.warn { background: var(--warn-soft); }
+.note.gold { background: var(--gold-soft); }
+.note strong { display: block; margin-bottom: 4px; font-family: var(--font-display); }
+.note p { margin: 0; max-width: none; }
+
+figure { margin: 22px 0; }
+figure img {
+  width: 100%; display: block; background: var(--surface);
+  border: 1px solid var(--rule); border-radius: 12px; padding: 8px;
+}
+figcaption { font-family: var(--font-mono); font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+figcaption b { color: var(--fg); font-weight: 500; }
+
+.steps { counter-reset: step; list-style: none; padding: 0; margin: 20px 0; display: grid; gap: 0; }
+.step { border-top: 1px solid var(--rule); padding: 16px 0; display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 6px 14px; align-items: start; }
+.step::before { counter-increment: step; content: counter(step); font-family: var(--font-display); font-size: 26px; font-weight: 700; color: var(--accent); grid-column: 1; grid-row: 1 / -1; }
+.step > * { grid-column: 2; min-width: 0; }
+.step h3 { margin: 0; align-self: center; }
+.step p { margin: 0; color: var(--fg); }
+.step .what { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+.insights { list-style: none; padding: 0; margin: 20px 0; border-top: 2px solid var(--rule); }
+.insight { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 4px 12px; padding: 18px 0; border-bottom: 1px solid var(--rule); align-items: start; }
+.insight .num { font-family: var(--font-display); font-size: 30px; font-weight: 700; color: var(--accent); grid-column: 1; grid-row: 1 / -1; }
+.insight > div:not(.num) { grid-column: 2; min-width: 0; }
+.insight h3 { margin: 0; align-self: center; }
+.insight p { margin: 0; }
+.insight .verdict { font-size: 14.5px; }
+.insight .verdict b { font-family: var(--font-mono); text-transform: uppercase; font-size: 11px; letter-spacing: 0.06em; color: var(--accent); margin-right: 8px; }
+
+.table-scroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); margin: 20px 0; }
+table { width: 100%; border-collapse: collapse; min-width: 520px; }
+th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--rule); }
+th { font-family: var(--font-mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); background: var(--bg); }
+td.num { font-variant-numeric: tabular-nums; }
+tr:last-child td { border-bottom: none; }
+.gold-cell { color: var(--gold); font-weight: 600; }
+
+.theme-toggle { position: fixed; top: 14px; right: 14px; font-family: var(--font-mono); font-size: 12px; background: var(--surface); color: var(--fg); border: 1px solid var(--rule); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule); padding-top: 16px; }
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="theme" type="button">theme</button>
+<div class="wrap">
+
+<header class="top">
+  <div class="eyebrow">Packet Alley · design journal · super levels</div>
+  <h1>Your own restaurant</h1>
+  <p class="lede">The first of the end-of-zone "super" levels — where the student stops answering one question and builds a whole working network from scratch, under a budget. This entry is the MVP: what it is, every action a student takes, how it's graded, the calls I made, and how the tests keep it honest.</p>
+</header>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Entry 1 · 15 October 2026</div><h2>Why a super level, and what this one is</h2></div>
+  <p>Every teaching zone in Packet Alley ends on a short finale. The super level is the zone's capstone: roughly ten times the graph (nodes plus edges) of anything in the zone, and instead of choosing one option on a fixed map, the student <em>places the machines, runs the cables, assigns the addresses, and fills every table themselves</em>. It is as close to setting up a real network as the game gets, and it still runs on the same deterministic engine as every other level — more pieces for the student to decide, not a new simulation.</p>
+  <p>The block zone teaches one network: hosts, a switch, frames carried by MAC address. So its super level is a shop you just opened. Three registers sit in far corners, a card-auth server is bolted into the back room, and a reel of cable is on the counter. The cable is not free. The job: get all three registers talking to the server for as little money as you can.</p>
+  <figure>
+    <img src="img/01-super-card.png" alt="The Frames on the Block zone with a full-width orange Super Challenge card reading Your own restaurant below the six level cards.">
+    <figcaption><b>The zone's capstone.</b> A distinct full-width card closes the zone. It unlocks once the zone's ordinary levels are cleared (or in Teacher mode). It carries its own stars and is kept out of the 57-star total for now.</figcaption>
+  </figure>
+  <div class="note">
+    <strong>The four things the student does</strong>
+    <p><b>Place</b> machines from a palette · <b>wire</b> them cable by cable within a reel limit · <b>address</b> each machine on the one block · <b>fill</b> the switch's forwarding table. Each one is a real decision the engine then lives or dies by.</p>
+  </div>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Part 1</div><h2>What the student does, step by step</h2></div>
+
+  <ol class="steps">
+    <li class="step">
+      <h3>Start with the bones of the shop</h3>
+      <p class="what">given: three registers, one server, a kitchen in the way</p>
+      <p>The floor opens with only the fixed endpoints in place and glowing, each one asking for an address. The dashed box is the kitchen — a wall you cannot drop a machine on and must route cable around. Nothing is wired yet, so nothing works yet.</p>
+      <figure>
+        <img src="img/02-empty-floor.png" alt="The restaurant floor: front and patio registers on the left, a bar register bottom-right, a card-auth server top-right, and a dashed KITCHEN box in the middle. Each machine glows orange and reads needs an address.">
+        <figcaption><b>The empty floor.</b> The bill already reads $1,500 — the registers and server are bought; what's left is the connective gear and the cable.</figcaption>
+      </figure>
+    </li>
+
+    <li class="step">
+      <h3>Place a switch</h3>
+      <p class="what">action: pick Switch from the palette, click an open spot</p>
+      <p>A switch costs $90 and the palette says how many are left. Click it to arm it, then click the floor to set it down. Where it sits is the whole optimisation: the closer it is to the four machines, the less cable each run needs — but the geometric sweet spot in the middle is exactly where the kitchen is.</p>
+      <figure>
+        <img src="img/03-switch-placed.png" alt="A single switch placed just below the kitchen box, labelled Switch 1, with the four machines still unwired around it.">
+        <figcaption><b>One switch down.</b> Placement is one click; dropping it on the kitchen is refused with a message. A second or third switch is allowed — sometimes two cheap ones near the clusters beat one in the middle.</figcaption>
+      </figure>
+    </li>
+
+    <li class="step">
+      <h3>Run the cables</h3>
+      <p class="what">action: turn on Draw a cable, click two machines</p>
+      <p>Each cable is clicked machine-to-machine and priced the instant it lands — the number on the line is its dollars. A cable longer than the reel allows is refused. The bill updates with every run, so the student sees a straight trade between a tidy layout and a sprawling one.</p>
+      <figure>
+        <img src="img/04-wired.png" alt="The switch wired to all four machines in a star, each cable labelled with its cost: $350, $483, $356, $488. The brief shows the machines and the running bill.">
+        <figcaption><b>Four cables, four prices.</b> A star from the switch to each machine. The cable labels ($350–$488) are the live cost; the brief's bill adds them up under "Cable".</figcaption>
+      </figure>
+    </li>
+
+    <li class="step">
+      <h3>Give every machine its address</h3>
+      <p class="what">action: click a register, pick an address from the list</p>
+      <p>Clicking a machine opens a small panel. A register needs an address on the shop's block. The list is mostly valid choices plus one deliberate trap on a different block — pick that and the register can never reach the server, which is the one-subnet lesson made concrete.</p>
+      <figure>
+        <img src="img/05-address.png" alt="A popover over the front register titled Front register with a dropdown labelled Its address on the shop's block.">
+        <figcaption><b>Addressing a machine.</b> The server's address is fixed (it's the known target); the three registers are the student's to set. An off-block pick fails on purpose.</figcaption>
+      </figure>
+    </li>
+
+    <li class="step">
+      <h3>Fill the switch's table</h3>
+      <p class="what">action: click the switch, choose a cable for each machine</p>
+      <p>A build switch does not learn — the student <em>is</em> its table. For each machine, pick the cable the switch should send that machine's frames out of ("to reach the bar register, send out the cable toward the bar register"). Phrasing it by neighbour means the student never types a port number; they point at the wire they drew.</p>
+      <figure>
+        <img src="img/06-switch-table.png" alt="A popover titled Switch 1, What this switch forwards, with a row per machine (Front register, Patio register, Bar register, Card-auth server), each with a dropdown, plus Run a cable from here and Remove this machine buttons.">
+        <figcaption><b>Being the switch.</b> One row per machine. Leave a row blank and that machine's frames are dropped; point it at the wrong cable and they go to the wrong place. The table has to be complete and correct.</figcaption>
+      </figure>
+    </li>
+
+    <li class="step">
+      <h3>Open for business</h3>
+      <p class="what">action: run it on the real engine, watch the packets</p>
+      <p>Each register sends a card-auth request to the server and waits for the approval to come back. The same deterministic simulation that runs every other level carries it, step by step, in the searchable log. If every register gets its reply, the shop is open.</p>
+      <figure>
+        <img src="img/07-result-gold.png" alt="A result sheet reading Delivered!, four stars (three plus a gold one), Set up for $3,267, a note Hidden gold star — one of the cheapest shops anyone has wired, three green goals met, and the lesson recap.">
+        <figcaption><b>A clean build.</b> Three stars for the cost tier, and the fourth — gold — for landing in the cheapest few per cent. The bill, the goals, and the lesson are all on the result.</figcaption>
+      </figure>
+    </li>
+  </ol>
+
+  <div class="note warn">
+    <strong>When it doesn't work, the game says why</strong>
+    <p>Leave the server out of the switch table and the run fails with the exact reason, and the step log — filtered to just the losses — shows every dropped frame. The student learns the table matters by watching it not matter.</p>
+  </div>
+  <figure>
+    <img src="img/08-fail-diagnosis.png" alt="A result sheet reading Not delivered yet, zero stars, all three goals failed, and a What went wrong box: Switch 1 has no table entry for 02:00:00:00:00:13, so the frame was dropped. A build switch forwards only by the table you fill. The log behind is filtered to Lost and Switch 1.">
+    <figcaption><b>A missing table row.</b> The diagnosis names the machine with no entry and what to do; the log (filtered to "Lost" / "Switch 1") shows the dropped frames tick by tick.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Part 2</div><h2>How it's graded: stars from the cost of every build</h2></div>
+  <p>Passing is simple — all three registers get their approvals back. The stars are about money, and they're set against the <em>distribution</em> of every network a student could reasonably build, not against a hand-picked number. I enumerated every single-switch placement on the floor, priced each one through the engine's own cost, and read the percentiles off that distribution.</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Stars</th><th>Among all buildable networks</th><th>Total at most</th></tr></thead>
+      <tbody>
+        <tr><td>★</td><td>it works at all</td><td class="num">— (any passing build)</td></tr>
+        <tr><td>★★</td><td>cheapest two-thirds (≤ 66th percentile)</td><td class="num">$3,325</td></tr>
+        <tr><td>★★★</td><td>cheapest third (≤ 33rd percentile)</td><td class="num">$3,293</td></tr>
+        <tr><td class="gold-cell">★★★★ gold</td><td class="gold-cell">cheapest ~5% (≤ 5th percentile) — hidden</td><td class="num gold-cell">$3,276</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The prices that feed this are meant to feel real: a point-of-sale register and the server are the sunk cost of the shop ($1,500 together), a small switch is $90, and cable is a dollar a unit. Because the machines are fixed, the only thing the stars really reward is a short, clever run of cable.</p>
+  <div class="note gold">
+    <strong>The kitchen is the whole puzzle</strong>
+    <p>The cheapest place for one switch is the geometric centre of the four machines — which sits dead inside the kitchen. So the true optimum is walled off, and the best a student can do is tuck the switch against a kitchen wall. That one obstacle turns "drop it in the middle" into an actual decision.</p>
+  </div>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Part 3</div><h2>The calls I made</h2></div>
+  <ol class="insights">
+    <li class="insight"><div class="num">1</div><div>
+      <h3>The student is the switch's table</h3>
+      <p class="verdict"><b>Rule</b>A build switch does not learn; it forwards only by the table the student fills, and drops anything the table doesn't cover. This is what makes filling the table a real task instead of a formality — a flooding switch would deliver no matter what you wrote.</p>
+    </div></li>
+    <li class="insight"><div class="num">2</div><div>
+      <h3>Fix the endpoints, let the student place the connective gear</h3>
+      <p class="verdict"><b>Rule</b>The three registers and the server are placed for you (that's the shop you walked into); the switch and every cable are yours. It keeps the first MVP focused on the wiring-and-cost decision without a blank canvas, while still being a build-from-scratch feel.</p>
+    </div></li>
+    <li class="insight"><div class="num">3</div><div>
+      <h3>Stars are the cost percentiles, derived not guessed</h3>
+      <p class="verdict"><b>Rule</b>Top third, top two-thirds, and a hidden cheapest-5% gold star — read off the real distribution of buildable networks and pinned by a test, so a change to the geometry can't quietly leave the thresholds wrong.</p>
+    </div></li>
+    <li class="insight"><div class="num">4</div><div>
+      <h3>One address choice is a trap</h3>
+      <p class="verdict"><b>Rule</b>The address list includes an address on a different block. Choosing it is a clean, self-explaining failure — the register simply can't find the server — which teaches the one-subnet rule by letting the student break it.</p>
+    </div></li>
+    <li class="insight"><div class="num">5</div><div>
+      <h3>Clever can beat tidy</h3>
+      <p class="verdict"><b>Later</b>Two cheap switches near the two clusters can cost less than one central switch, and the engine forwards across them correctly. The current distribution only samples single-switch builds, so a two-switch find is simply rewarded as gold — a nice thing to discover. A future pass could fold multi-switch builds into the distribution.</p>
+    </div></li>
+  </ol>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Part 4</div><h2>How Builder carries it: the tests</h2></div>
+  <p>The core owns every decision and does no I/O, so the whole level is testable headlessly — and because students will poke at it in ways I won't predict, the suite is a permutation sweep in the spirit of a survivors-like's "rig space": enumerate the networks a student could build, play each through the real engine, and hold every one to the same rules.</p>
+  <ul>
+    <li><b>Every buildable spot delivers.</b> Every place a switch can legally sit and reach all four, wired and configured correctly, passes — no dead spot silently fails a student who did everything right, and nothing panics.</li>
+    <li><b>The tiers are the real percentiles.</b> The suite recomputes the cost distribution from the engine and asserts the level's thresholds equal the 5th/33rd/66th percentiles. A stale threshold fails the build.</li>
+    <li><b>Nothing wedges the core.</b> Thousands of random edit sequences across many deterministic seeds — place, wire, unwire, address, fill, remove — always return valid state, keep the invariants (bill = machines + cable, no cable beats the reel, no more switches than allowed), and never panic.</li>
+    <li><b>The failure modes really fail.</b> An off-block or duplicate address can't deliver; every single missing table row leaves the server unreachable; a wrong row misdelivers. Each is its own test.</li>
+    <li><b>It's deterministic, and it works across engines.</b> The same build runs byte-for-byte the same twice, and a full place-wire-address-fill-run flow passes in Chromium, Firefox and WebKit on every check.</li>
+  </ul>
+  <p>Sixty-one core tests at the time of writing, and <code>./scripts/check.sh</code> green in all three browsers.</p>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Part 5</div><h2>What the MVP doesn't do yet — and for Ally to weigh in on</h2></div>
+  <ul>
+    <li><b>Static switch vs. "switches learn."</b> The block zone teaches that a switch learns its table automatically; this level asks the student to fill a static one. It's a defensible deepening ("be the table"), and static entries are real, but it is a slight reframing — worth a read from Ally. Routers in later zones will use the same table-as-input mechanic more naturally.</li>
+    <li><b>Placement is partial.</b> For this first MVP the endpoints are fixed and only the switch and cables are the student's. A fuller version could let the student place and even hand-connect everything on a blank floor.</li>
+    <li><b>The distribution is single-switch.</b> The star tiers are read from single-switch builds; a two-switch build that beats them is just rewarded as gold. Folding multi-switch networks into the distribution would make the tiers exact.</li>
+    <li><b>Supers sit outside the 57-star total for now.</b> Like the demonstration scenes, super levels are tracked but kept out of the headline star count until the whole set of zone finales is built.</li>
+  </ul>
+  <p>Next zones get their own super levels on the same bones: routers whose forwarding tables and signposts the student sets by hand, and a transport-layer build where the handshake and the windows are theirs to configure.</p>
+</section>
+
+<footer>
+  Packet Alley · a TCP/IP teaching game. Core owns every decision in integer maths and cannot reach a real network; the page draws what it returns. Screenshots are of the live MVP.
+</footer>
+
+</div>
+<script>
+(function () {
+  var btn = document.getElementById("theme");
+  var root = document.documentElement;
+  function cur() {
+    if (root.getAttribute("data-theme")) return root.getAttribute("data-theme");
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  btn.addEventListener("click", function () {
+    root.setAttribute("data-theme", cur() === "dark" ? "light" : "dark");
+  });
+})();
+</script>
+</body>
+</html>
