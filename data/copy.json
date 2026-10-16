@@ -213,6 +213,8 @@
   "ev_served": "{a} got its answer.",
   "ev_lost": "A frame from {a} to {b} was lost on the cable.",
   "ev_no_entry": "{a} has no table entry for {b}, so the frame was dropped.",
+  "ev_no_cable": "{a} has no cable, so nothing it sends can leave. The frame was dropped.",
+  "ev_no_addr": "{a} has no address, so it cannot address a packet. Nothing was sent.",
 
   "why_no_gateway": "A computer needs a gateway to reach another block.",
   "why_arp_fail": "That address is not on this block. Check the address, or send through the router.",
@@ -225,6 +227,8 @@
   "why_bad_ack": "The third step must acknowledge the server's number plus one.",
   "why_nothing_lost": "Nothing was dropped — the goal just was not met in time. Try a change.",
   "why_no_entry": "A build switch forwards only by the table you fill. Add a row for that machine, pointing out the right cable.",
+  "why_no_cable": "Every terminal needs a cable to the network. Switch on the wire tool and draw one from it.",
+  "why_no_addr": "Every register needs an address before it can send. Click it and pick one.",
 
   "how_title": "How to read the map",
   "how_1": "Devices sit on the map. Lines between them are cables. Click a device to see what it knows.",

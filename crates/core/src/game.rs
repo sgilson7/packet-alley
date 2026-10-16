@@ -159,6 +159,8 @@ pub const EVENT_KEYS: &[&str] = &[
     "ev_served",
     "ev_lost",
     "ev_no_entry",
+    "ev_no_cable",
+    "ev_no_addr",
 ];
 
 /// The packet classes the page draws. Each has a letter and a name in the

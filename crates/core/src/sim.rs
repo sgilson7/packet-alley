@@ -355,6 +355,13 @@ fn port_of(level: &Level, n: &Node, node: &str, link: &str) -> Result<usize, Str
 impl Sim {
     /// Builds the network a level describes. An error names what is wrong.
     pub fn build(level: &Level) -> Result<Sim, String> {
+        // A "super" build level is assembled from whatever the student placed and
+        // wired, which may be incomplete. There the simulation must still run and
+        // fail visibly — a terminal left unwired, a switch row pointing down a
+        // cable that was pulled — rather than refuse to start. So those structural
+        // checks, which are real invariants for an authored level, become tolerant
+        // here: the misconfiguration surfaces as dropped traffic and unmet goals.
+        let lenient = level.build.is_some();
         let mut nodes: Vec<Node> = Vec::new();
         for (i, d) in level.nodes.iter().enumerate() {
             let role = role_of(&d.kind).ok_or_else(|| format!("{}: unknown kind {}", d.id, d.kind))?;
@@ -385,7 +392,7 @@ impl Sim {
                 established: Vec::new(),
                 half_open: Vec::new(),
             });
-            if role == Role::Host && nodes[i].ip.is_none() {
+            if role == Role::Host && nodes[i].ip.is_none() && !lenient {
                 return Err(format!("{} needs an address", d.id));
             }
         }
@@ -415,7 +422,7 @@ impl Sim {
             nodes[i].outq = vec![VecDeque::new(); ports];
             nodes[i].blocked = vec![false; ports];
             nodes[i].ifaces = vec![None; ports];
-            if nodes[i].role == Role::Host && ports != 1 {
+            if nodes[i].role == Role::Host && ports != 1 && !lenient {
                 return Err(format!("{} must have exactly one cable", d.id));
             }
             if !d.block.is_empty() {
@@ -436,20 +443,29 @@ impl Sim {
             // frames toward. Resolve that neighbour to a port and the machine to
             // its MAC, which is what the forwarding loop matches on.
             for h in &d.mac_hints {
-                let dst = nodes
-                    .iter()
-                    .position(|o| o.id == h.dst)
-                    .ok_or_else(|| format!("{}: table names no machine {}", d.id, h.dst))?;
-                let via = nodes
-                    .iter()
-                    .position(|o| o.id == h.via)
-                    .ok_or_else(|| format!("{}: table names no machine {}", d.id, h.via))?;
+                // A table row the student filled and then invalidated (by removing
+                // the machine or pulling the cable it pointed down) is skipped on a
+                // build level, so the switch simply has no entry for that
+                // destination and floods or drops it — a run that fails, not one
+                // that refuses to start. An authored level still treats it as a bug.
+                let resolve = |id: &str| nodes.iter().position(|o| o.id == id);
+                let (Some(dst), Some(via)) = (resolve(&h.dst), resolve(&h.via)) else {
+                    if lenient {
+                        continue;
+                    }
+                    return Err(format!("{}: table names a machine it has not got", d.id));
+                };
                 let port = nodes[i].ports.iter().position(|&li| {
                     let l = &links[li];
                     let other = if l.a.0 == i { l.b.0 } else { l.a.0 };
                     other == via
                 });
-                let port = port.ok_or_else(|| format!("{}: no cable toward {}", d.id, h.via))?;
+                let Some(port) = port else {
+                    if lenient {
+                        continue;
+                    }
+                    return Err(format!("{}: no cable toward {}", d.id, h.via));
+                };
                 let mac = nodes[dst].mac;
                 nodes[i].mac_table.push((mac, port));
             }
@@ -588,6 +604,14 @@ impl Sim {
     }
 
     fn enqueue(&mut self, n: usize, port: usize, f: Frame) {
+        // A terminal the student never cabled has no port to send on. Its traffic
+        // has nowhere to go, so it is dropped at the source (and logged) instead of
+        // indexing a port that does not exist — the build runs and fails loudly.
+        if port >= self.nodes[n].outq.len() {
+            let who = self.name(n);
+            self.event(n, "ev_no_cable", vec![who], "drop");
+            return;
+        }
         let cap = if self.nodes[n].role == Role::Host {
             HOST_QUEUE
         } else {
@@ -686,7 +710,20 @@ impl Sim {
                 continue;
             }
             let from = a.from;
-            let src = self.nodes[from].ip.expect("address").ip;
+            // A terminal the student never addressed (possible only on a build
+            // level, which no longer refuses an unfinished network) cannot form a
+            // packet. It drops what it would have sent — logged once, when first
+            // due — so the run fails visibly instead of panicking on a missing IP.
+            let src = match self.nodes[from].ip {
+                Some(c) => c.ip,
+                None => {
+                    if t == a.at && a.sent < a.count {
+                        let who = self.name(from);
+                        self.event(from, "ev_no_addr", vec![who], "drop");
+                    }
+                    continue;
+                }
+            };
             let ttl = self.nodes[from].ttl;
             match a.kind {
                 Kind::Udp | Kind::Ping => {
@@ -1008,7 +1045,11 @@ impl Sim {
     }
 
     fn host(&mut self, n: usize, f: Frame) {
-        let me = self.nodes[n].ip.expect("address").ip;
+        // An unaddressed terminal (lenient build only) has no identity to match
+        // or reply with, so anything that reaches it is simply ignored.
+        let Some(me) = self.nodes[n].ip.map(|c| c.ip) else {
+            return;
+        };
         if f.dst_mac != self.nodes[n].mac && f.dst_mac != BROADCAST_MAC {
             let who = self.name(n);
             self.event(n, "ev_ignore", vec![who, show_mac(f.dst_mac)], "ignore");

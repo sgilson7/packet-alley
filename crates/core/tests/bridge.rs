@@ -154,6 +154,40 @@ fn a_hub_at_the_exchange_loses_replies() {
 }
 
 #[test]
+fn an_unwired_build_still_runs_and_fails_loudly() {
+    // The point of the super levels: hitting "Build & run" on a network that is
+    // not finished must RUN and fail visibly, never silently refuse. With nothing
+    // placed or wired, the terminals have no cable, so what they send is dropped
+    // at the source — the run completes, does not pass, and says why.
+    let mut g = game();
+    let out = g
+        .run()
+        .expect("an unfinished build still runs instead of refusing");
+    assert!(
+        has(&out, "\"passed\":false"),
+        "an empty build cannot deliver: {out}"
+    );
+    assert!(
+        has(&out, "no cable"),
+        "the diagnosis names the missing cable: {out}"
+    );
+}
+
+#[test]
+fn a_single_unwired_terminal_still_runs() {
+    // A fully-built network with one terminal left unplugged: it still runs (the
+    // old behaviour refused the whole level over "exactly one cable").
+    let mut g = game();
+    star(&mut g);
+    g.unwire("regL", "m3").expect("pull the island terminal's cable");
+    let out = g.run().expect("one unwired terminal does not block the run");
+    assert!(
+        has(&out, "\"passed\":false"),
+        "the island branch can no longer reach anything: {out}"
+    );
+}
+
+#[test]
 fn a_cable_cannot_cross_the_water() {
     let mut g = game();
     // a router on the north bank, over open water (not a bridge gap) from the HQ

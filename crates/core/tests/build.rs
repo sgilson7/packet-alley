@@ -57,6 +57,26 @@ fn two_switch(g: &mut Game) {
 }
 
 #[test]
+fn an_unfinished_restaurant_still_runs_and_fails_loudly() {
+    // Hitting "Build & run" before the shop is wired or the registers addressed
+    // must RUN and fail visibly, not silently refuse. With nothing placed, the
+    // registers have no address to send from, so the run completes, does not
+    // pass, and the diagnosis says why.
+    let mut g = game();
+    let out = g
+        .run()
+        .expect("an unfinished restaurant still runs instead of refusing");
+    assert!(
+        has(&out, "\"passed\":false"),
+        "an empty shop cannot serve anyone: {out}"
+    );
+    assert!(
+        has(&out, "no address"),
+        "the diagnosis names the unaddressed register: {out}"
+    );
+}
+
+#[test]
 fn the_restaurant_can_be_wired_and_passes() {
     let mut g = game();
     two_switch(&mut g);

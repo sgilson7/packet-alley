@@ -61,6 +61,7 @@ examples — are built.
 | CI on `main` (Chromium) | check: success, deploy: success |
 | `BUILDER_ORIGIN=https://sgilson7.github.io/packet-alley tests/browser/check.py` | PASSED in Chromium against the live site |
 | `./scripts/check.sh` after the network-layer super "The Seven Bridges" (routers + mixed palette in build mode, student-filled router forwarding tables, Königsberg water/bridges, analytics on the north bank) | BUILDER CHECK PASSED in Chromium, Firefox and WebKit; 58 `cargo test -p pa_core` green (new `tests/bridge.rs`, 7); the browser check places four routers + two switches, wires eleven lines over the bridges, fills every router's table and opens across the river (SECOND-ORDER rows 35–36) |
+| `./scripts/check.sh` after making both super levels run on an incomplete network (Sam: the simulation must run and fail visibly, not refuse, when the network is not set up right) | BUILDER CHECK PASSED in Chromium, Firefox and WebKit; 65 `cargo test -p pa_core` green (new runs-and-fails tests in `bridge.rs` + `build.rs`); a 3-engine in-browser check confirmed an empty build on both super levels opens a failing result sheet naming the problem (SECOND-ORDER row 39). A winning run is filmed at `notes/img/seven-bridges-win.gif`. |
 | Website `make check`, `make packet`, `make gate`, `make deploy` | all passed; the listing is live and filed as a classroom tool |
 
 ## The curriculum packet (Sam's `packet_alley_curriculum_packet`)
