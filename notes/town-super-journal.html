@@ -134,6 +134,7 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
 
 <nav class="tabnav">
   <button data-tab="tab-v2" class="active" type="button">The Seven Bridges<span class="pill">current</span></button>
+  <button data-tab="tab-backdrop" type="button">Backdrop study<span class="pill">proposal</span></button>
   <button data-tab="tab-v1" type="button">Branches across town<span class="pill old">v1</span></button>
 </nav>
 
@@ -647,6 +648,59 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
 </section>
 
 </div><!-- /tab-v1 -->
+
+<div class="tab" id="tab-backdrop">
+
+<section>
+  <div class="draft">Proposal · mockups for review · the game backdrop is not changed yet</div>
+  <div class="section-head"><div class="eyebrow">Backdrop study · 16 October 2026</div><h2>Make the scenery an old map of Königsberg</h2></div>
+  <p>Right now the Seven Bridges plays over the town zone's street-grid backdrop (<code>web/art/backdrops/town.png</code>) — a modern block of city streets. It doesn't mesh with a river running through it: the gameplay is islands and bridges, but the picture behind is intersections and sidewalks. Sam asked to base the scenery on a real historical map of Königsberg and recreate that art style, so the whole scene looks like one old engraving. These are mockups of that, for review — <b>no game art has been changed.</b></p>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Part 1</div><h2>The source maps</h2></div>
+  <p>Königsberg (now Kaliningrad) was engraved many times in the age of the great city atlases. Three are the obvious references for the art style, and all are long in the public domain:</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Source</th><th>What it gives the style</th></tr></thead>
+      <tbody>
+        <tr><td><b>Braun &amp; Hogenberg, <i>Civitates Orbis Terrarum</i> (1582)</b> — the Königsberg / Kaliningrad plate</td><td>The classic oblique bird's-eye view: little gabled houses in rows, the Pregel splitting the town, hatched water, a decorative cartouche and figures. <a href="https://en.wikipedia.org/wiki/Kneiphof">Kneiphof</a> and the river are already the subject.</td></tr>
+        <tr><td><b>Merian-Erben (1652)</b> — the Königsberg plan</td><td>A tighter city plan of the same view a lifetime later: the fortified walls, the bridges across the centre, the cathedral on the island. (Referenced in the <a href="https://www.maths.tcd.ie/~dwilkins/Courses/MA2C03/MA2C03Courseware_2013to14/BridgesOfKoenigsberg.html">TCD graph-theory notes</a>.)</td></tr>
+        <tr><td><b>Euler's figure (1736)</b> — from the paper that founded graph theory</td><td>The schematic the whole level rests on: four land areas, seven bridges, the branches of the Pregel. <a href="https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg">Seven Bridges of Königsberg</a>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The shared idiom: aged parchment, sepia copperplate line-work, oblique 3-D buildings with hatched shading, water drawn as fine wavy engraved lines, a title cartouche, a compass rose and a ruled border. I recreated that in vector art, with the geography laid out to match the game's river exactly.</p>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Part 2</div><h2>The mockup</h2></div>
+  <figure>
+    <img src="img/backdrop-01-engraving.png" alt="A mockup backdrop drawn as an antique engraving of Königsberg: aged parchment with a title cartouche reading Königsberg, on the River Pregel; four land masses (North Bank, Kneiphof, Lomse, South Bank) with rows of little oblique gabled houses, a cathedral on Kneiphof, a bastioned wall along the North Bank, the River Pregel drawn as fine hatched waves with sailing ships, an eight-point compass rose and a double-ruled border.">
+    <figcaption><b>The backdrop alone.</b> Parchment and sepia line-work in the Braun &amp; Hogenberg / Merian idiom — a title cartouche, the Kneiphof cathedral, a bastioned wall, hatched water with ships, a compass rose and a ruled border. The river's shape <em>is</em> the game's water, so the picture and the playfield are the same geometry.</figcaption>
+  </figure>
+  <figure>
+    <img src="img/backdrop-02-gameplay.png" alt="The same antique Königsberg backdrop, faded back, with the Seven Bridges gameplay on top: the machines the student places (routers, switches, hosts, the card-auth HQ and analytics logger), the cables between them, and the seven bridges labelled Merchant's, Blacksmith's, Wooden, Green, Giblets, High and Honey — the only crossings over the engraved river.">
+    <figcaption><b>With the gameplay on top.</b> The engraving fades back; the machines, the cables and the seven named bridges sit on it. The engraved Pregel reads as the thing a cable can't cross, and the bridges as the only way over — the art and the rules become one picture. (Labels are in English, with the real English names of the seven bridges.)</figcaption>
+  </figure>
+  <div class="note">
+    <strong>Why it meshes where the street grid didn't</strong>
+    <p>The barrier in this level is <em>water</em>, and the crossings are <em>bridges</em>. An old river-city map is built around exactly those two things, so the backdrop now explains the rules instead of fighting them — and it ties the whole level to Euler's Königsberg, which is where the lesson comes from.</p>
+  </div>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Part 3</div><h2>How it would ship, and what I'd want your read on</h2></div>
+  <ul>
+    <li><b>As a backdrop asset for this level.</b> The art pipeline is vector-first (TikZ → <code>web/art/</code>); this would become a Königsberg backdrop PNG the <code>newbridge</code> level points at, in place of the town grid. The mockup is SVG, so it ports to the pipeline cleanly. The interactive water/bridges/machines keep living in the core-driven SVG on top; only the picture behind changes.</li>
+    <li><b>Per-level backdrop.</b> Today a backdrop is set per chapter. The simplest route is to let a level override its chapter's backdrop (one new optional field), so only the Seven Bridges uses the map and the other town levels keep the street view — or we move the whole town zone onto it if you like it enough.</li>
+    <li><b>Labels &amp; density.</b> The mockup labels the four land masses, the river and all seven bridges in English. In-game the bridge names will sit near the machines at the bridgeheads, so I'd thin them (or show a name only on hover) to keep the playfield readable.</li>
+    <li><b>Open question — how far to push the art.</b> This is clean vector "engraving"; a truly etched look (denser cross-hatching, a real aged-paper texture) is possible but heavier. I'd tune it to sit quietly behind the gameplay rather than compete with it. Tell me if you want it more ornate or more restrained.</li>
+  </ul>
+  <p>If this direction is good, say the word and I'll build the backdrop into the pipeline and wire the Seven Bridges to it.</p>
+</section>
+
+</div><!-- /tab-backdrop -->
 
 <footer>
   Packet Alley · a TCP/IP teaching game. Core owns every decision in integer maths and cannot reach a real network; the page draws what it returns. The screenshots on this page are of a <b>design mockup</b> built to show the proposed level — no game code has been changed. Textbook excerpts are quoted under CC BY-SA 3.0 from <i>Computer Networking: Principles, Protocols and Practice</i> (O. Bonaventure et&nbsp;al., cnp3/ebook), the same source the game cites in its concept panels.
