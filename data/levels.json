@@ -1677,7 +1677,7 @@
       ]}
     },
     {
-      "id": "newspot", "chapter": "block", "title": "Your own restaurant",
+      "id": "newspot", "chapter": "block", "title": "Your own restaurant", "backdrop": "noodle-shop",
       "story": "You have moved out and opened your own noodle shop. The three registers are in, the card-auth server is bolted into the back room, and a reel of cable is on the counter. Now wire it up yourself — and the cable is not free.",
       "concept": [
         "On one network every machine shares a block and a switch carries the frames between them.",

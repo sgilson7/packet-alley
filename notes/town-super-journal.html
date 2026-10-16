@@ -652,9 +652,13 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
 <div class="tab" id="tab-backdrop">
 
 <section>
-  <div class="draft">Proposal · mockups for review · the game backdrop is not changed yet</div>
+  <div class="draft">Built &amp; live · both super levels now wear an antique backdrop</div>
   <div class="section-head"><div class="eyebrow">Backdrop study · 16 October 2026</div><h2>Make the scenery an old map of Königsberg</h2></div>
-  <p>Right now the Seven Bridges plays over the town zone's street-grid backdrop (<code>web/art/backdrops/town.png</code>) — a modern block of city streets. It doesn't mesh with a river running through it: the gameplay is islands and bridges, but the picture behind is intersections and sidewalks. Sam asked to base the scenery on a real historical map of Königsberg and recreate that art style, so the whole scene looks like one old engraving. These are mockups of that, for review — <b>no game art has been changed.</b></p>
+  <p>The Seven Bridges used to play over the town zone's street-grid backdrop — a modern block of streets that didn't mesh with a river running through it. Sam asked to base the scenery on a real historical map of Königsberg and recreate that art style, so the whole scene looks like one old engraving. <b>This is now built and deployed</b>; the restaurant super level got a matching antique floor plan too. The study below records the sources and the mockups; the live result is at the end.</p>
+  <figure>
+    <img src="img/backdrop-03-live-bridges.png" alt="The Seven Bridges as it now plays: the antique Königsberg engraving as the backdrop (hatched Pregel, the four land masses labelled Kneiphof / Lomse / North Bank / South Bank, the cathedral, bridge planks, a compass rose) with the game's six fixed endpoints on it.">
+    <figcaption><b>Live.</b> The engraved Königsberg map behind the gameplay — the river is the barrier, the bridges the crossings, and the whole scene is one old picture.</figcaption>
+  </figure>
 </section>
 
 <section>
@@ -690,14 +694,17 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
 </section>
 
 <section>
-  <div class="section-head"><div class="eyebrow">Part 3</div><h2>How it would ship, and what I'd want your read on</h2></div>
-  <ul>
-    <li><b>As a backdrop asset for this level.</b> The art pipeline is vector-first (TikZ → <code>web/art/</code>); this would become a Königsberg backdrop PNG the <code>newbridge</code> level points at, in place of the town grid. The mockup is SVG, so it ports to the pipeline cleanly. The interactive water/bridges/machines keep living in the core-driven SVG on top; only the picture behind changes.</li>
-    <li><b>Per-level backdrop.</b> Today a backdrop is set per chapter. The simplest route is to let a level override its chapter's backdrop (one new optional field), so only the Seven Bridges uses the map and the other town levels keep the street view — or we move the whole town zone onto it if you like it enough.</li>
-    <li><b>Labels &amp; density.</b> The mockup labels the four land masses, the river and all seven bridges in English. In-game the bridge names will sit near the machines at the bridgeheads, so I'd thin them (or show a name only on hover) to keep the playfield readable.</li>
-    <li><b>Open question — how far to push the art.</b> This is clean vector "engraving"; a truly etched look (denser cross-hatching, a real aged-paper texture) is possible but heavier. I'd tune it to sit quietly behind the gameplay rather than compete with it. Tell me if you want it more ornate or more restrained.</li>
-  </ul>
-  <p>If this direction is good, say the word and I'll build the backdrop into the pipeline and wire the Seven Bridges to it.</p>
+  <div class="section-head"><div class="eyebrow">Part 3</div><h2>What shipped</h2></div>
+  <p>The engraving is now the backdrop for the Seven Bridges, rendered to <code>web/art/backdrops/koenigsberg.png</code>. A new per-level <code>backdrop</code> field overrides the chapter's, so only this level uses the map; a <code>terrain_bg</code> flag tells the page the backdrop supplies the river and bridges, so the SVG stops painting them over it and only the invisible collision shapes (enforced by the core) remain. The bridge-name labels were left out of the picture to keep the playfield clear — the bridges read as planks, and a refused cable names the water.</p>
+  <p>The restaurant super level (super #1) got a matching treatment: an antique floor plan of the shop, <code>noodle-shop.png</code> — the kitchen drawn as a room with a stove, a Counting Room for the card-auth server, Front / Patio / Bar service counters, dining tables, a title cartouche and a compass. The game still draws its dashed KITCHEN box on top to mark the no-cable zone.</p>
+  <figure>
+    <img src="img/backdrop-04-live-restaurant.png" alt="The restaurant super level as it now plays: an antique floor-plan backdrop titled The Noodle Shop, with the kitchen room (stove and prep counter) under the dashed KITCHEN box, the registers at Front/Patio/Bar counters, the card-auth server in the Counting Room, two switches and the cables routed around the kitchen.">
+    <figcaption><b>The matching restaurant plan.</b> Super level #1 on the same engraving idiom — the kitchen is a room on the plan, and the game's dashed box still marks where cable can't go.</figcaption>
+  </figure>
+  <div class="note good">
+    <strong>Playtested</strong>
+    <p>Before shipping, I played the Seven Bridges hard, looking for spots that would block or confuse a student. The fixes that came out of it: the bridge gaps were <b>widened</b> (a straight cable has to thread a gap, and the old 40-unit gaps left only a 46-unit placement window — now ~94, about one icon); wiring two machines on one block straight to a router is now a clear <b>"put them on a switch"</b> refusal instead of a silent misdelivery; and the cross-water, place-on-water and hop-count messages were rewritten to name the water, the bridge and the hops instead of the restaurant's kitchen. All verified live across the three browsers.</p>
+  </div>
 </section>
 
 </div><!-- /tab-backdrop -->
