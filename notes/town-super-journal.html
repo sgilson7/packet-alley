@@ -126,7 +126,7 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
 <div class="wrap">
 
 <header class="top">
-  <div class="draft">Design proposal · for review · nothing built yet</div>
+  <div class="draft">The Seven Bridges is built &amp; live · v1 (Branches across town) is the earlier proposal</div>
   <div class="eyebrow">Packet Alley · design journal · super levels · the network layer</div>
   <h1>The network-layer super level</h1>
   <p class="lede">The capstone for <em>Routes Across Town</em> — where the student stops answering one question and builds a whole routed network from scratch, under a budget. Two designs live here. <b>The Seven Bridges</b> is the current proposal: four neighbourhoods on the land masses of Königsberg, a mix of the right boxes, and an Exchange that approves and logs every sale. <b>Branches across town</b> is the first, simpler proposal, kept for reference. Both tabs are mockups for your review — no game code has been touched.</p>
@@ -144,12 +144,19 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
   <p>The first proposal (the <em>Branches across town</em> tab) proved the shape: place routers, lay lines around an obstacle, address, set gateways, fill signposts, size the hop count, pay for it. This revision keeps all of that and answers the brief that followed it — the level should make a student <em>choose between machine types</em> (a hub here, a switch there, a router between blocks), spread across <b>four</b> neighbourhoods, on a map with real geography, with a shared endpoint the data has to pass through for analytics.</p>
   <p>The map is the <b>Seven Bridges of Königsberg</b>. The river Pregel cut the city into four land masses — two banks and two islands — joined by seven bridges; in 1736 Euler proved you cannot walk the city crossing each bridge exactly once, and modern graph theory was born. Here the four land masses are four neighbourhoods, each its own block; wires may cross water only on a bridge; and — unlike Euler's walk — you do <em>not</em> need all seven. You pick the cheapest set of crossings that connects every neighbourhood to the heart of the city.</p>
   <figure>
-    <img src="img/bridge-03-wired.png" alt="The Seven Bridges super level: a map of Königsberg with north bank, south bank, Kneiphof (the central island, labelled THE EXCHANGE) and Lomse (east island), separated by water with seven named wooden bridges. Routers sit on each land mass, a switch and two servers (card-auth HQ and analytics logger) plus a desk on the central island, a hub joining two registers on the south bank. Leased lines cross only at bridges; a red dashed line shows a refused cable with the message a cable can't cross the water, run it over a bridge. The brief totals $3,118.">
+    <img src="img/bridge-03-wired.png" alt="The Seven Bridges super level in the live game: a map of Königsberg with north bank, south bank, Kneiphof (central island) and Lomse (east island), separated by water with seven wooden bridges. The North register and the Analytics logger sit on the north bank behind a switch; the Card-auth HQ and the Exchange desk on the central island behind a second switch; routers on each land mass carry the leased lines over the bridges, each labelled with its cost.">
     <figcaption><b>The whole level.</b> Four neighbourhoods, the Exchange on Kneiphof, and a mix of routers, a switch and a hub — each where it belongs. Leased lines cross only on bridges; a cable over open water is refused.</figcaption>
   </figure>
   <div class="note">
     <strong>What this adds over v1</strong>
-    <p><b>Four neighbourhoods</b> (one terminal each) · a <b>mix of machine types</b> the student must choose correctly (router / switch / hub) · a <b>water-and-bridges</b> geography where crossings are the scarce resource · and <b>the Exchange</b>, where every sale must be both approved (card-auth) and recorded (analytics) — two endpoints the traffic has to reach.</p>
+    <p><b>Four neighbourhoods</b> (one terminal each) · a <b>mix of machine types</b> the student must choose correctly (router / switch / hub) · a <b>water-and-bridges</b> geography where crossings are the scarce resource · and two destinations every sale must reach — the <b>card-auth HQ</b> on the central island, and the <b>analytics logger</b> across the water in the far corner of the north bank.</p>
+  </div>
+  <div class="note good">
+    <strong>Built &amp; shipped — and how the live level differs from this proposal</strong>
+    <p>The screenshots below are of the <b>live level</b>, not a mockup. Building it clarified three things, all noted at the relevant step:</p>
+    <p>· <b>The analytics logger moved to the north bank</b> (Sam's call), so it is a second <em>destination block</em> — the routers now need signposts to two neighbourhoods, and the north bank, with the register and the logger, needs its own switch. There are <b>two</b> switched segments, not one.</p>
+    <p>· <b>Addressing and gateways are derived by the engine</b> from the student's wiring in this first version — so the student's decisions are the boxes, the cables, the <b>forwarding tables</b> and the hop count. Student-set per-interface addressing (shown as a design idea further down) is the next deepening, not yet shipped.</p>
+    <p>· <b>The hub-vs-switch choice is enforced by a "runs clean — no collisions" goal</b> rather than a popover: a hub on a busy segment collides and fails the run (with a diagnosis that names it), while an all-switch build runs clean.</p>
   </div>
 </section>
 
@@ -157,7 +164,7 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
   <div class="section-head"><div class="eyebrow">Part 1</div><h2>The map is Königsberg</h2></div>
   <p>The level opens with the four land masses drawn and the four neighbourhoods' endpoints glowing, each asking for its part of the setup. The <b>north bank</b> and <b>south bank</b> run top and bottom; <b>Kneiphof</b>, the central island, is <em>the Exchange</em>; <b>Lomse</b> is the east island. Between them is water, and the only way across is one of the seven bridges — Krämer, Schmiede, Grüne, Köttel, Honig, Holz and Hohe, each drawn where the real one stood.</p>
   <figure>
-    <img src="img/bridge-01-city.png" alt="The empty Königsberg map: four land masses in tan surrounded by blue water, seven labelled wooden bridges, and the fixed endpoints glowing — North register, the Card-auth HQ and Analytics logger and Exchange desk on the central island, the Island register on Lomse, and the South register and kiosk on the south bank, each reading needs an address. Nothing is wired.">
+    <img src="img/bridge-01-city.png" alt="The empty Königsberg map in the live game: four land masses in tan surrounded by blue water, seven wooden bridges, and the fixed endpoints — North register and Analytics logger on the north bank, Card-auth HQ and Exchange desk on the central island, Island register on Lomse, South register on the south bank. Nothing is wired yet.">
     <figcaption><b>The empty city.</b> Nothing crosses the water yet. Machines cannot be placed on water; the bridges are the only crossings, and three of the seven are enough.</figcaption>
   </figure>
   <div class="quote">
@@ -171,21 +178,21 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
   <div class="section-head"><div class="eyebrow">Part 2</div><h2>Pick the right box for each spot</h2></div>
   <p>This is the new heart of the level. The palette now offers three boxes, and the student has to put the <em>right</em> one in each place — the same judgement a real installer makes.</p>
   <figure>
-    <img src="img/bridge-02-machines.png" alt="The Königsberg map with the student's gear placed: a router on each of the four land masses near its bridges, a switch on the central island linking the two servers and the desk, and a hub on the south bank linking the register and the kiosk. The switch and hub glow to mark the choice just made.">
-    <figcaption><b>Routers between neighbourhoods, a switch at the Exchange, a hub on the quiet bank.</b> A single host that only talks to its router needs no box at all — another judgement the level rewards.</figcaption>
+    <img src="img/bridge-02-machines.png" alt="The Königsberg map in the live game with the student's gear placed: a router on each of the four land masses near its bridges, a switch on the central island linking the card-auth HQ and the desk, and a second switch on the north bank linking the register and the analytics logger.">
+    <figcaption><b>Routers between neighbourhoods; a switch on each two-host segment.</b> The Exchange (HQ + desk) and the north bank (register + logger) each get a switch; a single register that only talks to its router needs no box at all — another judgement the level rewards.</figcaption>
   </figure>
   <div class="table-scroll">
     <table>
       <thead><tr><th>Spot</th><th>Right box</th><th>Why</th></tr></thead>
       <tbody>
         <tr><td>Between two neighbourhoods (across a bridge)</td><td><b>Router</b> · $300</td><td>Only a router forwards between IP blocks. A switch or hub can't leave the block.</td></tr>
-        <tr><td>The Exchange (HQ + logger + desk)</td><td><b>Switch</b> · $90</td><td>Three machines answer at once; a switch forwards each reply out only its own port.</td></tr>
-        <tr><td>A quiet bank (register + kiosk)</td><td><b>Hub</b> · $40</td><td>Only one host talks at a time, so there are no collisions to avoid — the cheap box is the right one.</td></tr>
-        <tr><td>A single host to its router</td><td><b>No box</b> · $0</td><td>One cable does it; buying gear here just wastes money.</td></tr>
+        <tr><td>A segment where several machines answer — the Exchange (HQ + desk) and the north bank (register + logger)</td><td><b>Switch</b> · $90</td><td>A switch forwards each reply out only its own port, so concurrent answers don't collide.</td></tr>
+        <tr><td>A single host to its router (the south and island registers)</td><td><b>No box</b> · $0</td><td>One cable does it; buying gear here just wastes money.</td></tr>
+        <tr><td>A busy segment, done cheap</td><td><b>Hub</b> · $40 — the trap</td><td>A hub repeats to every port, so concurrent replies collide and the run fails to run clean. $50 cheaper, and wrong.</td></tr>
       </tbody>
     </table>
   </div>
-  <p>The switch-vs-hub choice is a real decision on the map, priced and explained where it's made — and grounded in the same textbook the block zone already quotes:</p>
+  <p>The switch-vs-hub choice is a real decision, grounded in the same textbook the block zone already quotes:</p>
   <div class="quote">
     <p>A hub is thus a physical layer relay that receives an electrical signal on one of its interfaces, regenerates the signal and transmits it over all its other interfaces.</p>
     <cite>Computer Networking: Principles, Protocols and Practice, 3rd ed. — O. Bonaventure et al., <a href="https://beta.computer-networking.info/syllabus/default/protocols/lan.html">protocols/lan.html</a>. CC BY-SA 3.0.</cite>
@@ -194,17 +201,13 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
     <p>An Ethernet switch understands the format of the Ethernet frames and can selectively forward frames over each interface.</p>
     <cite>protocols/lan.html. CC BY-SA 3.0.</cite>
   </div>
-  <figure>
-    <img src="img/bridge-07-device.png" alt="Two popovers side by side. Box for the Exchange: three machines answer at once, a hub (collides) versus a switch (keeps them apart, chosen) — pay for the switch. Box for the South bank: just a register and a kiosk, only one busy at a time, a hub (chosen, plenty) versus a switch (overkill).">
-    <figcaption><b>The same question, two answers.</b> At the Exchange the switch is worth $90; on the quiet south bank a $40 hub is the right call. The level teaches that "better box" depends on the spot.</figcaption>
-  </figure>
   <div class="note warn">
-    <strong>Put a hub where a switch belongs, and the Exchange eats the replies</strong>
-    <p>If the student saves $50 and drops a hub at the Exchange, the card-auth reply and the analytics reply leave together and collide on the hub — both lost. The diagnosis names it: this is a collision domain, and three talkers need a switch. (The engine already models hub collisions; the level just lets the student feel them.)</p>
+    <strong>Put a hub where a switch belongs, and the run won't run clean</strong>
+    <p>The shipped level enforces this with a goal: <em>every busy segment runs clean — no collisions</em>. Drop a $40 hub at a segment where several machines answer at once, and their replies collide; the run delivers everything but fails the no-collisions goal, so it scores <b>zero stars</b> even though it was cheaper. That's the point — the cheap wrong box can't win. The diagnosis names the hub and says what to do.</p>
   </div>
   <figure>
-    <img src="img/bridge-08-hubfail.png" alt="A failure result sheet reading Lost at the Exchange, zero of four stars, over a map where the Exchange has a hub with a red collision burst. The note: you wired a hub where three machines answer at once; the card-auth reply and the analytics reply collided on the hub and were lost. The Exchange needs a switch.">
-    <figcaption><b>The wrong box, diagnosed.</b> The collision is shown on the map and named on the result — the link-layer lesson from zone one, paid off one layer up.</figcaption>
+    <img src="img/bridge-08-hubfail.png" alt="A result sheet reading Not delivered yet, zero of three stars, set up for $8,074. All eight approve/log goals are green ticks, but the ninth — every busy segment runs clean, no collisions — is a red cross. What went wrong: Hub 1, two frames arrived at once and collided; a hub lets only one device talk at a time, a switch gives each device its own line.">
+    <figcaption><b>The wrong box, diagnosed.</b> A hub at the Exchange delivers every request but collides — the no-collisions goal fails and the build earns nothing, even at $8,074. The result names the hub and the fix.</figcaption>
   </figure>
 </section>
 
@@ -219,41 +222,36 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
 </section>
 
 <section>
-  <div class="section-head"><div class="eyebrow">Part 4</div><h2>Then the routing: address, gateway, signpost, hops</h2></div>
-  <p>With the boxes placed and the bridges crossed, the routing is the same set of decisions the first proposal made — and the same three textbook ideas — now over four blocks and a river.</p>
+  <div class="section-head"><div class="eyebrow">Part 4</div><h2>Then the routing: the engine addresses, you fill the tables</h2></div>
+  <p>With the boxes placed and the bridges crossed, the student's remaining decisions are the <b>forwarding tables</b> and the <b>hop count</b> — the two network-layer ideas this zone is about. The addresses the tables refer to are derived by the engine from the wiring, so the student points at roads, not octets.</p>
 
   <ol class="steps">
     <li class="step">
-      <h3>Address every link on its own block</h3>
-      <p class="what">action: click a router, give each link an address</p>
-      <p>Each router sits on several blocks; every link takes an address on <em>its</em> block — a <code>/24</code> to a neighbourhood, a <code>/30</code> across a bridge — with off-block traps in the list.</p>
+      <h3>The engine addresses the network</h3>
+      <p class="what">derived from the wiring — no typing</p>
+      <p>From the cables alone, the engine gives every router interface an address on its block (a <code>/24</code> toward a neighbourhood, a point-to-point <code>/30</code> across a bridge) and every host a gateway — the router on its own block. The inspector shows what each machine got, so the table rows are readable.</p>
       <figure>
-        <img src="img/bridge-04-address.png" alt="A popover over the North router: its link down to the North register set to 10.0.1.1/24 (on the north block, ticked), and its link across Schmiede bridge to the Exchange on 10.0.254.0/30 with a dropdown to choose the point-to-point address, with off-block traps.">
-        <figcaption><b>An address per link.</b> The bridge link is a point-to-point <code>/30</code>; the neighbourhood link is on the neighbourhood's <code>/24</code>.</figcaption>
+        <img src="img/bridge-05-gateway.png" alt="The North register's inspector in the live game, showing its MAC address, its IP 10.0.1.10/24, and its gateway 10.0.1.1 — the north router's address on the north block — all derived by the engine from the wiring.">
+        <figcaption><b>Derived, not typed.</b> The register's gateway is the north router's address on the north block — worked out from the cables. <i>Student-set per-interface addressing, with off-block traps, is the next deepening (sketched in Part 8); this first version keeps the focus on the tables.</i></figcaption>
       </figure>
     </li>
     <li class="step">
-      <h3>Point each neighbourhood at its gateway</h3>
-      <p class="what">action: click a register, choose its way off the block</p>
-      <p>A register reaches its own block directly and hands everything else to a gateway on that block — its local router. The far routers are offered as traps.</p>
+      <h3>Fill every router's forwarding table</h3>
+      <p class="what">action: click a router, choose the road for each far block</p>
+      <p>This is the heart of the level — the routed twin of the restaurant's switch table. Connected blocks need no entry; for every far block, the student picks the neighbouring router that leads there. A wrong signpost sends the packet to a router that can't deliver it — a black hole; a missing one strands it at the first router.</p>
       <figure>
-        <img src="img/bridge-05-gateway.png" alt="A popover over the North register showing address 10.0.1.10/24 and block 10.0.1.0/24, with a gateway dropdown offering 10.0.1.1 (North router, on our block, correct) and two off-block traps.">
-        <figcaption><b>The hand-off.</b> The gateway must be an address the register can already reach — one on its own block.</figcaption>
-      </figure>
-    </li>
-    <li class="step">
-      <h3>Fill every router's signposts</h3>
-      <p class="what">action: click a router, choose the bridge for each far block</p>
-      <p>Connected blocks need no entry; for every far block, the student picks the bridge toward it. A wrong signpost sends the packet to a router that can't deliver it — a black hole.</p>
-      <figure>
-        <img src="img/bridge-06-table.png" alt="A popover titled North router · signposts: 10.0.1.0/24 marked connected, and rows for the Exchange (10.0.9.0/24), the south block and the island block, each pointing over Schmiede bridge to the Exchange router, with a trap option.">
-        <figcaption><b>Being the forwarding table.</b> Phrased by bridge and neighbour, never a port number — the same idiom as the restaurant's switch table, carrying IP blocks.</figcaption>
+        <img src="img/bridge-06-table.png" alt="The Exchange router's inspector in the live game, titled What this router forwards, with a row per remote block — 10.0.1.0/24 North bank, 10.0.2.0/24 South bank, 10.0.3.0/24 Lomse — each a dropdown of the neighbouring routers to send toward.">
+        <figcaption><b>Being the forwarding table.</b> One row per block the router can't see directly; the student points at a neighbour router, never a port number — the same idiom as the restaurant's switch table, now carrying IP blocks.</figcaption>
       </figure>
     </li>
     <li class="step">
       <h3>Give packets the hops for the trip</h3>
       <p class="what">action: set the hop count (TTL)</p>
-      <p>The hop count must clear the longest crossing; too low and the packet expires in the river. On the redundant-bridge variation, the TTL is also what ends a loop.</p>
+      <p>The hop count must clear the longest crossing — three routers, from a bank to the analytics logger on the far side. Leave it at the low default and the packet expires mid-river, however perfect the tables. It's the TTL dial, as a single choice.</p>
+      <figure>
+        <img src="img/bridge-07-ttl.png" alt="The build brief in the live game with the Hops of life (TTL) dropdown offering 2, 6 and 32 hops, below the running bill and the star tier.">
+        <figcaption><b>Enough life for the route.</b> Two hops die before the far side; six clear it. A safety limit, not an address.</figcaption>
+      </figure>
     </li>
   </ol>
 
@@ -273,12 +271,12 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
 
 <section>
   <div class="section-head"><div class="eyebrow">Part 5</div><h2>The Exchange approves and logs</h2></div>
-  <p>Kneiphof holds two servers — the <b>card-auth HQ</b> and the <b>analytics logger</b> — and a desk, all on one block behind the switch. Every sale has to be <em>approved</em> at the HQ and <em>recorded</em> at the logger, so each neighbourhood's traffic must reach both. That's why the central segment needs a switch, and why the routing to the Exchange block has to be complete: miss either server and the run fails.</p>
+  <p>Two machines have to be reached from every branch: the <b>card-auth HQ</b>, on Kneiphof with the Exchange desk behind a switch, and the <b>analytics logger</b>, across the water in the far corner of the north bank with the north register behind a second switch. Every sale has to be <em>approved</em> at the HQ and <em>recorded</em> at the logger — so the routers need signposts to both blocks, and both two-host segments need a switch. Miss either destination, or collide on a hub, and the run fails.</p>
   <figure>
-    <img src="img/bridge-09-gold.png" alt="A result sheet reading Open across the river!, four stars (three ink plus one gold), Wired for $3,118, eight green ticks in two columns — North/South/Island/Exchange each approved and logged — and a gold note: three bridges, not seven; every neighbourhood reaches the Exchange on the shortest crossing, and the switch keeps the two servers' replies clean.">
-    <figcaption><b>Approved and logged, all four.</b> Eight checks — approve and log for each neighbourhood — plus the gold star for the cheapest three-bridge build with the right boxes.</figcaption>
+    <img src="img/bridge-09-gold.png" alt="A result sheet in the live game reading Delivered!, four stars (three ink plus one gold), over the wired Königsberg map. Eight green ticks — North, South, Island and Exchange each approved and logged — and the no-collisions goal met.">
+    <figcaption><b>Approved and logged, all four.</b> Eight checks — approve and log for each neighbourhood — plus the no-collisions goal, and the gold star for a clean, cheap build on three of the seven bridges.</figcaption>
   </figure>
-  <p>The analytics endpoint is the "data must pass through a logger" idea from the brief, modelled honestly within the engine's grammar: two required destinations rather than a magic tap. It also motivates the switch, ties the four neighbourhoods together through one place, and leaves room for a later variation where the logger sits <em>on the path</em> and a missed hop drops the record.</p>
+  <p>The analytics endpoint is the "data must be recorded for analytics" idea from the brief, modelled honestly within the engine's grammar: a second required destination rather than a magic tap. Moving it to the north bank (Sam's call) made it a second <em>block</em> to route to, which is what gives the forwarding tables two neighbourhoods to point at and the north bank its own switch. A later variation could put the logger <em>on the path</em>, so a missed hop drops the record.</p>
 </section>
 
 <section>
@@ -344,13 +342,13 @@ footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule)
   <ul>
     <li><b>A mixed palette with real cost.</b> Router / switch / hub, each placeable, each priced — and a build switch and build hub that behave as the sim already models them (a switch forwards selectively; a hub repeats to every port and so collides when two hosts answer at once).</li>
     <li><b>Water as the obstacle, bridges as the gaps.</b> The restaurant's "cable can't cross the kitchen" becomes "cable can't cross water except on a bridge," with machines refused on water — the same integer geometry test over a few rectangles.</li>
-    <li><b>A multi-host LAN with two servers.</b> The central island is one block with the HQ, the logger and a desk behind the student's switch — the first build segment with more than one server, which is what makes the switch necessary.</li>
+    <li><b>Two multi-host segments.</b> The central island (HQ + desk) and the north bank (register + logger) are each one block with more than one machine answering — the first build segments that make a switch necessary rather than optional.</li>
     <li><b>Two required destinations per neighbourhood.</b> "Approved and logged" is two apps that must each succeed, already expressible with the existing goal kinds (as in the <code>roads</code> level's two pings).</li>
     <li><b>Cost sampling over the bridge choices.</b> The star tiers come from a deterministic sweep of valid builds, now ranging over which bridges are bought and which boxes are placed, respecting the no-cross-water rule.</li>
   </ul>
   <p>Open questions for you:</p>
   <ul>
-    <li><b>How many boxes should be a real choice vs. a trap?</b> The clean lesson is one clear switch spot (the Exchange), one clear hub spot (a quiet bank), and routers between blocks. Adding more hub/switch decisions deepens it but risks fiddliness — I lean toward the three clear calls above.</li>
+    <li><b>How many box choices?</b> The shipped level has two clear switch spots (the Exchange and the north bank), single hosts that need no box, and routers between blocks — with the hub as the cheaper trap that fails the no-collisions goal. A "hub is the right cheap call" case (a segment where only one host ever talks) is a good future addition; it isn't in v1.</li>
     <li><b>Four neighbourhoods, one terminal each — plus the Exchange's desk.</b> That makes the central island both a neighbourhood (its desk) and the destination (HQ + logger). Happy to drop the desk if you'd rather the centre be purely the destination.</li>
     <li><b>Analytics as a second destination, or as a waypoint on the path?</b> Two-destinations is honest and within the engine today; a true "must pass through" tap is a bigger change. I'd ship two-destinations now and keep the waypoint as a later variation.</li>
     <li><b>How much Königsberg to tell?</b> The Euler story is a lovely hook for a CS classroom. I'd put one line in the brief and a fuller note in the debrief, not gate anything on it.</li>
