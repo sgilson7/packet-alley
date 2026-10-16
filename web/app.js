@@ -734,10 +734,43 @@ function renderBuildPanel() {
   const tier = buildTier(bs);
   cost.appendChild(tag("p", "cost-tier " + tier.cls, tier.text));
 
+  // Routed builds: the hop count (TTL) the terminals send with.
+  if (bs.ttl && bs.ttl.choices.length) {
+    const tw = tag("div", "build-ttl");
+    tw.appendChild(tag("span", "build-ttl-label", t("build_ttl_h")));
+    const sel = document.createElement("select");
+    sel.className = "build-select";
+    const none = document.createElement("option");
+    none.value = "";
+    none.textContent = t("build_ttl_none");
+    sel.appendChild(none);
+    for (const c of bs.ttl.choices) {
+      const o = document.createElement("option");
+      o.value = String(c);
+      o.textContent = fill(t("build_ttl_opt"), [String(c)]);
+      if (c === bs.ttl.current) {
+        o.selected = true;
+      }
+      sel.appendChild(o);
+    }
+    sel.addEventListener("change", (e) => {
+      const n = bs.ttl.choices.find((c) => String(c) === e.target.value);
+      if (n !== undefined) {
+        refreshBuild(call("set_ttl", n));
+      }
+    });
+    tw.appendChild(sel);
+    cost.appendChild(tw);
+  }
+
   const steps = el("build-steps");
   clear(steps);
-  for (const k of ["build_step_place", "build_step_addr", "build_step_table", "build_step_cost"]) {
-    steps.appendChild(tag("li", null, t(k)));
+  // Each build level states its own steps in its concept lines.
+  const lines = bs.concept && bs.concept.length
+    ? bs.concept
+    : ["build_step_place", "build_step_addr", "build_step_table", "build_step_cost"].map((k) => t(k));
+  for (const line of lines) {
+    steps.appendChild(tag("li", null, line));
   }
 }
 
@@ -760,6 +793,45 @@ function buildMachines() {
   return bld.state.fixed.concat(bld.state.placed);
 }
 
+// A plank across each gap between two in-line water pieces — the bridges a
+// cable may cross. Water on one band shares a y and height (a horizontal row of
+// pieces); the river channel shares an x and width (a vertical column). Between
+// each neighbouring pair sits one bridge.
+function drawBridges(g, water) {
+  const bands = {};
+  for (const o of water) {
+    const h = o.y + ":" + o.h + ":h";
+    (bands[h] = bands[h] || []).push(o);
+    const v = o.x + ":" + o.w + ":v";
+    (bands[v] = bands[v] || []).push(o);
+  }
+  for (const key in bands) {
+    const horiz = key.endsWith("h");
+    const list = bands[key].slice().sort((p, q) => (horiz ? p.x - q.x : p.y - q.y));
+    for (let i = 1; i < list.length; i++) {
+      const a = list[i - 1];
+      const b = list[i];
+      if (horiz) {
+        const x = a.x + a.w;
+        const gap = b.x - x;
+        // a real crossing is a narrow gap in the band, not the island-wide span
+        // between a piece of one band and a piece of the other.
+        const lim = a.w < b.w ? a.w : b.w;
+        if (gap > 0 && gap < lim) {
+          g.appendChild(svg("rect", { class: "bridge", x: x, y: a.y, width: gap, height: a.h }));
+        }
+      } else {
+        const y = a.y + a.h;
+        const gap = b.y - y;
+        const lim = a.h < b.h ? a.h : b.h;
+        if (gap > 0 && gap < lim) {
+          g.appendChild(svg("rect", { class: "bridge", x: a.x, y: y, width: a.w, height: gap }));
+        }
+      }
+    }
+  }
+}
+
 function renderBuildMap() {
   const bs = bld.state;
   const map = el("map");
@@ -773,16 +845,23 @@ function renderBuildMap() {
     bld.index[m.id] = i;
   });
 
-  // Fixtures to route around.
+  // Fixtures to route around. Water reads as water (and the gaps between its
+  // pieces become the bridges a cable may cross); any other obstacle is a wall.
   const obs = svg("g", {});
+  const water = [];
   for (const o of bs.obstacles) {
-    obs.appendChild(svg("rect", { class: "obstacle", x: o.x, y: o.y, width: o.w, height: o.h }));
-    if (o.label) {
+    const isWater = o.label === "water";
+    obs.appendChild(svg("rect", { class: isWater ? "obstacle water" : "obstacle", x: o.x, y: o.y, width: o.w, height: o.h }));
+    if (o.label && !isWater) {
       const txt = svg("text", { class: "obstacle-label", x: o.cx, y: o.cy });
       txt.textContent = o.label;
       obs.appendChild(txt);
     }
+    if (isWater) {
+      water.push(o);
+    }
   }
+  drawBridges(obs, water);
   map.appendChild(obs);
 
   // Cables, each with its length and price, and a wide invisible hit line so a
@@ -957,6 +1036,10 @@ function openMachineEditor(m) {
   if (m.addr) {
     factRow(t("tbl_ip"), m.addr);
   }
+  const gw = bld.state.gateways && bld.state.gateways[m.id];
+  if (gw) {
+    factRow(t("tbl_gateway"), gw);
+  }
   body.appendChild(facts);
 
   if (m.needs_addr) {
@@ -970,8 +1053,11 @@ function openMachineEditor(m) {
     body.appendChild(wrap);
   }
 
-  if (!m.fixed && m.kind === "switch") {
+  if (!m.fixed && m.kind === "switch" && bld.state.static_switch) {
     body.appendChild(switchTableEditor(m));
+  }
+  if (!m.fixed && m.kind === "router") {
+    body.appendChild(routerTableEditor(m));
   }
 
   const act = tag("div", "chooser-actions");
@@ -1043,6 +1129,40 @@ function switchTableEditor(m) {
     td.appendChild(sel);
     tr.appendChild(td);
     table.appendChild(tr);
+  }
+  wrap.appendChild(table);
+  return wrap;
+}
+
+// A router's forwarding table: one row per block it can't see directly, each a
+// dropdown of the neighbouring routers it could send toward. The routed twin of
+// the switch table — the student fills every signpost.
+function routerTableEditor(m) {
+  const bs = bld.state;
+  const wrap = tag("div", "chooser-field");
+  wrap.appendChild(tag("p", "chooser-label", t("build_route_h")));
+  wrap.appendChild(tag("p", "chooser-hint", t("build_route_hint")));
+  const r = (bs.routers || []).find((x) => x.id === m.id);
+  const table = tag("table", "switch-table route-table");
+  if (r) {
+    for (const blk of r.blocks) {
+      const tr = tag("tr");
+      const dst = tag("td", "st-dst");
+      dst.appendChild(tag("span", "route-block", blk.prefix));
+      if (blk.name) {
+        dst.appendChild(tag("span", "route-name", blk.name));
+      }
+      tr.appendChild(dst);
+      const td = tag("td");
+      const opts = r.neighbours.map((n) => [n.id, n.name]);
+      const sel = buildSelect(t("build_via_none"), opts, blk.via, (val) => {
+        call("set_route", m.id, blk.prefix, val);
+        refreshBuild(call("build_state"));
+      });
+      td.appendChild(sel);
+      tr.appendChild(td);
+      table.appendChild(tr);
+    }
   }
   wrap.appendChild(table);
   return wrap;

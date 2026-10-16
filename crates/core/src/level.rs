@@ -117,6 +117,34 @@ pub struct BuildDef {
     /// all tried. 0 means no gold star.
     #[serde(default)]
     pub gold_cost: u32,
+    /// Network-layer builds: every neighbourhood block a router might need a
+    /// signpost toward (prefix + a friendly name). Empty for a one-subnet build
+    /// like the restaurant, which needs no routers.
+    #[serde(default)]
+    pub blocks: Vec<BlockDef>,
+    /// The hop counts (TTL) the student may choose from. Empty means the build
+    /// has no hop-count decision.
+    #[serde(default)]
+    pub ttl_choices: Vec<u32>,
+    /// A placed switch is a static table the student fills by hand (true, the
+    /// restaurant's "be the switch") or an ordinary learning switch (false, the
+    /// routed builds, where the tables the student fills are the routers').
+    #[serde(default = "default_true")]
+    pub static_switch: bool,
+}
+
+/// One neighbourhood block on a routed build: the prefix a router forwards
+/// toward, and a human name for the signpost row.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct BlockDef {
+    pub prefix: String,
+    #[serde(default)]
+    pub name: String,
+}
+
+fn default_true() -> bool {
+    true
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

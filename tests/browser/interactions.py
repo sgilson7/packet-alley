@@ -122,6 +122,7 @@ def run(page, check, engine):
     check(page.locator(".level-card.locked").count() == 17, "passing the first level unlocked the second")
 
     build_flow(page, check)
+    bridge_flow(page, check)
 
 
 def mapclick(page, mx, my):
@@ -148,8 +149,8 @@ def build_flow(page, check):
     # Teacher mode unlocks the super challenge without clearing the whole zone.
     page.check("#teacher")
     page.wait_for_selector(".super-card", timeout=5000)
-    check(page.locator(".super-card").count() == 1, "the zone offers one super challenge")
-    page.locator(".super-card").first.click()
+    check(page.locator(".super-card").count() == 2, "both built zones offer a super challenge")
+    page.locator(".super-card").filter(has_text=re.compile("restaurant", re.I)).first.click()
     page.wait_for_selector("body[data-mode='level']", state="attached", timeout=5000)
     check(page.locator("#l-build:not([hidden])").count() == 1, "the build panel is shown")
     check(images_loaded(page, "#map-wrap"), "the restaurant floor loaded")
@@ -204,3 +205,70 @@ def build_flow(page, check):
     page.wait_for_selector("#overlay:not([hidden])", timeout=20000)
     check(page.inner_text("#overlay-body h2") == COPY["passed"], "every register reaches the server")
     check(page.locator("#overlay-body .stars-big .gold").count() == 1, "a cheapest-few build earns the hidden gold star")
+
+
+def bridge_flow(page, check):
+    """The network-layer super level, "The Seven Bridges": place a mix of boxes
+    (routers and switches), wire them over the bridges, fill every router's
+    forwarding table, set the hop count, and open across the river. A hub where a
+    switch belongs would collide, so the gold build is all switches; this is
+    worked out from the level by hand, not read from the game."""
+    # back to the menu from the restaurant result, then open the routed super
+    page.click("#overlay-close")
+    page.wait_for_selector("#overlay[hidden]", state="attached", timeout=5000)
+    page.click("#home-btn")
+    page.wait_for_selector("body[data-mode='menu']", state="attached", timeout=5000)
+    check(page.locator(".super-card").count() >= 2, "the routed zone has a super challenge too")
+    page.locator(".super-card").filter(has_text=re.compile("Seven Bridges", re.I)).first.click()
+    page.wait_for_selector("#l-build:not([hidden])", timeout=5000)
+    check(images_loaded(page, "#map-wrap"), "the river city loaded")
+    check(page.locator("#map .obstacle.water").count() >= 1, "the river is drawn as water")
+    check(page.locator("#map .bridge").count() == 7, "seven bridges span the gaps in the water")
+
+    # place four routers and two switches (one per multi-host segment)
+    for x, y in [(430, 120), (430, 480), (700, 300), (435, 300)]:
+        page.locator(".palette-item").nth(0).click()
+        mapclick(page, x, y)
+    page.locator(".palette-item").nth(1).click()
+    mapclick(page, 300, 300)
+    page.locator(".palette-item").nth(1).click()
+    mapclick(page, 620, 110)
+    page.wait_for_selector("#map .build-machine", timeout=5000)
+    check(page.locator(".build-machine").count() == 12, "four routers and two switches join the six fixed machines")
+
+    # wire. fixed: regN0 anl1 regS2 regL3 desk4 hq5; placed m1..m6 = 6..11
+    page.locator(".build-tool").filter(has_text=re.compile("cable", re.I)).first.click()
+    for a, c in [(0, 11), (1, 11), (11, 6), (6, 9), (2, 7), (7, 9), (3, 8), (8, 9), (5, 10), (4, 10), (10, 9)]:
+        machine_img(page, a).click()
+        machine_img(page, c).click()
+    check(page.locator(".build-cable").count() == 11, "eleven leased lines run on land or over a bridge")
+    page.locator(".build-tool").filter(has_text=re.compile("Drawing", re.I)).first.click()
+
+    # fill every router's forwarding table: the branch routers send everything
+    # far toward the Exchange router (their only neighbour); the Exchange router
+    # points each branch block down its own road.
+    exch = {"10.0.1.0/24": "Router 1", "10.0.2.0/24": "Router 2", "10.0.3.0/24": "Router 3"}
+    for idx in (6, 7, 8, 9):
+        machine_img(page, idx).click()
+        page.wait_for_selector("#chooser .route-table", timeout=5000)
+        rows = page.locator("#chooser .route-table tr")
+        for ri in range(rows.count()):
+            sel = rows.nth(ri).locator("select")
+            if idx == 9:
+                sel.select_option(label=exch[rows.nth(ri).locator(".route-block").inner_text()])
+            else:
+                sel.select_option(index=1)
+        page.keyboard.press("Escape")
+        page.wait_for_selector("#chooser[hidden]", state="attached", timeout=5000)
+
+    # give the packets enough hops for the longest trip
+    page.locator(".build-ttl select").select_option(label="6 hops")
+
+    page.click("#run-btn")
+    try:
+        page.click("#skip-btn", timeout=6000)
+    except Exception:
+        pass
+    page.wait_for_selector("#overlay:not([hidden])", timeout=20000)
+    check(page.inner_text("#overlay-body h2") == COPY["passed"], "every branch reaches the HQ and the logger")
+    check(page.locator("#overlay-body .stars-big .gold").count() == 1, "a clean, cheap routed build earns the gold star")

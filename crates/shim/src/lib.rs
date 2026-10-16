@@ -89,4 +89,10 @@ impl Game {
     pub fn set_port(&mut self, switch: &str, dst: &str, via: &str) -> String {
         self.inner.set_port(switch, dst, via)
     }
+    pub fn set_route(&mut self, router: &str, prefix: &str, via: &str) -> String {
+        self.inner.set_route(router, prefix, via)
+    }
+    pub fn set_ttl(&mut self, value: u32) -> String {
+        self.inner.set_ttl(value)
+    }
 }

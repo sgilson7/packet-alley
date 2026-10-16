@@ -107,4 +107,10 @@ impl Api {
     pub fn set_port(&mut self, switch: &str, dst: &str, via: &str) -> String {
         self.with(|g| g.set_port(switch, dst, via))
     }
+    pub fn set_route(&mut self, router: &str, prefix: &str, via: &str) -> String {
+        self.with(|g| g.set_route(router, prefix, via))
+    }
+    pub fn set_ttl(&mut self, value: u32) -> String {
+        self.with(|g| g.set_ttl(value))
+    }
 }

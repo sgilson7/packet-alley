@@ -8,7 +8,7 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
-use crate::ip::{parse_cidr, show_ip, show_mac, BROADCAST_MAC};
+use crate::ip::{mask, parse_cidr, show_ip, show_mac, Cidr, BROADCAST_MAC};
 use crate::level::{self, Claim, Cond, Level, LevelFile};
 use crate::sim::{Body, FactVal, Proto, Record, Sim};
 
@@ -73,6 +73,12 @@ struct BuildState {
     addrs: BTreeMap<String, String>,
     /// Switch id → its table: (destination host id, the neighbour to send toward).
     tables: BTreeMap<String, Vec<(String, String)>>,
+    /// Router id → its forwarding table: (destination block prefix, the
+    /// neighbouring router to send toward). The routed-build analogue of a
+    /// switch's MAC table — the student fills every row.
+    routes: BTreeMap<String, Vec<(String, String)>>,
+    /// The hop count (TTL) the student chose for the terminals; 0 = not yet set.
+    ttl: u32,
 }
 
 struct Placed {
@@ -82,6 +88,33 @@ struct Placed {
     x: i32,
     y: i32,
 }
+
+/// The addressing a routed build derives from the student's placement and
+/// wiring: every router interface's address, every host's gateway, and, for
+/// each router, its directly-connected neighbour routers, the address to send
+/// toward each of them, and the remote blocks it still needs a signpost for.
+/// The student never types an address — they choose the box, the cable and the
+/// next-hop neighbour; the engine numbers the network underneath.
+#[derive(Default)]
+struct BuildNet {
+    /// router id → its interfaces: (cable id, address as CIDR).
+    iface: BTreeMap<String, Vec<(String, String)>>,
+    /// host/server id → its gateway address (the router on its own block).
+    gw: BTreeMap<String, String>,
+    /// router id → the router ids it shares a point-to-point link with.
+    rneigh: BTreeMap<String, Vec<String>>,
+    /// (router id, neighbour router id) → the neighbour's address on their link
+    /// (the next hop this router forwards toward).
+    via_ip: BTreeMap<(String, String), String>,
+    /// router id → the blocks it is not directly on, each needing a signpost:
+    /// (prefix, friendly name).
+    remote: BTreeMap<String, Vec<(String, String)>>,
+}
+
+/// The base address the engine numbers point-to-point router links from:
+/// 10.0.254.0, stepping by four (a /30) per link. Chosen to sit clear of the
+/// neighbourhood blocks a level declares.
+const P2P_BASE: u32 = 0x0A00_FE00;
 
 pub struct Game {
     file: LevelFile,
@@ -1009,6 +1042,180 @@ impl Game {
         def.obstacles.iter().any(|o| seg_hits_rect(ax, ay, bx, by, o))
     }
 
+    /// Works out the addressing of a routed build from the student's placement
+    /// and wiring: each router interface's address (a `/24` toward a
+    /// neighbourhood, a `/30` between two routers), every host's gateway, each
+    /// router's directly-connected neighbour routers and the address to send
+    /// toward them, and the blocks each router still needs a signpost for. The
+    /// student chooses boxes, cables and next-hop neighbours; the numbers are
+    /// derived here so the lesson is the forwarding table, not address typing.
+    fn build_net(&self) -> BuildNet {
+        let mut wiring = BuildNet::default();
+        let def = match self.build_def() {
+            Ok(d) => d,
+            Err(_) => return wiring,
+        };
+        let play = self.play.as_ref().expect("level open");
+        let base = &self.file.levels[play.level];
+        let st = match play.build.as_ref() {
+            Some(s) => s,
+            None => return wiring,
+        };
+        let nodes = self.build_nodes();
+        let pos = |id: &str| nodes.iter().position(|n| n.0 == id);
+        let kind = |id: &str| {
+            nodes
+                .iter()
+                .find(|n| n.0 == id)
+                .map(|n| n.1.clone())
+                .unwrap_or_default()
+        };
+        let is_router = |id: &str| kind(id) == "router";
+        let cidr_of = |id: &str| -> Option<Cidr> {
+            base.nodes
+                .iter()
+                .find(|n| n.id == id && !n.ip.is_empty())
+                .and_then(|n| parse_cidr(&n.ip))
+        };
+        let cables = &st.cables;
+        let neighbours = |id: &str| -> Vec<String> {
+            cables
+                .iter()
+                .filter_map(|(a, b)| {
+                    if a == id {
+                        Some(b.clone())
+                    } else if b == id {
+                        Some(a.clone())
+                    } else {
+                        None
+                    }
+                })
+                .collect()
+        };
+        // L2 segments: non-router nodes joined without crossing a router. Each is
+        // one block, named by any fixed host or server on it.
+        let mut comp: BTreeMap<String, usize> = BTreeMap::new();
+        let mut comp_block: Vec<Option<Cidr>> = Vec::new();
+        for n in nodes.iter().filter(|n| n.1 != "router") {
+            if comp.contains_key(&n.0) {
+                continue;
+            }
+            let c = comp_block.len();
+            let mut block: Option<Cidr> = None;
+            let mut stack = vec![n.0.clone()];
+            comp.insert(n.0.clone(), c);
+            while let Some(u) = stack.pop() {
+                if let Some(cd) = cidr_of(&u) {
+                    block = Some(cd.network());
+                }
+                for v in neighbours(&u) {
+                    if !is_router(&v) && !comp.contains_key(&v) {
+                        comp.insert(v.clone(), c);
+                        stack.push(v);
+                    }
+                }
+            }
+            comp_block.push(block);
+        }
+        // Router interfaces toward a neighbourhood, and the gateway every host on
+        // that segment uses (the router's address on the block, <network>.1).
+        for n in nodes.iter().filter(|n| n.1 == "router") {
+            let r = &n.0;
+            for (ci, (a, b)) in cables.iter().enumerate() {
+                let other = if a == r {
+                    b
+                } else if b == r {
+                    a
+                } else {
+                    continue;
+                };
+                if is_router(other) {
+                    continue;
+                }
+                if let Some(&c) = comp.get(other) {
+                    if let Some(block) = comp_block[c] {
+                        let ip = (block.ip & mask(block.len)) + 1;
+                        wiring
+                            .iface
+                            .entry(r.clone())
+                            .or_default()
+                            .push((format!("c{}", ci + 1), format!("{}/{}", show_ip(ip), block.len)));
+                        for (m, &mc) in comp.iter() {
+                            if mc == c && matches!(kind(m).as_str(), "host" | "server" | "printer") {
+                                wiring.gw.entry(m.clone()).or_insert_with(|| show_ip(ip));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // Point-to-point /30 links between two routers, numbered in a fixed order.
+        let mut rr: Vec<(usize, String, String)> = cables
+            .iter()
+            .enumerate()
+            .filter(|(_, (a, b))| is_router(a) && is_router(b))
+            .map(|(i, (a, b))| (i, a.clone(), b.clone()))
+            .collect();
+        rr.sort_by_key(|(_, a, b)| {
+            let (pa, pb) = (pos(a).unwrap_or(0), pos(b).unwrap_or(0));
+            (pa.min(pb), pa.max(pb))
+        });
+        for (k, (ci, a, b)) in rr.iter().enumerate() {
+            let net30 = P2P_BASE + 4 * k as u32;
+            let (pa, pb) = (pos(a).unwrap_or(0), pos(b).unwrap_or(0));
+            let (lo, hi) = if pa <= pb { (a, b) } else { (b, a) };
+            let cable = format!("c{}", ci + 1);
+            wiring
+                .iface
+                .entry(lo.clone())
+                .or_default()
+                .push((cable.clone(), format!("{}/30", show_ip(net30 + 1))));
+            wiring
+                .iface
+                .entry(hi.clone())
+                .or_default()
+                .push((cable, format!("{}/30", show_ip(net30 + 2))));
+            wiring.rneigh.entry(lo.clone()).or_default().push(hi.clone());
+            wiring.rneigh.entry(hi.clone()).or_default().push(lo.clone());
+            wiring.via_ip.insert((lo.clone(), hi.clone()), show_ip(net30 + 2));
+            wiring.via_ip.insert((hi.clone(), lo.clone()), show_ip(net30 + 1));
+        }
+        // The blocks each router is not directly on — the signposts to fill.
+        let norm = |p: &str| parse_cidr(p).map(|c| c.network().show());
+        for n in nodes.iter().filter(|n| n.1 == "router") {
+            let r = &n.0;
+            let mut here: Vec<String> = Vec::new();
+            for (a, b) in cables.iter() {
+                let other = if a == r {
+                    b
+                } else if b == r {
+                    a
+                } else {
+                    continue;
+                };
+                if is_router(other) {
+                    continue;
+                }
+                if let Some(&c) = comp.get(other) {
+                    if let Some(block) = comp_block[c] {
+                        here.push(block.show());
+                    }
+                }
+            }
+            let remote: Vec<(String, String)> = def
+                .blocks
+                .iter()
+                .filter(|bl| match norm(&bl.prefix) {
+                    Some(p) => !here.contains(&p),
+                    None => true,
+                })
+                .map(|bl| (bl.prefix.clone(), bl.name.clone()))
+                .collect();
+            wiring.remote.insert(r.clone(), remote);
+        }
+        wiring
+    }
+
     /// Places one machine from the palette at a point on the floor.
     pub fn place(&mut self, kind: &str, x: i32, y: i32) -> Result<String, String> {
         let def = self.build_def()?.clone();
@@ -1051,6 +1258,10 @@ impl Game {
         b.tables.remove(id);
         for rows in b.tables.values_mut() {
             rows.retain(|(dst, via)| dst != id && via != id);
+        }
+        b.routes.remove(id);
+        for rows in b.routes.values_mut() {
+            rows.retain(|(_, via)| via != id);
         }
         Ok(self.build_state())
     }
@@ -1138,6 +1349,37 @@ impl Game {
         Ok(self.build_state())
     }
 
+    /// Sets one row of a router's forwarding table: to reach the block `prefix`,
+    /// send toward the neighbour router `via` (empty `via` clears the row). The
+    /// routed-build twin of `set_port` — the student fills every router's table
+    /// the way they fill a switch's.
+    pub fn set_route(&mut self, router: &str, prefix: &str, via: &str) -> Result<String, String> {
+        self.build_def()?;
+        let play = self.play.as_mut().expect("level open");
+        let st = play.build.as_mut().expect("build level");
+        if !st.placed.iter().any(|p| p.id == router && p.kind == "router") {
+            return Err(self.t("err_bad_choice"));
+        }
+        let rows = st.routes.entry(router.to_string()).or_default();
+        rows.retain(|(p, _)| p != prefix);
+        if !via.is_empty() {
+            rows.push((prefix.to_string(), via.to_string()));
+        }
+        Ok(self.build_state())
+    }
+
+    /// Sets the hop count (TTL) the terminals send with; must be one of the
+    /// level's offered choices.
+    pub fn set_ttl(&mut self, value: u32) -> Result<String, String> {
+        let def = self.build_def()?.clone();
+        if !def.ttl_choices.contains(&value) {
+            return Err(self.t("err_bad_choice"));
+        }
+        let play = self.play.as_mut().expect("level open");
+        play.build.as_mut().expect("build level").ttl = value;
+        Ok(self.build_state())
+    }
+
     /// Assembles the student's work into a concrete level the simulation runs.
     fn assembled(&self) -> Result<Level, String> {
         let play = self.play.as_ref().expect("level open");
@@ -1145,13 +1387,31 @@ impl Game {
         let mut l = self.file.levels[play.level].clone();
         l.edits = Vec::new();
         let st = play.build.as_ref().expect("build level");
-        // Addresses onto the fixed hosts/servers.
+        // The addressing the wiring implies: router interfaces, gateways, next hops.
+        let wiring = self.build_net();
+        // The hop count the student chose (or the lowest offered, so an untouched
+        // build dies on the longest route and the TTL decision bites).
+        let ttl = if st.ttl > 0 {
+            st.ttl
+        } else {
+            def.ttl_choices.first().copied().unwrap_or(0)
+        };
+        // Addresses, gateways and hop counts onto the fixed hosts/servers.
         for n in l.nodes.iter_mut() {
             if let Some(ip) = st.addrs.get(&n.id) {
                 n.ip = ip.clone();
             }
+            if let Some(gw) = wiring.gw.get(&n.id) {
+                n.gateway = gw.clone();
+            }
+            if ttl > 0 && matches!(n.kind.as_str(), "host" | "server" | "printer") {
+                n.ttl = ttl;
+            }
         }
-        // Placed machines, switches pre-loaded with the student's table.
+        // Placed machines. A routed build's switch is an ordinary learning switch
+        // (the student's judgement is choosing it over a hub); the restaurant's is
+        // a static table the student fills. A router is given the interfaces the
+        // wiring implies and the forwarding table the student filled.
         for p in &st.placed {
             let mut node = level::NodeDef {
                 id: p.id.clone(),
@@ -1168,17 +1428,44 @@ impl Game {
                 static_fwd: false,
                 mac_hints: Vec::new(),
             };
-            if p.kind == "switch" {
-                node.static_fwd = true;
-                if let Some(rows) = st.tables.get(&p.id) {
-                    node.mac_hints = rows
-                        .iter()
-                        .map(|(dst, via)| level::MacHint {
-                            dst: dst.clone(),
-                            via: via.clone(),
-                        })
-                        .collect();
+            match p.kind.as_str() {
+                "switch" if def.static_switch => {
+                    node.static_fwd = true;
+                    if let Some(rows) = st.tables.get(&p.id) {
+                        node.mac_hints = rows
+                            .iter()
+                            .map(|(dst, via)| level::MacHint {
+                                dst: dst.clone(),
+                                via: via.clone(),
+                            })
+                            .collect();
+                    }
                 }
+                "router" => {
+                    if let Some(ifs) = wiring.iface.get(&p.id) {
+                        node.ifaces = ifs
+                            .iter()
+                            .map(|(link, ip)| level::IfaceDef {
+                                link: link.clone(),
+                                ip: ip.clone(),
+                            })
+                            .collect();
+                    }
+                    if let Some(rows) = st.routes.get(&p.id) {
+                        node.routes =
+                            rows.iter()
+                                .filter_map(|(prefix, via)| {
+                                    wiring.via_ip.get(&(p.id.clone(), via.clone())).map(|vip| {
+                                        level::RouteDef {
+                                            prefix: prefix.clone(),
+                                            via: vip.clone(),
+                                        }
+                                    })
+                                })
+                                .collect();
+                    }
+                }
+                _ => {}
             }
             l.nodes.push(node);
         }
@@ -1196,7 +1483,6 @@ impl Game {
                 delay: 1,
             })
             .collect();
-        let _ = def;
         Ok(l)
     }
 
@@ -1281,6 +1567,51 @@ impl Game {
                 )
             })
             .collect();
+        // The routed-build extras: each placed router's signposts to fill (the
+        // remote blocks, the neighbour routers it can send toward, and the
+        // student's current pick for each), the hop-count choice, and the blocks.
+        let wiring = self.build_net();
+        let name_of = |id: &str| {
+            nodes
+                .iter()
+                .find(|n| n.0 == id)
+                .map(|n| n.2.clone())
+                .unwrap_or_default()
+        };
+        let routers: Vec<Value> = st
+            .placed
+            .iter()
+            .filter(|p| p.kind == "router")
+            .map(|p| {
+                let rows = st.routes.get(&p.id);
+                let via_of = |prefix: &str| {
+                    rows.and_then(|rs| rs.iter().find(|(pp, _)| pp == prefix))
+                        .map(|(_, v)| v.clone())
+                        .unwrap_or_default()
+                };
+                let blocks: Vec<Value> = wiring
+                    .remote
+                    .get(&p.id)
+                    .map(|v| {
+                        v.iter()
+                            .map(|(prefix, name)| {
+                                json!({"prefix": prefix, "name": name, "via": via_of(prefix)})
+                            })
+                            .collect()
+                    })
+                    .unwrap_or_default();
+                let neighbours: Vec<Value> = wiring
+                    .rneigh
+                    .get(&p.id)
+                    .map(|v| {
+                        v.iter()
+                            .map(|nid| json!({"id": nid, "name": name_of(nid)}))
+                            .collect()
+                    })
+                    .unwrap_or_default();
+                json!({"id": p.id, "name": p.name, "blocks": blocks, "neighbours": neighbours})
+            })
+            .collect();
         json!({
             "build": true,
             "viewbox": format!("0 0 {MAP_W} {MAP_H}"),
@@ -1300,6 +1631,12 @@ impl Game {
             "addr_choices": def.addr_choices,
             "addrs": st.addrs,
             "tables": tables,
+            "concept": base.concept,
+            "blocks": def.blocks.iter().map(|b| json!({"prefix": b.prefix, "name": b.name})).collect::<Vec<_>>(),
+            "ttl": {"choices": def.ttl_choices, "current": st.ttl},
+            "routers": routers,
+            "gateways": wiring.gw,
+            "static_switch": def.static_switch,
         })
         .to_string()
     }
