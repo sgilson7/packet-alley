@@ -1029,17 +1029,12 @@ impl Game {
         (machines, wire, machines + wire)
     }
 
-    fn in_obstacle(def: &level::BuildDef, x: i32, y: i32) -> bool {
+    /// The obstacle a point falls in, if any (for placement refusal and its
+    /// message).
+    fn obstacle_at(def: &level::BuildDef, x: i32, y: i32) -> Option<&level::Obstacle> {
         def.obstacles
             .iter()
-            .any(|o| x >= o.x && x <= o.x + o.w && y >= o.y && y <= o.y + o.h)
-    }
-
-    /// Whether the straight cable between two points runs into any fixture — a
-    /// cable may not cross the kitchen, which forces the layout around it. True
-    /// if the segment touches an obstacle's rectangle at all.
-    fn cable_blocked(def: &level::BuildDef, ax: i32, ay: i32, bx: i32, by: i32) -> bool {
-        def.obstacles.iter().any(|o| seg_hits_rect(ax, ay, bx, by, o))
+            .find(|o| x >= o.x && x <= o.x + o.w && y >= o.y && y <= o.y + o.h)
     }
 
     /// Works out the addressing of a routed build from the student's placement
@@ -1230,8 +1225,13 @@ impl Game {
         if have >= item.max {
             return Err(self.t("err_build_max"));
         }
-        if Self::in_obstacle(&def, x, y) {
-            return Err(self.t("err_build_obstacle"));
+        if let Some(o) = Self::obstacle_at(&def, x, y) {
+            let key = if o.label == "water" {
+                "err_build_water_place"
+            } else {
+                "err_build_obstacle"
+            };
+            return Err(self.t(key));
         }
         let n = b.placed.iter().filter(|p| p.kind == kind).count() as u32 + 1;
         b.placed.push(Placed {
@@ -1282,9 +1282,66 @@ impl Game {
         }
         let ends = |id: &str| nodes.iter().find(|n| n.0 == id).map(|n| (n.3, n.4));
         if let (Some((ax, ay)), Some((bx, by))) = (ends(a), ends(b)) {
-            if Self::cable_blocked(&def, ax, ay, bx, by) {
-                return Err(self.t("err_build_crosses"));
+            // Name the thing in the way: water asks for a bridge, a wall (the
+            // kitchen) asks to route around.
+            if let Some(o) = def.obstacles.iter().find(|o| seg_hits_rect(ax, ay, bx, by, o)) {
+                let key = if o.label == "water" {
+                    "err_build_water"
+                } else {
+                    "err_build_crosses"
+                };
+                return Err(self.t(key));
             }
+        }
+        // A router reaches one machine per block directly; a second machine on
+        // the same block belongs on a switch. Catch it here with a clear message
+        // rather than a silent misdelivery (two router interfaces on one block).
+        let two_host_clash = {
+            let play_ref = self.play.as_ref().expect("level open");
+            let base = &self.file.levels[play_ref.level];
+            let st_ref = play_ref.build.as_ref().expect("build level");
+            let block_of = |id: &str| -> Option<String> {
+                let ip = st_ref.addrs.get(id).cloned().or_else(|| {
+                    base.nodes
+                        .iter()
+                        .find(|n| n.id == id && !n.ip.is_empty())
+                        .map(|n| n.ip.clone())
+                })?;
+                parse_cidr(&ip).map(|c| c.network().show())
+            };
+            let kind_of = |id: &str| {
+                nodes
+                    .iter()
+                    .find(|n| n.0 == id)
+                    .map(|n| n.1.as_str())
+                    .unwrap_or("")
+            };
+            let is_ep = |id: &str| matches!(kind_of(id), "host" | "server" | "printer");
+            let pair = if kind_of(a) == "router" && is_ep(b) {
+                Some((a, b))
+            } else if kind_of(b) == "router" && is_ep(a) {
+                Some((b, a))
+            } else {
+                None
+            };
+            match pair.and_then(|(r, h)| block_of(h).map(|hb| (r, hb))) {
+                Some((r, hb)) => st_ref.cables.iter().any(|(x, y)| {
+                    let other = if x == r {
+                        Some(y.as_str())
+                    } else if y == r {
+                        Some(x.as_str())
+                    } else {
+                        None
+                    };
+                    other
+                        .map(|o| is_ep(o) && block_of(o).as_deref() == Some(hb.as_str()))
+                        .unwrap_or(false)
+                }),
+                None => false,
+            }
+        };
+        if two_host_clash {
+            return Err(self.t("err_build_two_hosts"));
         }
         let play = self.play.as_mut().expect("level open");
         let st = play.build.as_mut().expect("build level");
@@ -1633,6 +1690,7 @@ impl Game {
             "tables": tables,
             "concept": base.concept,
             "blocks": def.blocks.iter().map(|b| json!({"prefix": b.prefix, "name": b.name})).collect::<Vec<_>>(),
+            "terrain_bg": !base.backdrop.is_empty(),
             "ttl": {"choices": def.ttl_choices, "current": st.ttl},
             "routers": routers,
             "gateways": wiring.gw,
@@ -1794,7 +1852,8 @@ impl Game {
         json!({
             "id": base.id, "title": base.title,
             "number": fill(&self.t("level_n"), &[(play.level + 1).to_string()]),
-            "chapter": chapter.title, "layer": chapter.layer, "backdrop": chapter.backdrop,
+            "chapter": chapter.title, "layer": chapter.layer,
+            "backdrop": if base.backdrop.is_empty() { &chapter.backdrop } else { &base.backdrop },
             "story": base.story, "concept": base.concept, "task": base.task,
             "goals": goals, "bonus": base.bonus.text,
             "nodes": nodes, "links": links, "edits": edits,

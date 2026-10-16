@@ -52,6 +52,12 @@ pub struct Level {
     /// models a simplified Go-Back-N, not full TCP (PA11).
     #[serde(default)]
     pub note: String,
+    /// An optional backdrop that overrides the chapter's, by file stem in
+    /// `web/art/backdrops/` (e.g. a build level that wants its own scenery). When
+    /// set, the page treats it as supplying the terrain and does not paint the
+    /// SVG water or bridges over it.
+    #[serde(default)]
+    pub backdrop: String,
     /// A chapter's demonstration scene (Phase 2): a watch-only lesson on
     /// TEST-NET addresses, shown before the chapter's levels. Not a scored
     /// level — kept out of the level cards, the progression and the star total.

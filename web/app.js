@@ -847,10 +847,16 @@ function renderBuildMap() {
 
   // Fixtures to route around. Water reads as water (and the gaps between its
   // pieces become the bridges a cable may cross); any other obstacle is a wall.
+  // When the level's own backdrop already paints the terrain (the Königsberg
+  // map), the water and bridges live in the picture, so the SVG only keeps the
+  // invisible collision shapes the core enforces.
   const obs = svg("g", {});
   const water = [];
   for (const o of bs.obstacles) {
     const isWater = o.label === "water";
+    if (isWater && bs.terrain_bg) {
+      continue;
+    }
     obs.appendChild(svg("rect", { class: isWater ? "obstacle water" : "obstacle", x: o.x, y: o.y, width: o.w, height: o.h }));
     if (o.label && !isWater) {
       const txt = svg("text", { class: "obstacle-label", x: o.cx, y: o.cy });
@@ -861,7 +867,9 @@ function renderBuildMap() {
       water.push(o);
     }
   }
-  drawBridges(obs, water);
+  if (!bs.terrain_bg) {
+    drawBridges(obs, water);
+  }
   map.appendChild(obs);
 
   // Cables, each with its length and price, and a wide invisible hit line so a

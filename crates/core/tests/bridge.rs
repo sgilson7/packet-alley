@@ -156,9 +156,11 @@ fn a_hub_at_the_exchange_loses_replies() {
 #[test]
 fn a_cable_cannot_cross_the_water() {
     let mut g = game();
-    g.place("router", 430, 120).unwrap(); // m1, north bank
-                                          // a straight cable from the north register to a server on the island would
-                                          // cross open water away from any bridge gap.
-    let err = g.wire("regN", "hq").unwrap_err();
-    assert!(!err.is_empty(), "a cable over open water is refused: {err}");
+    // a router on the north bank, over open water (not a bridge gap) from the HQ
+    g.place("router", 120, 80).unwrap(); // m1
+    let err = g.wire("m1", "hq").unwrap_err();
+    assert!(
+        err.contains("water") || err.contains("bridge"),
+        "a cable over open water is refused, and the message names the water, not the kitchen: {err}"
+    );
 }

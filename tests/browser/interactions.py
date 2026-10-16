@@ -222,8 +222,10 @@ def bridge_flow(page, check):
     page.locator(".super-card").filter(has_text=re.compile("Seven Bridges", re.I)).first.click()
     page.wait_for_selector("#l-build:not([hidden])", timeout=5000)
     check(images_loaded(page, "#map-wrap"), "the river city loaded")
-    check(page.locator("#map .obstacle.water").count() >= 1, "the river is drawn as water")
-    check(page.locator("#map .bridge").count() == 7, "seven bridges span the gaps in the water")
+    # the terrain (river + bridges) lives in the level's own Königsberg backdrop,
+    # so the SVG no longer paints water or bridge planks over it
+    check("koenigsberg" in (page.get_attribute("#backdrop", "src") or ""), "the Königsberg map is the backdrop")
+    check(page.locator("#map .obstacle.water").count() == 0, "the SVG does not double-paint the river")
 
     # place four routers and two switches (one per multi-host segment)
     for x, y in [(430, 120), (430, 480), (700, 300), (435, 300)]:

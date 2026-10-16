@@ -191,7 +191,7 @@
   "ev_collision_gave_up": "A frame from {a} collided too many times and was dropped.",
   "ev_moved": "{a}: {b} is now on port {c}.",
   "ev_learn": "{a} learned that {b} is on port {c}.",
-  "ev_ttl": "{a} dropped a packet from {b} to {c}: it ran out of hops (a loop?).",
+  "ev_ttl": "{a} dropped a packet from {b} to {c}: it ran out of hops.",
   "ev_no_route": "{a} has no route to {b}.",
   "ev_arp_fail_router": "{a} could not find the next hop {b} on its block.",
   "ev_route": "{a} sends {b} toward {c} by way of {d}.",
@@ -217,7 +217,7 @@
   "why_no_gateway": "A computer needs a gateway to reach another block.",
   "why_arp_fail": "That address is not on this block. Check the address, or send through the router.",
   "why_arp_fail_gw": "The gateway address must be a real device on this block.",
-  "why_ttl": "Each router subtracts one hop. A packet that loops runs out and is dropped — look for a loop.",
+  "why_ttl": "Each router subtracts one hop. A packet runs out when the trip needs more hops than it was given — or when it loops. Give it more hops, or break the loop.",
   "why_no_route": "The router needs a route that covers the destination.",
   "why_collision": "A hub lets only one device talk at a time. A switch gives each device its own line.",
   "why_not_mine": "The destination address does not match this device.",
@@ -285,5 +285,8 @@
   "err_build_too_long": "That cable would be longer than the reel allows.",
   "err_build_wired": "Those two are already joined by a cable.",
   "err_build_crosses": "A cable cannot run through the kitchen — route it around.",
+  "err_build_water": "A cable can't cross the water — run it over a bridge.",
+  "err_build_water_place": "You can't place a machine on the water — put it on the land.",
+  "err_build_two_hosts": "A router reaches one machine per block. Put both machines on a switch, then wire the switch to the router.",
   "err_load": "The game data could not be loaded."
 }

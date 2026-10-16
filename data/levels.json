@@ -1721,7 +1721,7 @@
       }
     },
     {
-      "id": "newbridge", "chapter": "town", "title": "The Seven Bridges",
+      "id": "newbridge", "chapter": "town", "title": "The Seven Bridges", "backdrop": "koenigsberg",
       "story": "The noodle shop became a small chain. Four branches sit on the four land masses of the old river city — north bank, south bank, and the two islands. On the central island, Kneiphof, you set up the card-auth office; the analytics logger sits across the water in the far corner of the north bank. Every sale has to be approved at the office and recorded at the logger. The roads between the neighbourhoods are yours to lay, but a cable can only cross the water on a bridge.",
       "concept": [
         "A router moves packets between blocks; a switch carries frames within one; pick the right box for each spot.",
@@ -1771,16 +1771,16 @@
         "costs": [{"kind": "server", "cost": 0}, {"kind": "host", "cost": 0}, {"kind": "router", "cost": 300}, {"kind": "switch", "cost": 90}, {"kind": "hub", "cost": 40}],
         "palette": [{"kind": "router", "name": "Router", "max": 5, "ports": 8}, {"kind": "switch", "name": "Switch", "max": 2, "ports": 8}, {"kind": "hub", "name": "Hub", "max": 2, "ports": 8}],
         "obstacles": [
-          {"x": 0, "y": 150, "w": 220, "h": 60, "label": "water"},
-          {"x": 260, "y": 150, "w": 150, "h": 60, "label": "water"},
-          {"x": 450, "y": 150, "w": 290, "h": 60, "label": "water"},
-          {"x": 780, "y": 150, "w": 220, "h": 60, "label": "water"},
-          {"x": 0, "y": 390, "w": 220, "h": 60, "label": "water"},
-          {"x": 260, "y": 390, "w": 150, "h": 60, "label": "water"},
-          {"x": 450, "y": 390, "w": 290, "h": 60, "label": "water"},
-          {"x": 780, "y": 390, "w": 220, "h": 60, "label": "water"},
-          {"x": 590, "y": 210, "w": 60, "h": 60, "label": "water"},
-          {"x": 590, "y": 310, "w": 60, "h": 80, "label": "water"}
+          {"x": 0, "y": 150, "w": 200, "h": 60, "label": "water"},
+          {"x": 280, "y": 150, "w": 110, "h": 60, "label": "water"},
+          {"x": 470, "y": 150, "w": 250, "h": 60, "label": "water"},
+          {"x": 800, "y": 150, "w": 200, "h": 60, "label": "water"},
+          {"x": 0, "y": 390, "w": 200, "h": 60, "label": "water"},
+          {"x": 280, "y": 390, "w": 110, "h": 60, "label": "water"},
+          {"x": 470, "y": 390, "w": 250, "h": 60, "label": "water"},
+          {"x": 800, "y": 390, "w": 200, "h": 60, "label": "water"},
+          {"x": 590, "y": 210, "w": 60, "h": 40, "label": "water"},
+          {"x": 590, "y": 330, "w": 60, "h": 60, "label": "water"}
         ],
         "needs_addr": [],
         "addr_choices": [],
