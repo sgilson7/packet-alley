@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Packet Alley — Town Super Level Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #fbefd0;
+  --surface: #ffffff;
+  --fg: #3b2340;
+  --muted: #7a6a74;
+  --rule: #d8c3a4;
+  --accent: #0072b2;
+  --accent-soft: #e4eef6;
+  --good: #0a7f58;
+  --good-soft: #e1f2ea;
+  --warn: #a15c00;
+  --warn-soft: #f8ecd6;
+  --gold: #b8860b;
+  --gold-soft: #f6edcf;
+  --font-display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #171019; --surface: #211826; --fg: #f1e7d8; --muted: #a99fa8; --rule: #3a2d3c;
+    --accent: #64b5e6; --accent-soft: #1d2b38; --good: #6fd3a3; --good-soft: #15291f;
+    --warn: #e2a14e; --warn-soft: #30230f; --gold: #e3bb4e; --gold-soft: #2c2410;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #171019; --surface: #211826; --fg: #f1e7d8; --muted: #a99fa8; --rule: #3a2d3c;
+  --accent: #64b5e6; --accent-soft: #1d2b38; --good: #6fd3a3; --good-soft: #15291f;
+  --warn: #e2a14e; --warn-soft: #30230f; --gold: #e3bb4e; --gold-soft: #2c2410;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body);
+  font-size: 16px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap {
+  max-width: 980px; margin: 0 auto; display: grid; gap: 52px;
+  padding: 48px max(16px, env(safe-area-inset-left)) 96px;
+}
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; }
+h1 { font-size: clamp(32px, 6vw, 52px); font-weight: 700; margin: 0 0 8px; letter-spacing: -0.01em; }
+h2 { font-size: clamp(23px, 4vw, 31px); font-weight: 700; margin: 0; }
+h3 { font-size: 19px; font-weight: 700; margin: 24px 0 4px; }
+p { max-width: 70ch; }
+a { color: var(--accent); }
+code { font-family: var(--font-mono); font-size: 0.88em; background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); font-weight: 500; }
+.lede { font-size: 18px; color: var(--muted); max-width: 66ch; }
+
+header.top { border-bottom: 3px solid var(--fg); padding-bottom: 20px; }
+.section-head { display: flex; flex-direction: column; gap: 4px; border-top: 2px solid var(--rule); padding-top: 14px; margin-bottom: 8px; }
+
+.note { background: var(--accent-soft); border-radius: 10px; padding: 16px 18px; margin: 18px 0; }
+.note.warn { background: var(--warn-soft); }
+.note.gold { background: var(--gold-soft); }
+.note.good { background: var(--good-soft); }
+.note strong { display: block; margin-bottom: 4px; font-family: var(--font-display); }
+.note p { margin: 0; max-width: none; }
+
+figure { margin: 22px 0; }
+figure img {
+  width: 100%; display: block; background: var(--surface);
+  border: 1px solid var(--rule); border-radius: 12px; padding: 8px;
+}
+figcaption { font-family: var(--font-mono); font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+figcaption b { color: var(--fg); font-weight: 500; }
+
+.quote { border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 10px 10px 0; padding: 12px 16px; margin: 14px 0; }
+.quote p { margin: 0; font-style: italic; max-width: none; }
+.quote cite { display: block; margin-top: 7px; font-style: normal; font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); letter-spacing: 0.02em; }
+.quote cite a { color: var(--accent); }
+
+.steps { counter-reset: step; list-style: none; padding: 0; margin: 20px 0; display: grid; gap: 0; }
+.step { border-top: 1px solid var(--rule); padding: 16px 0; display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 6px 14px; align-items: start; }
+.step::before { counter-increment: step; content: counter(step); font-family: var(--font-display); font-size: 26px; font-weight: 700; color: var(--accent); grid-column: 1; grid-row: 1 / -1; }
+.step > * { grid-column: 2; min-width: 0; }
+.step h3 { margin: 0; align-self: center; }
+.step p { margin: 0; color: var(--fg); }
+.step .what { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+.insights { list-style: none; padding: 0; margin: 20px 0; border-top: 2px solid var(--rule); }
+.insight { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 4px 12px; padding: 18px 0; border-bottom: 1px solid var(--rule); align-items: start; }
+.insight .num { font-family: var(--font-display); font-size: 30px; font-weight: 700; color: var(--accent); grid-column: 1; grid-row: 1 / -1; }
+.insight > div:not(.num) { grid-column: 2; min-width: 0; }
+.insight h3 { margin: 0; align-self: center; }
+.insight p { margin: 0; }
+.insight .verdict { font-size: 14.5px; }
+.insight .verdict b { font-family: var(--font-mono); text-transform: uppercase; font-size: 11px; letter-spacing: 0.06em; color: var(--accent); margin-right: 8px; }
+
+.table-scroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); margin: 20px 0; }
+table { width: 100%; border-collapse: collapse; min-width: 560px; }
+th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: var(--font-mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); background: var(--bg); }
+td.num { font-variant-numeric: tabular-nums; }
+tr:last-child td { border-bottom: none; }
+.gold-cell { color: var(--gold); font-weight: 600; }
+
+.tabnav { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 2px solid var(--rule); margin-bottom: -28px; }
+.tabnav button { font-family: var(--font-display); font-size: 16px; font-weight: 700; background: none; border: none; border-bottom: 3px solid transparent; color: var(--muted); padding: 11px 16px; cursor: pointer; margin-bottom: -2px; display: inline-flex; align-items: center; }
+.tabnav button.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tabnav .pill { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; background: var(--good-soft); color: var(--good); border-radius: 5px; padding: 2px 6px; margin-left: 8px; }
+.tabnav .pill.old { background: var(--warn-soft); color: var(--warn); }
+.tab { display: none; }
+.tab.is-active { display: grid; gap: 52px; }
+.theme-toggle { position: fixed; top: 14px; right: 14px; font-family: var(--font-mono); font-size: 12px; background: var(--surface); color: var(--fg); border: 1px solid var(--rule); border-radius: 8px; padding: 6px 10px; cursor: pointer; z-index: 10; }
+footer { color: var(--muted); font-size: 14px; border-top: 2px solid var(--rule); padding-top: 16px; }
+.draft { display: inline-block; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--warn); background: var(--warn-soft); border-radius: 6px; padding: 3px 9px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="theme" type="button">theme</button>
+<div class="wrap">
+
+<header class="top">
+  <div class="draft">Design proposal · for review · nothing built yet</div>
+  <div class="eyebrow">Packet Alley · design journal · super levels · the network layer</div>
+  <h1>The network-layer super level</h1>
+  <p class="lede">The capstone for <em>Routes Across Town</em> — where the student stops answering one question and builds a whole routed network from scratch, under a budget. Two designs live here. <b>The Seven Bridges</b> is the current proposal: four neighbourhoods on the land masses of Königsberg, a mix of the right boxes, and an Exchange that approves and logs every sale. <b>Branches across town</b> is the first, simpler proposal, kept for reference. Both tabs are mockups for your review — no game code has been touched.</p>
+</header>
+
+<nav class="tabnav">
+  <button data-tab="tab-v2" class="active" type="button">The Seven Bridges<span class="pill">current</span></button>
+  <button data-tab="tab-v1" type="button">Branches across town<span class="pill old">v1</span></button>
+</nav>
+
+<div class="tab is-active" id="tab-v2">
+
+<section>
+  <div class="section-head"><div class="eyebrow">Entry 1 · 16 October 2026 · revised</div><h2>A bigger idea: build a routed city, with the right box in every spot</h2></div>
+  <p>The first proposal (the <em>Branches across town</em> tab) proved the shape: place routers, lay lines around an obstacle, address, set gateways, fill signposts, size the hop count, pay for it. This revision keeps all of that and answers the brief that followed it — the level should make a student <em>choose between machine types</em> (a hub here, a switch there, a router between blocks), spread across <b>four</b> neighbourhoods, on a map with real geography, with a shared endpoint the data has to pass through for analytics.</p>
+  <p>The map is the <b>Seven Bridges of Königsberg</b>. The river Pregel cut the city into four land masses — two banks and two islands — joined by seven bridges; in 1736 Euler proved you cannot walk the city crossing each bridge exactly once, and modern graph theory was born. Here the four land masses are four neighbourhoods, each its own block; wires may cross water only on a bridge; and — unlike Euler's walk — you do <em>not</em> need all seven. You pick the cheapest set of crossings that connects every neighbourhood to the heart of the city.</p>
+  <figure>
+    <img src="img/bridge-03-wired.png" alt="The Seven Bridges super level: a map of Königsberg with north bank, south bank, Kneiphof (the central island, labelled THE EXCHANGE) and Lomse (east island), separated by water with seven named wooden bridges. Routers sit on each land mass, a switch and two servers (card-auth HQ and analytics logger) plus a desk on the central island, a hub joining two registers on the south bank. Leased lines cross only at bridges; a red dashed line shows a refused cable with the message a cable can't cross the water, run it over a bridge. The brief totals $3,118.">
+    <figcaption><b>The whole level.</b> Four neighbourhoods, the Exchange on Kneiphof, and a mix of routers, a switch and a hub — each where it belongs. Leased lines cross only on bridges; a cable over open water is refused.</figcaption>
+  </figure>
+  <div class="note">
+    <strong>What this adds over v1</strong>
+    <p><b>Four neighbourhoods</b> (one terminal each) · a <b>mix of machine types</b> the student must choose correctly (router / switch / hub) · a <b>water-and-bridges</b> geography where crossings are the scarce resource · and <b>the Exchange</b>, where every sale must be both approved (card-auth) and recorded (analytics) — two endpoints the traffic has to reach.</p>
+  </div>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Part 1</div><h2>The map is Königsberg</h2></div>
+  <p>The level opens with the four land masses drawn and the four neighbourhoods' endpoints glowing, each asking for its part of the setup. The <b>north bank</b> and <b>south bank</b> run top and bottom; <b>Kneiphof</b>, the central island, is <em>the Exchange</em>; <b>Lomse</b> is the east island. Between them is water, and the only way across is one of the seven bridges — Krämer, Schmiede, Grüne, Köttel, Honig, Holz and Hohe, each drawn where the real one stood.</p>
+  <figure>
+    <img src="img/bridge-01-city.png" alt="The empty Königsberg map: four land masses in tan surrounded by blue water, seven labelled wooden bridges, and the fixed endpoints glowing — North register, the Card-auth HQ and Analytics logger and Exchange desk on the central island, the Island register on Lomse, and the South register and kiosk on the south bank, each reading needs an address. Nothing is wired.">
+    <figcaption><b>The empty city.</b> Nothing crosses the water yet. Machines cannot be placed on water; the bridges are the only crossings, and three of the seven are enough.</figcaption>
+  </figure>
+  <div class="quote">
+    <p>Since there are seven bridges, no route exists that crosses each exactly once — the result Euler proved for Königsberg, and the start of graph theory.</p>
+    <cite>After L. Euler, <i>Solutio problematis ad geometriam situs pertinentis</i> (1736). Historical note, used for the setting.</cite>
+  </div>
+  <p>The Euler story is the hook, not the task. The task is a connectivity-and-cost one: of the seven possible crossings, wire the cheapest few that still join every neighbourhood to the Exchange — and the duplicated bridges (two to each bank) give a genuine cheap-vs-dear choice, while a redundant one makes a loop the hop count has to guard.</p>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Part 2</div><h2>Pick the right box for each spot</h2></div>
+  <p>This is the new heart of the level. The palette now offers three boxes, and the student has to put the <em>right</em> one in each place — the same judgement a real installer makes.</p>
+  <figure>
+    <img src="img/bridge-02-machines.png" alt="The Königsberg map with the student's gear placed: a router on each of the four land masses near its bridges, a switch on the central island linking the two servers and the desk, and a hub on the south bank linking the register and the kiosk. The switch and hub glow to mark the choice just made.">
+    <figcaption><b>Routers between neighbourhoods, a switch at the Exchange, a hub on the quiet bank.</b> A single host that only talks to its router needs no box at all — another judgement the level rewards.</figcaption>
+  </figure>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Spot</th><th>Right box</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Between two neighbourhoods (across a bridge)</td><td><b>Router</b> · $300</td><td>Only a router forwards between IP blocks. A switch or hub can't leave the block.</td></tr>
+        <tr><td>The Exchange (HQ + logger + desk)</td><td><b>Switch</b> · $90</td><td>Three machines answer at once; a switch forwards each reply out only its own port.</td></tr>
+        <tr><td>A quiet bank (register + kiosk)</td><td><b>Hub</b> · $40</td><td>Only one host talks at a time, so there are no collisions to avoid — the cheap box is the right one.</td></tr>
+        <tr><td>A single host to its router</td><td><b>No box</b> · $0</td><td>One cable does it; buying gear here just wastes money.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The switch-vs-hub choice is a real decision on the map, priced and explained where it's made — and grounded in the same textbook the block zone already quotes:</p>
+  <div class="quote">
+    <p>A hub is thus a physical layer relay that receives an electrical signal on one of its interfaces, regenerates the signal and transmits it over all its other interfaces.</p>
+    <cite>Computer Networking: Principles, Protocols and Practice, 3rd ed. — O. Bonaventure et al., <a href="https://beta.computer-networking.info/syllabus/default/protocols/lan.html">protocols/lan.html</a>. CC BY-SA 3.0.</cite>
+  </div>
+  <div class="quote">
+    <p>An Ethernet switch understands the format of the Ethernet frames and can selectively forward frames over each interface.</p>
+    <cite>protocols/lan.html. CC BY-SA 3.0.</cite>
+  </div>
+  <figure>
+    <img src="img/bridge-07-device.png" alt="Two popovers side by side. Box for the Exchange: three machines answer at once, a hub (collides) versus a switch (keeps them apart, chosen) — pay for the switch. Box for the South bank: just a register and a kiosk, only one busy at a time, a hub (chosen, plenty) versus a switch (overkill).">
+    <figcaption><b>The same question, two answers.</b> At the Exchange the switch is worth $90; on the quiet south bank a $40 hub is the right call. The level teaches that "better box" depends on the spot.</figcaption>
+  </figure>
+  <div class="note warn">
+    <strong>Put a hub where a switch belongs, and the Exchange eats the replies</strong>
+    <p>If the student saves $50 and drops a hub at the Exchange, the card-auth reply and the analytics reply leave together and collide on the hub — both lost. The diagnosis names it: this is a collision domain, and three talkers need a switch. (The engine already models hub collisions; the level just lets the student feel them.)</p>
+  </div>
+  <figure>
+    <img src="img/bridge-08-hubfail.png" alt="A failure result sheet reading Lost at the Exchange, zero of four stars, over a map where the Exchange has a hub with a red collision burst. The note: you wired a hub where three machines answer at once; the card-auth reply and the analytics reply collided on the hub and were lost. The Exchange needs a switch.">
+    <figcaption><b>The wrong box, diagnosed.</b> The collision is shown on the map and named on the result — the link-layer lesson from zone one, paid off one layer up.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Part 3</div><h2>Wire across the bridges, never the water</h2></div>
+  <p>Leased line is clicked box-to-box and priced as it lands, exactly as in the restaurant — but here a cable is refused if its straight run would cross open water. The only way over the Pregel is a bridge, so every inter-neighbourhood line has to aim through one. Machines, likewise, can't be dropped on water.</p>
+  <figure>
+    <img src="img/bridge-03-wired.png" alt="The wired Königsberg network with a red dashed cable attempting to cross open water and the refusal message: a cable can't cross the water, run it over a bridge. The valid leased lines all pass over wooden bridges, each labelled with its cost; total $3,118.">
+    <figcaption><b>Bridges are the scarce resource.</b> Three crossings — the cheaper of each duplicated pair — connect all four neighbourhoods to the Exchange. The refused cable shows the rule the instant it's broken.</figcaption>
+  </figure>
+  <p>This is the <code>seg_hits_rect</code> rule from the restaurant's kitchen, generalised: the obstacle is now the water, and the bridges are gaps in it a cable may pass through. The Königsberg geometry makes the trade concrete — a duplicated bridge may be shorter but lands you at a router with a longer onward path, so cheapest-line is not always cheapest-network.</p>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Part 4</div><h2>Then the routing: address, gateway, signpost, hops</h2></div>
+  <p>With the boxes placed and the bridges crossed, the routing is the same set of decisions the first proposal made — and the same three textbook ideas — now over four blocks and a river.</p>
+
+  <ol class="steps">
+    <li class="step">
+      <h3>Address every link on its own block</h3>
+      <p class="what">action: click a router, give each link an address</p>
+      <p>Each router sits on several blocks; every link takes an address on <em>its</em> block — a <code>/24</code> to a neighbourhood, a <code>/30</code> across a bridge — with off-block traps in the list.</p>
+      <figure>
+        <img src="img/bridge-04-address.png" alt="A popover over the North router: its link down to the North register set to 10.0.1.1/24 (on the north block, ticked), and its link across Schmiede bridge to the Exchange on 10.0.254.0/30 with a dropdown to choose the point-to-point address, with off-block traps.">
+        <figcaption><b>An address per link.</b> The bridge link is a point-to-point <code>/30</code>; the neighbourhood link is on the neighbourhood's <code>/24</code>.</figcaption>
+      </figure>
+    </li>
+    <li class="step">
+      <h3>Point each neighbourhood at its gateway</h3>
+      <p class="what">action: click a register, choose its way off the block</p>
+      <p>A register reaches its own block directly and hands everything else to a gateway on that block — its local router. The far routers are offered as traps.</p>
+      <figure>
+        <img src="img/bridge-05-gateway.png" alt="A popover over the North register showing address 10.0.1.10/24 and block 10.0.1.0/24, with a gateway dropdown offering 10.0.1.1 (North router, on our block, correct) and two off-block traps.">
+        <figcaption><b>The hand-off.</b> The gateway must be an address the register can already reach — one on its own block.</figcaption>
+      </figure>
+    </li>
+    <li class="step">
+      <h3>Fill every router's signposts</h3>
+      <p class="what">action: click a router, choose the bridge for each far block</p>
+      <p>Connected blocks need no entry; for every far block, the student picks the bridge toward it. A wrong signpost sends the packet to a router that can't deliver it — a black hole.</p>
+      <figure>
+        <img src="img/bridge-06-table.png" alt="A popover titled North router · signposts: 10.0.1.0/24 marked connected, and rows for the Exchange (10.0.9.0/24), the south block and the island block, each pointing over Schmiede bridge to the Exchange router, with a trap option.">
+        <figcaption><b>Being the forwarding table.</b> Phrased by bridge and neighbour, never a port number — the same idiom as the restaurant's switch table, carrying IP blocks.</figcaption>
+      </figure>
+    </li>
+    <li class="step">
+      <h3>Give packets the hops for the trip</h3>
+      <p class="what">action: set the hop count (TTL)</p>
+      <p>The hop count must clear the longest crossing; too low and the packet expires in the river. On the redundant-bridge variation, the TTL is also what ends a loop.</p>
+    </li>
+  </ol>
+
+  <div class="quote">
+    <p>With the datagram organization, routers use hop-by-hop forwarding. … it looks up the destination address of the packet in its forwarding table.</p>
+    <cite>principles/network.html — the signpost mechanic. CC BY-SA 3.0.</cite>
+  </div>
+  <div class="quote">
+    <p>A black hole is a router that receives packets … but does not have an entry inside its forwarding table for this destination.</p>
+    <cite>principles/network.html — the wrong-signpost failure. CC BY-SA 3.0.</cite>
+  </div>
+  <div class="quote">
+    <p>Consider a path that contains a cycle. … the packet is discarded when it reaches zero.</p>
+    <cite>principles/network.html — TTL and loops. CC BY-SA 3.0.</cite>
+  </div>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Part 5</div><h2>The Exchange approves and logs</h2></div>
+  <p>Kneiphof holds two servers — the <b>card-auth HQ</b> and the <b>analytics logger</b> — and a desk, all on one block behind the switch. Every sale has to be <em>approved</em> at the HQ and <em>recorded</em> at the logger, so each neighbourhood's traffic must reach both. That's why the central segment needs a switch, and why the routing to the Exchange block has to be complete: miss either server and the run fails.</p>
+  <figure>
+    <img src="img/bridge-09-gold.png" alt="A result sheet reading Open across the river!, four stars (three ink plus one gold), Wired for $3,118, eight green ticks in two columns — North/South/Island/Exchange each approved and logged — and a gold note: three bridges, not seven; every neighbourhood reaches the Exchange on the shortest crossing, and the switch keeps the two servers' replies clean.">
+    <figcaption><b>Approved and logged, all four.</b> Eight checks — approve and log for each neighbourhood — plus the gold star for the cheapest three-bridge build with the right boxes.</figcaption>
+  </figure>
+  <p>The analytics endpoint is the "data must pass through a logger" idea from the brief, modelled honestly within the engine's grammar: two required destinations rather than a magic tap. It also motivates the switch, ties the four neighbourhoods together through one place, and leaves room for a later variation where the logger sits <em>on the path</em> and a missed hop drops the record.</p>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Part 6</div><h2>Every decision the student reckons with</h2></div>
+  <ol class="insights">
+    <li class="insight"><div class="num">1</div><div>
+      <h3>Which box goes where?</h3>
+      <p class="verdict"><b>device choice · new</b> Router between blocks, switch where many talk, hub where one does, nothing where a cable suffices. The link-layer lesson, now a cost-and-judgement call. <i>Grounded in protocols/lan.html.</i></p>
+    </div></li>
+    <li class="insight"><div class="num">2</div><div>
+      <h3>Which bridges do you buy?</h3>
+      <p class="verdict"><b>topology · cost · Euler</b> Seven crossings, three needed; duplicated bridges give a cheap-vs-dear pick, a redundant one a loop. Wires can't cross open water.</p>
+    </div></li>
+    <li class="insight"><div class="num">3</div><div>
+      <h3>What address does each link get?</h3>
+      <p class="verdict"><b>subnet addressing</b> A <code>/24</code> to a neighbourhood, a <code>/30</code> across a bridge; off-block traps in every list.</p>
+    </div></li>
+    <li class="insight"><div class="num">4</div><div>
+      <h3>What's each neighbourhood's gateway?</h3>
+      <p class="verdict"><b>gateways</b> A host hands off-block traffic to a router on its own block. <i>network.html / glossary.</i></p>
+    </div></li>
+    <li class="insight"><div class="num">5</div><div>
+      <h3>Which bridge leads to each far block?</h3>
+      <p class="verdict"><b>hop-by-hop forwarding · black holes</b> Fill every router's table; a wrong signpost strands the packet. <i>"looks up the destination … in its forwarding table."</i></p>
+    </div></li>
+    <li class="insight"><div class="num">6</div><div>
+      <h3>How many hops, and what about loops?</h3>
+      <p class="verdict"><b>TTL</b> Enough hops to cross the city; the safety net on a redundant crossing. <i>"discarded when it reaches zero."</i></p>
+    </div></li>
+    <li class="insight"><div class="num">7</div><div>
+      <h3>Does every sale get approved <em>and</em> logged?</h3>
+      <p class="verdict"><b>the Exchange · new</b> Two required destinations on the central island — routing to that block has to be complete, and the switch has to keep the replies apart.</p>
+    </div></li>
+  </ol>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Part 7</div><h2>Three variations</h2></div>
+  <p>Same bones — pick the boxes, buy the bridges, address, gateway, signpost, size the TTL, pay for it — three different crossings of Königsberg, each leaning on a different corner of the zone.</p>
+  <figure>
+    <img src="img/bridge-10-variations.png" alt="Three small Königsberg maps. Variation 1 Star on the island: N, S and E each cross one bridge straight to HQ on Kneiphof. Variation 2 The redundant crossing: both bridges to the north bank are wired, making a loop. Variation 3 The long way through Lomse: the banks route through the east island to reach Kneiphof, a longer chain.">
+    <figcaption><b>Three crossings on the same mechanics.</b> A star on the island, a redundant crossing, and the long way through Lomse.</figcaption>
+  </figure>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Variation</th><th>The puzzle</th><th>Leans hardest on</th></tr></thead>
+      <tbody>
+        <tr><td><b>1 · Star on the island</b></td><td>Each neighbourhood crosses one bridge straight to Kneiphof — three of the seven, the cheaper of each pair. The whole puzzle is the Exchange router's table and the right box in each spot.</td><td>Device choice · forwarding-table completeness · gateways · shortest crossings.</td></tr>
+        <tr><td><b>2 · The redundant crossing</b></td><td>Both bridges to a bank are wired, so a packet can loop between two routers. The second crossing survives a cut, but only the hop count stops the loop running forever.</td><td>Loops &amp; TTL · black-hole drops · redundancy vs. cost.</td></tr>
+        <tr><td><b>3 · The long way, through Lomse</b></td><td>No bank has a direct bridge to Kneiphof — everything routes through the east island first. A longer chain: every router needs the onward signpost and the TTL has to clear the extra hop.</td><td>Per-hop signpost chain · TTL sizing · the Euler "which bridges" choice.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note good">
+    <strong>My recommendation</strong>
+    <p>Ship <b>Variation 1 (Star on the island)</b> as the zone's super card — it's the cleanest first "build the whole routed network," with the device-choice and forwarding-table lessons front and centre. Keep <b>2</b> and <b>3</b> as deeper re-runs the engine supports for free. The walkthrough above uses Variation 1.</p>
+  </div>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Part 8</div><h2>What it needs from the engine, and open questions</h2></div>
+  <p>This still extends the restaurant's build mode rather than inventing a new simulation — the core owns every decision and number; the page only draws. On top of what the first proposal listed (routers in the palette, per-interface addressing, hand-set router tables, gateway and TTL as build edits), the Seven Bridges adds:</p>
+  <ul>
+    <li><b>A mixed palette with real cost.</b> Router / switch / hub, each placeable, each priced — and a build switch and build hub that behave as the sim already models them (a switch forwards selectively; a hub repeats to every port and so collides when two hosts answer at once).</li>
+    <li><b>Water as the obstacle, bridges as the gaps.</b> The restaurant's "cable can't cross the kitchen" becomes "cable can't cross water except on a bridge," with machines refused on water — the same integer geometry test over a few rectangles.</li>
+    <li><b>A multi-host LAN with two servers.</b> The central island is one block with the HQ, the logger and a desk behind the student's switch — the first build segment with more than one server, which is what makes the switch necessary.</li>
+    <li><b>Two required destinations per neighbourhood.</b> "Approved and logged" is two apps that must each succeed, already expressible with the existing goal kinds (as in the <code>roads</code> level's two pings).</li>
+    <li><b>Cost sampling over the bridge choices.</b> The star tiers come from a deterministic sweep of valid builds, now ranging over which bridges are bought and which boxes are placed, respecting the no-cross-water rule.</li>
+  </ul>
+  <p>Open questions for you:</p>
+  <ul>
+    <li><b>How many boxes should be a real choice vs. a trap?</b> The clean lesson is one clear switch spot (the Exchange), one clear hub spot (a quiet bank), and routers between blocks. Adding more hub/switch decisions deepens it but risks fiddliness — I lean toward the three clear calls above.</li>
+    <li><b>Four neighbourhoods, one terminal each — plus the Exchange's desk.</b> That makes the central island both a neighbourhood (its desk) and the destination (HQ + logger). Happy to drop the desk if you'd rather the centre be purely the destination.</li>
+    <li><b>Analytics as a second destination, or as a waypoint on the path?</b> Two-destinations is honest and within the engine today; a true "must pass through" tap is a bigger change. I'd ship two-destinations now and keep the waypoint as a later variation.</li>
+    <li><b>How much Königsberg to tell?</b> The Euler story is a lovely hook for a CS classroom. I'd put one line in the brief and a fuller note in the debrief, not gate anything on it.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Part 9</div><h2>How the tests keep it honest — and the UI A/B idea</h2></div>
+  <p>Same discipline as the restaurant: a behaviour suite plus a hand-rolled permutation/property suite, each new rule broken once and the failure logged in <code>SECOND-ORDER.md</code>. Planned coverage adds, over v1's list:</p>
+  <ul>
+    <li>A hub at the Exchange drops replies to collision and fails; a switch there delivers — the device-choice rule, break-tested.</li>
+    <li>A cable whose straight run crosses water off a bridge is refused; one over a bridge is allowed; a machine can't be placed on water.</li>
+    <li>Every neighbourhood reaches <em>both</em> the HQ and the logger; missing either fails.</li>
+    <li>A sweep confirms three bridges are both necessary and sufficient for the star layout, and the tiers partition a deterministic sample of valid builds.</li>
+  </ul>
+  <div class="note">
+    <strong>On your A/B idea for the build UI</strong>
+    <p>You asked whether some build-UI designs bug out more than others. I'd run it as a headless harness that drives two interaction variants — say, "arm-then-click placement" vs. "drag-from-palette," or "point-at-neighbour" vs. "dropdown" for tables — through the <em>same</em> deterministic random edit sequences across the three engines, and compare how often each wedges, mis-places, or desyncs from the core. Because the core is the single source of truth, "correct" is unambiguous, so the comparison is just failure-rate per variant. I can fold that into the build-phase test plan once we pick a design to build first.</p>
+  </div>
+</section>
+
+</div><!-- /tab-v2 -->
+
+<div class="tab" id="tab-v1">
+
+<section>
+  <div class="section-head"><div class="eyebrow">Entry 1 · 16 October 2026</div><h2>First, what the restaurant super level actually tests</h2></div>
+  <p>Before designing the next one, it's worth being precise about what the first one does — its constraints and the knowledge it makes a student demonstrate — so the town level deepens the same idea rather than repeating it.</p>
+  <p>The block zone teaches <em>one</em> network: hosts and a switch, frames carried by MAC address, a switch that learns. Its super level — <a href="super-levels-journal.html">Your own restaurant</a> — hands the student an empty floor with three registers, a card-auth server, a reel of cable, and a kitchen in the middle. Everything the student does lives inside that single block.</p>
+
+  <h3>Its constraints</h3>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Constraint</th><th>What it forces</th></tr></thead>
+      <tbody>
+        <tr><td>A reel limit (max cable per run)</td><td>No single sprawling cable; placement has to be compact.</td></tr>
+        <tr><td>Cable priced per unit length</td><td>Every run is a cost decision; the bill is the score.</td></tr>
+        <tr><td>Switches cost money, endpoints are free</td><td>You buy as few switches as the geometry allows.</td></tr>
+        <tr><td>No cable may cross the kitchen</td><td>Routing around an obstacle, not through it.</td></tr>
+        <tr><td>Kitchen sized so one switch can't reach all four</td><td>At least two switches — a real topology choice, proven by a sweep test.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>The knowledge it makes a student demonstrate</h3>
+  <ul>
+    <li><b>Link-layer addressing.</b> Every machine has a MAC; the student reads it and reasons about it.</li>
+    <li><b>Switching by a table.</b> A build switch doesn't learn — the student <em>is</em> the MAC table, picking which cable each machine's frames go out of. Miss a row and the frame is dropped.</li>
+    <li><b>One subnet.</b> Each register is addressed on the shop's block; an off-block address can never reach the server.</li>
+    <li><b>Physical topology &amp; cost.</b> Place, wire, and pay — the cheapest working layout wins the stars.</li>
+  </ul>
+  <div class="note">
+    <strong>The shape to keep</strong>
+    <p><b>Place → wire → address → fill the tables → run, under a budget, around an obstacle, graded on the cost distribution.</b> That is the super-level grammar. The town level keeps every verb and raises what each one means — from one block and one switch to many blocks and routers that forward by hand-set signposts.</p>
+  </div>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Entry 2</div><h2>What the network layer has to teach — straight from the textbook</h2></div>
+  <p>The town zone (<em>Routes Across Town</em>) is where packets leave their own block. Its levels already teach, one idea at a time: a gateway on your own block, a router that forwards by a table, directly-connected blocks that need no entry, dead ends when a signpost is wrong, and a hop count that kills loops. The super level has to make a student do <em>all</em> of them at once, on a network they built. The three ideas most specific to it are grounded in the open textbook the game already cites:</p>
+
+  <div class="quote">
+    <p>With the datagram organization, routers use hop-by-hop forwarding. This means that when a router receives a packet that is not destined to itself, it looks up the destination address of the packet in its forwarding table.</p>
+    <cite>Computer Networking: Principles, Protocols and Practice, 3rd ed. — O. Bonaventure et al., <a href="https://beta.computer-networking.info/syllabus/default/principles/network.html">principles/network.html</a>. CC BY-SA 3.0.</cite>
+  </div>
+  <p>This is the forwarding-table mechanic: at every router the student fills, a packet's destination block is looked up and sent on. Get the lookup right and it advances; leave it blank and it stops.</p>
+
+  <div class="quote">
+    <p>A path may lead to a black hole. In a network, a black hole is a router that receives packets for at least one given source/destination pair but does not have an entry inside its forwarding table for this destination.</p>
+    <cite>principles/network.html. CC BY-SA 3.0.</cite>
+  </div>
+  <p>This is the failure the student has to avoid: a missing or wrong signpost sends a packet to a router that can't deliver it, and there the journey ends. The diagnosis on a failed run names it in exactly these terms.</p>
+
+  <div class="quote">
+    <p>A second type of problem may exist in networks using the datagram organization. Consider a path that contains a cycle. … [the hop count] is decremented … and the packet is discarded when it reaches zero.</p>
+    <cite>principles/network.html. CC BY-SA 3.0.</cite>
+  </div>
+  <p>This is TTL: on a long route or a wiring that loops, the hop count is the safety net. The student has to give packets enough hops to cross the town — and sees why a loop can't run forever.</p>
+  <p>Gateways and subnet addressing lean on the same chapter and the glossary, and are already taught verbatim-sourced in the town levels <code>gateway</code>, <code>point</code> and <code>roads</code>: a device reaches its own block directly, and for anywhere else hands the packet to a gateway that must sit on its own block.</p>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Entry 3</div><h2>The design: a franchise across town</h2></div>
+  <p>The restaurant became a small chain. Three branch registers sit in three districts — each its own block — and a downtown HQ server approves every card. The roads between the districts are the student's to lay. A rail yard cuts through the middle of the map; leased lines can't cross it, so the junctions have to sit where the roads can route around — the direct echo of the kitchen, one layer up.</p>
+  <figure>
+    <img src="img/town-03-roads.png" alt="The town super level: a city-grid map with Branch A and B registers on the left, Branch C and an HQ card-auth server on the right, two routers (West and East junction) along the top, five leased lines routed around a dashed RAIL YARD box in the centre, each line labelled with its dollar cost; the brief on the left shows the job and a running bill of $5,208.">
+    <figcaption><b>The whole level.</b> Four fixed endpoints on four different blocks, a rail yard in the way, and the roads and routers to be laid between them. The bill on the left updates as the student builds — routers at $300, leased line at $3 a unit.</figcaption>
+  </figure>
+
+  <ol class="steps">
+    <li class="step">
+      <h3>Read the town you've been handed</h3>
+      <p class="what">given: three branches on three blocks, an HQ on a fourth, a rail yard between</p>
+      <p>The map opens with only the four endpoints, each glowing and asking for its part of the setup. Branch A is on <code>10.0.1.0/24</code>, Branch B on <code>10.0.2.0/24</code>, Branch C on <code>10.0.3.0/24</code>, and HQ downtown on <code>10.0.9.0/24</code>. Nothing connects them yet.</p>
+      <figure>
+        <img src="img/town-01-empty.png" alt="The empty town map: four glowing endpoints — Branch A and B registers on the left, Branch C register bottom-right, HQ card-auth server top-right — each reading needs an address, with a dashed RAIL YARD box in the centre and no routers or roads yet.">
+        <figcaption><b>The empty town.</b> The branches and the HQ are already yours, so the bill starts at $0 — you spend only on routers and leased line.</figcaption>
+      </figure>
+    </li>
+
+    <li class="step">
+      <h3>Place the routers</h3>
+      <p class="what">action: pick Router from the palette, click a spot</p>
+      <p>A router costs $300 — the one piece of gear you buy, and the thing a block needs to talk to any other block. Because leased line can't cross the rail yard, there's no single spot that reaches all four branches; the planning is where to put the junctions so the roads route around. The canonical cheap answer is two, one serving each pair of branches, joined along the top.</p>
+      <figure>
+        <img src="img/town-02-routers.png" alt="Two routers placed along the top of the map, labelled West junction and East junction, above the rail yard; the four endpoints still glow and no roads are drawn yet.">
+        <figcaption><b>Two junctions.</b> West junction will serve branches A and B; East junction the HQ and branch C. One router in the middle can't reach everyone without a line through the yard.</figcaption>
+      </figure>
+    </li>
+
+    <li class="step">
+      <h3>Lay the leased lines</h3>
+      <p class="what">action: turn on Lay a road, click two devices</p>
+      <p>Each line is clicked device-to-device and priced the instant it lands. A line over the reel limit, or one whose straight run would cross the rail yard, is refused — so every road goes around. Leased line is dear ($3 a unit), so the shape of the network is most of the bill.</p>
+      <figure>
+        <img src="img/town-03-roads.png" alt="Five leased lines drawn: Branch A to West junction ($184), Branch B to West junction ($384), West junction to East junction ($400), East junction to HQ ($184), East junction to Branch C ($384), all routed clear of the rail yard; total bill $5,208.">
+        <figcaption><b>Five roads around the yard.</b> Each branch to its junction, and the two junctions joined along the top. The number on each line is its cost; the brief totals them under "Leased line".</figcaption>
+      </figure>
+    </li>
+
+    <li class="step">
+      <h3>Address every link, on its own block</h3>
+      <p class="what">action: click a router, give each of its links an address</p>
+      <p>This is the new depth over the restaurant. A router sits on several blocks at once; each of its links needs an address <em>on that link's block</em>. The branch links take the branch's <code>/24</code>; the road between junctions is a point-to-point <code>/30</code>. The list for each link mixes valid choices with deliberate traps on the wrong block — the subnet lesson, made concrete at every interface.</p>
+      <figure>
+        <img src="img/town-04-address.png" alt="A popover over West junction titled West junction: three links, each with a dropdown — Link toward Branch A set to 10.0.1.1/24 (on A's block, ticked), Link toward Branch B set to 10.0.2.1/24 (on B's block, ticked), and Link toward East junction (10.0.254.0/30) with a dropdown reading choose this link's address.">
+        <figcaption><b>Being the address plan.</b> Each interface gets an address on the block it faces. Pick one off that block and the link can't carry traffic — the trap is right there in the list.</figcaption>
+      </figure>
+    </li>
+
+    <li class="step">
+      <h3>Point each branch at its gateway</h3>
+      <p class="what">action: click a register, choose its way off the block</p>
+      <p>A register can reach its own block directly, but HQ is somewhere else — so it needs a gateway, and the gateway has to be an address it can already reach: the junction's near side, on its own block. The HQ's router address and the other branch's block are offered as traps.</p>
+      <figure>
+        <img src="img/town-05-gateway.png" alt="A popover over Branch A register showing its address 10.0.1.10/24 and block 10.0.1.0/24, with a gateway dropdown offering 10.0.1.1 (West junction, on our block, ticked), 10.0.9.1 (HQ's router, downtown, wrong), and 10.0.2.1 (Branch B's block, wrong).">
+        <figcaption><b>The hand-off.</b> The gateway must be on the register's own block. Point it at the far router and the register can't even deliver the first hop.</figcaption>
+      </figure>
+    </li>
+
+    <li class="step">
+      <h3>Fill every router's signposts</h3>
+      <p class="what">action: click a router, choose the road for each far block</p>
+      <p>The heart of the zone. Each router already knows the blocks it is wired to — those are directly connected and need no entry (shown greyed, with the lesson stated). For every block it <em>can't</em> see directly, the student picks the road that leads there: "to reach HQ, send toward East junction." Point a block down the wrong road and the packet hits a router that can't deliver it — a black hole. Leave a row blank and it stops at the first junction.</p>
+      <figure>
+        <img src="img/town-06-table.png" alt="A popover titled West junction · signposts: rows for 10.0.1.0/24 and 10.0.2.0/24 marked connected — no signpost (Branch A link, Branch B link, in green), a row for 10.0.3.0/24 Branch C set to toward East junction, and a row for 10.0.9.0/24 HQ office with a dropdown reading choose a road.">
+        <figcaption><b>Being the forwarding table.</b> Connected blocks are free; far blocks each need a signpost. The student points at a neighbour, never types a port — the same idiom as the restaurant's switch table, now carrying IP blocks.</figcaption>
+      </figure>
+    </li>
+
+    <li class="step">
+      <h3>Give packets the hops to make the trip</h3>
+      <p class="what">action: set the hop count (TTL) for the longest route</p>
+      <p>Even with every signpost right, a packet dies in transit if it runs out of hops. The longest trip here crosses two junctions; a hop count of two expires before the far side. The student sizes the TTL to the route — and, in the variations that allow a loop, sees the hop count stop a cycle from running forever.</p>
+      <figure>
+        <img src="img/town-07-ttl.png" alt="A popover titled Hops of life (TTL) with a dropdown offering 2 — barely off the block (wrong), 6 — clears the longest route (ticked), and 16 — more than enough, and a note that the longest trip crosses two junctions so two hops die in transit.">
+        <figcaption><b>Enough life for the route.</b> TTL is a safety limit, not an address — but set it too low and even a perfect network drops its packets mid-town.</figcaption>
+      </figure>
+    </li>
+
+    <li class="step">
+      <h3>Open across town</h3>
+      <p class="what">action: run it on the real engine, watch the packets cross the city</p>
+      <p>Each branch sends a card-auth request to HQ and waits for the approval. The same deterministic engine that runs every other level carries them, hop by hop, in the searchable log. If all three branches get their replies, the franchise is online — and the cheaper the network, the more stars.</p>
+      <figure>
+        <img src="img/town-09-gold.png" alt="A result sheet reading Open across town!, four stars (three ink plus one gold), Wired for $5,208, three green ticks (Branch A, B, C reach HQ), and a gold note: one of the cheapest town networks anyone has laid, two junctions along the top, every road clear of the rail yard.">
+        <figcaption><b>A clean build.</b> Three stars for the cost tier and a fourth, gold, for landing in the cheapest few per cent. Cost, goals and the lesson all on the result.</figcaption>
+      </figure>
+    </li>
+  </ol>
+
+  <div class="note warn">
+    <strong>When it doesn't work, the game names the black hole</strong>
+    <p>Leave a junction without a signpost for HQ's block and the run fails with the textbook's own term — a black hole — and the exact block and router at fault, with the step log filtered to just the dropped packets. The student learns the table matters by watching it not matter.</p>
+  </div>
+  <figure>
+    <img src="img/town-08-fail.png" alt="A result sheet reading Not delivered yet, zero stars, three red crosses (Branch A, B, C reach HQ all failed), and a What went wrong box: West junction has no signpost for 10.0.9.0/24, so the packet reached a router that couldn't deliver it — a black hole. Give the junction a road for that block. The map behind shows the West–East line dashed in red.">
+    <figcaption><b>A missing signpost.</b> The diagnosis names the block with no road and what to do; the offending leg of the route is marked on the map.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Entry 4</div><h2>Every decision the student reckons with — and why it's there</h2></div>
+  <ol class="insights">
+    <li class="insight"><div class="num">1</div><div>
+      <h3>Where do the routers go?</h3>
+      <p class="verdict"><b>topology + cost</b> Leased line can't cross the rail yard and routers cost real money, so the student trades a tidy two-junction layout against a sprawling detour. Mirrors the restaurant's two-switch kitchen puzzle one layer up.</p>
+    </div></li>
+    <li class="insight"><div class="num">2</div><div>
+      <h3>What address does each link get?</h3>
+      <p class="verdict"><b>subnet addressing</b> A router lives on several blocks; each interface must be on its link's block (a <code>/24</code> to a branch, a <code>/30</code> between junctions). Off-block traps make the subnet rule bite. <i>Grounded in the town addressing levels (gateway, point).</i></p>
+    </div></li>
+    <li class="insight"><div class="num">3</div><div>
+      <h3>What's each branch's way off the block?</h3>
+      <p class="verdict"><b>gateways</b> A host reaches its own block directly and hands everything else to a gateway on that block. The far router and a neighbour's block are offered as traps. <i>Grounded in network.html / glossary.</i></p>
+    </div></li>
+    <li class="insight"><div class="num">4</div><div>
+      <h3>Which road leads to each far block?</h3>
+      <p class="verdict"><b>hop-by-hop forwarding</b> The student fills every router's table: a signpost per remote block, none for connected ones. <i>"routers use hop-by-hop forwarding … looks up the destination address … in its forwarding table."</i></p>
+    </div></li>
+    <li class="insight"><div class="num">5</div><div>
+      <h3>What happens down the wrong road?</h3>
+      <p class="verdict"><b>black holes</b> A wrong or missing signpost strands the packet at a router with no entry; the failure is diagnosed by name. <i>"a black hole is a router that … does not have an entry … for this destination."</i></p>
+    </div></li>
+    <li class="insight"><div class="num">6</div><div>
+      <h3>How many hops of life does a packet need?</h3>
+      <p class="verdict"><b>TTL &amp; loops</b> The hop count has to clear the longest route, and it's what stops a looped wiring from running forever. <i>"Consider a path that contains a cycle … the packet is discarded when it reaches zero."</i></p>
+    </div></li>
+  </ol>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Entry 5</div><h2>How it's graded</h2></div>
+  <p>Passing is simple: all three branches get their approvals back. The stars are about money — routers plus leased line — and, exactly as in the restaurant, they're set against the <em>distribution</em> of every network a student could reasonably build, not a hand-picked number. The method is the one already shipped: sample many valid builds, price each through the engine's own cost, and read the percentiles off that distribution.</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Stars</th><th>Among all buildable town networks</th><th>Illustrative total*</th></tr></thead>
+      <tbody>
+        <tr><td>★</td><td>it delivers at all</td><td class="num">any passing build</td></tr>
+        <tr><td>★★</td><td>cheapest two-thirds (≤ 66th percentile)</td><td class="num">to be sampled</td></tr>
+        <tr><td>★★★</td><td>cheapest third (≤ 33rd percentile)</td><td class="num">to be sampled</td></tr>
+        <tr><td class="gold-cell">★★★★ gold</td><td class="gold-cell">cheapest ~5% (≤ 5th percentile) — hidden</td><td class="num gold-cell">≈ $5,208 (two junctions, top route)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <figcaption>*The exact tiers come from a deterministic sweep of valid builds once the engine piece lands, the same way the restaurant's $1,697 / $1,823 / $1,916 were derived. The $5,208 shown in the mockup is the canonical two-junction gold layout and is illustrative until that sweep runs.</figcaption>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Entry 6</div><h2>Three variations</h2></div>
+  <p>Same bones — place routers, lay roads, address links, set gateways, fill signposts, size the TTL, pay for it — three different towns, each leaning on a different corner of the zone. They give you a choice of difficulty curve and let the level be re-run without being the same puzzle twice.</p>
+  <figure>
+    <img src="img/town-10-variations.png" alt="Three small town maps side by side. Variation 1 Downtown exchange: branches A, B, C around a single central router X near the rail yard, HQ top-right, a star topology. Variation 2 The river and two bridges: a river down the middle, routers W and S on the left bank, E on the right bank by HQ, two crossings. Variation 3 The long haul: Branch A and HQ at the ends of a straight chain of four routers 1-2-3-4.">
+    <figcaption><b>Three towns on the same mechanics.</b> Left to right: a hub-and-spoke, a river with two crossings, and a four-router chain across the city.</figcaption>
+  </figure>
+
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Variation</th><th>The puzzle</th><th>Leans hardest on</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>1 · Downtown exchange</b></td>
+          <td>One junction router downtown; every branch homes to it in a star. Cheapest on gear and line — the whole puzzle is the hub's table (a signpost per branch block plus HQ) and a single default route out of each branch.</td>
+          <td>Forwarding-table completeness · gateways · directly-connected routes. Fewest hops, so a modest TTL.</td>
+        </tr>
+        <tr>
+          <td><b>2 · The river &amp; two bridges</b></td>
+          <td>A river splits the city with two crossings — a short dear bridge and a long cheap detour — and branches on both banks. The wrong bank's signpost dead-ends a packet; a redundant loop is possible, and only the hop count saves it.</td>
+          <td>Black-hole drops · route vs. directly-connected · loops &amp; TTL · a real cost trade-off.</td>
+        </tr>
+        <tr>
+          <td><b>3 · The long haul</b></td>
+          <td>The farthest branch sits four routers deep in a line. Every router on the chain needs the HQ signpost and the return signpost, and the TTL has to clear all four crossings — a perfect chain still fails if the hop count is too low (the <code>across</code> lesson, built from scratch).</td>
+          <td>Per-hop signpost chain · TTL sizing · the longest, costliest lines.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note good">
+    <strong>My recommendation</strong>
+    <p>Ship <b>Variation 1 (Downtown exchange)</b> as the zone's default super level — it is the cleanest first encounter with "build the whole forwarding plan," closest in spirit to the restaurant, and the hub's table is a satisfying single focus. Keep <b>2</b> and <b>3</b> as the deeper re-runs the engine supports for free, since they're the same mechanic on a different map. The walkthrough above uses the two-junction form because it shows the richest single table; a hub-and-spoke is a strict simplification of it.</p>
+  </div>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Entry 7</div><h2>What this needs from the engine — and open questions</h2></div>
+  <p>The restaurant super level added a build mode to the I/O-free core: a <code>build</code> block, a student-held build state, and an <code>assembled()</code> step that turns the student's placement into a concrete level the existing simulation runs. The town level extends that mode rather than inventing a new one. The new pieces, in the same spirit (core owns every decision and number; the page only draws):</p>
+  <ul>
+    <li><b>Routers in the palette.</b> The build palette already carries device kinds; it needs <code>router</code> with its per-link interfaces as a placeable, the way the restaurant placed static switches.</li>
+    <li><b>Per-interface addressing.</b> Today a build host picks one address; a router needs an address per link, chosen from per-link candidate lists (valid block + traps). This generalises the existing <code>set_addr</code> to an interface target.</li>
+    <li><b>Hand-set forwarding tables.</b> The static switch already resolves "send toward neighbour X" into a concrete table entry; the router table is the same idiom carrying an IP block instead of a MAC, resolved in <code>assembled()</code> to a route whose next hop is the chosen neighbour's interface.</li>
+    <li><b>Gateway &amp; TTL as build edits.</b> Both already exist as level fields and as edits elsewhere; here they become build-state the student sets and the assembler writes onto the host.</li>
+    <li><b>Cost over multiple blocks.</b> The cost/tier maths is unchanged — line length × unit + routers — but the valid-build sampler has to respect the no-cross-rail-yard rule and the addressing constraints when it enumerates builds for the percentiles.</li>
+  </ul>
+  <p>Open questions I'd like your read on before building:</p>
+  <ul>
+    <li><b>How much addressing is too much?</b> Making the student address <em>every</em> interface (including the <code>/30</code> between junctions) is the fullest lesson but the most clicks. An alternative: fix the point-to-point links and have the student address only the branch-facing interfaces. I lean toward the fuller version with good traps, but it's a load question for a classroom.</li>
+    <li><b>Static routers, like the static switch.</b> The zone's levels show routers forwarding by a table that's largely given; here the student fills it entirely. Same defensible "be the table" deepening we flagged for the switch — worth a sentence in the curriculum notes so it's deliberate.</li>
+    <li><b>One default variation, or let the teacher pick?</b> I'd ship Variation 1 as the super card and leave 2 and 3 as optional re-runs; happy to surface all three if you'd rather the zone offer a short ladder.</li>
+    <li><b>TTL as a visible dial or a consequence to discover?</b> The mockup gives it its own control. It could instead be fixed-but-low so the student has to <em>find</em> that the long route needs more — more dramatic, but it hides a knob behind a failure.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="section-head"><div class="eyebrow">Entry 8</div><h2>How the tests would keep it honest</h2></div>
+  <p>The same way the restaurant's do — a behaviour suite plus a hand-rolled permutation/property suite, each new rule break-tested once and the failure recorded in <code>SECOND-ORDER.md</code>. Planned coverage:</p>
+  <ul>
+    <li>A correct build delivers all three branches and earns the gold; the cost maths equals routers + line.</li>
+    <li>No router placement can serve every branch with a line that avoids the rail yard — proven by a sweep, so two junctions are genuinely required (the town analogue of the kitchen sweep).</li>
+    <li>A wrong signpost produces a black hole and fails; a missing one strands the packet at the first junction.</li>
+    <li>An off-block interface address or an off-block gateway can't carry traffic.</li>
+    <li>A TTL below the route length expires in transit even with every signpost right; a redundant loop dies at zero rather than forever.</li>
+    <li>Hundreds of random edit sequences never wedge the core, and the star tiers partition a deterministic sample of valid builds.</li>
+    <li>A cross-engine browser smoke test builds the two-junction layout and opens for business in Chromium, Firefox and WebKit.</li>
+  </ul>
+</section>
+
+</div><!-- /tab-v1 -->
+
+<footer>
+  Packet Alley · a TCP/IP teaching game. Core owns every decision in integer maths and cannot reach a real network; the page draws what it returns. The screenshots on this page are of a <b>design mockup</b> built to show the proposed level — no game code has been changed. Textbook excerpts are quoted under CC BY-SA 3.0 from <i>Computer Networking: Principles, Protocols and Practice</i> (O. Bonaventure et&nbsp;al., cnp3/ebook), the same source the game cites in its concept panels.
+</footer>
+
+</div>
+<script>
+(function () {
+  var btn = document.getElementById("theme");
+  var root = document.documentElement;
+  function cur() {
+    if (root.getAttribute("data-theme")) return root.getAttribute("data-theme");
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  btn.addEventListener("click", function () {
+    root.setAttribute("data-theme", cur() === "dark" ? "light" : "dark");
+  });
+})();
+(function () {
+  var nav = document.querySelector(".tabnav");
+  if (!nav) return;
+  nav.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-tab]");
+    if (!b) return;
+    var id = b.getAttribute("data-tab");
+    nav.querySelectorAll("button").forEach(function (x) { x.classList.toggle("active", x === b); });
+    document.querySelectorAll(".tab").forEach(function (t) { t.classList.toggle("is-active", t.id === id); });
+    window.scrollTo(0, 0);
+  });
+})();
+</script>
+</body>
+</html>

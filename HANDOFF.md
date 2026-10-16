@@ -60,6 +60,7 @@ examples — are built.
 | `./scripts/check.sh` after the curriculum content rewrite (verbatim story/task/debrief for all 19 levels, chapter openings, textbook-sourced device blurbs) | BUILDER CHECK PASSED in Chromium, Firefox and WebKit; `cargo test -p pa_core` green; campaign choices unchanged; `python3 packet_alley_curriculum_packet/scripts/validate_packet.py` passes the answer-leak lint |
 | CI on `main` (Chromium) | check: success, deploy: success |
 | `BUILDER_ORIGIN=https://sgilson7.github.io/packet-alley tests/browser/check.py` | PASSED in Chromium against the live site |
+| `./scripts/check.sh` after the network-layer super "The Seven Bridges" (routers + mixed palette in build mode, student-filled router forwarding tables, Königsberg water/bridges, analytics on the north bank) | BUILDER CHECK PASSED in Chromium, Firefox and WebKit; 58 `cargo test -p pa_core` green (new `tests/bridge.rs`, 7); the browser check places four routers + two switches, wires eleven lines over the bridges, fills every router's table and opens across the river (SECOND-ORDER rows 35–36) |
 | Website `make check`, `make packet`, `make gate`, `make deploy` | all passed; the listing is live and filed as a classroom tool |
 
 ## The curriculum packet (Sam's `packet_alley_curriculum_packet`)

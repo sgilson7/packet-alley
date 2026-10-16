@@ -319,6 +319,10 @@ button.ghost.small { padding: 3px 9px; font-size: 0.8rem; border-width: 2px; }
 .build-steps li { margin: 4px 0; }
 
 .obstacle { fill: var(--line); opacity: 0.5; stroke: var(--muted); stroke-width: 2px; stroke-dasharray: 8 6; }
+.obstacle.water { fill: var(--oi-sky); opacity: 0.4; stroke: var(--oi-blue); stroke-width: 1.5px; stroke-dasharray: none; }
+.bridge { fill: #b07d46; stroke: #6b4a26; stroke-width: 2px; }
+.route-block { font-family: var(--mono, monospace); font-weight: 600; }
+.route-name { display: block; color: var(--muted); font-size: 0.82em; }
 .obstacle-label { fill: var(--muted); font-size: 22px; font-weight: 700; text-anchor: middle; dominant-baseline: central; text-transform: uppercase; letter-spacing: 0.06em; }
 .build-cable { fill: none; stroke: var(--ink); stroke-width: 6px; stroke-linecap: round; }
 .build-cable-hit { fill: none; stroke: transparent; stroke-width: 22px; cursor: pointer; }
