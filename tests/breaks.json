@@ -1,0 +1,54 @@
+[
+  {
+    "name": "privacy CSP: font-src 'none' (T1)",
+    "file": "web/index.html",
+    "find": "font-src 'none'; ",
+    "replace": "",
+    "test": "every_private_page_sets_the_strict_privacy_policy"
+  },
+  {
+    "name": "privacy CSP: no-referrer (T1)",
+    "file": "web/index.html",
+    "find": "  <meta name=\"referrer\" content=\"no-referrer\">\n",
+    "replace": "",
+    "test": "every_private_page_sets_the_strict_privacy_policy"
+  },
+  {
+    "name": "privacy check: no request after ready (T1)",
+    "file": "web/app.js",
+    "find": "    await preloadArt();",
+    "replace": "    preloadArt();",
+    "test": "browser",
+    "expect": "no request of any kind after the page reported ready"
+  },
+  {
+    "name": "blocked message names the host (T1)",
+    "file": "data/copy.json",
+    "find": "allow WebAssembly for sgilson7.github.io",
+    "replace": "allow WebAssembly for this site",
+    "test": "the_blocked_device_messages_exist_and_name_the_host"
+  },
+  {
+    "name": "blocked message keeps to the tone file (T1)",
+    "file": "data/copy.json",
+    "find": "the part of the browser the game runs on.",
+    "replace": "the part of the browser the game runs on!",
+    "test": "no_scoped_string_uses_a_phrase_the_tone_file_rules_out"
+  },
+  {
+    "name": "blocked message: shown when WebAssembly is blocked (T1)",
+    "file": "web/app.js",
+    "find": "  el(\"blocked\").hidden = false;\n",
+    "replace": "",
+    "test": "browser",
+    "expect": "the page says WebAssembly is blocked"
+  },
+  {
+    "name": "blocked message: hidden on a normal load (T1)",
+    "file": "web/index.html",
+    "find": "<p id=\"blocked\" class=\"blocked\" role=\"alert\" hidden></p>",
+    "replace": "<p id=\"blocked\" class=\"blocked\" role=\"alert\">.</p>",
+    "test": "browser",
+    "expect": "a normal load shows no blocked-device message"
+  }
+]

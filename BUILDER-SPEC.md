@@ -49,5 +49,7 @@ These stay with the person and go in `BRIEF.md` or `PLAN.md`:
 | Default | Changed to | Reason | Recorded in |
 | --- | --- | --- | --- |
 | Template has no browser storage | the page keeps the player's stars and teacher-mode flag in `localStorage` | Stars and progress are the game; they must survive a visit. The core reads the save and treats an unreadable one as a new player. | PLAN.md P7 |
+| D4, D7 | stricter CSP (`font-src`, `frame-src`, `worker-src`, `manifest-src` `'none'`, `no-referrer`); the browser check fails on any request after ready, same-origin included | a student tool used in classrooms (kits/privacy, TRIAGE T1) | SECOND-ORDER.md rows 40–42 |
+| D7 | D7 tightened; storage allowed for the declared keys only (`STORAGE_KEYS` in `tests/browser/check.py`: `packet-alley-save`), where the kit allows none | the brief keeps progress between visits (PLAN P7), so the kit's "nothing stored" rule is narrowed to an allowlist rather than followed | SECOND-ORDER.md row 40 |
 
 No other default is changed. In particular `connect-src 'self'` is unchanged: there is no online mode and nothing opens an off-origin connection, so R7's load-and-idle path holds and the browser check proves it. The simulated network is values in the I/O-free core, so it reaches nothing real.

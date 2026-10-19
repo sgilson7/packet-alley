@@ -109,4 +109,16 @@ Protocols and Practice* (Bonaventure, `cnp3/ebook`), under **CC BY-SA 3.0**. Tho
 excerpts are not MIT; their source, exact text and SHA-256 are in
 `data/textbook_extracts.json` and the attribution is in `LICENSES.md`.
 
+**Privacy.** The game sends nothing anywhere. It keeps one thing in the
+browser, the player's stars and progress (`localStorage`, key
+`packet-alley-save`), and nothing else. The browser check fails on any request
+after the page is ready and on any other stored key, and
+`scripts/prove-privacy.sh` plants five leaks and requires each to be caught.
+That shows what the page did on the check's path in three engines; it does not
+show what a browser extension, the operating system or the host does.
+
+**On a school device.** If a device policy blocks WebAssembly (in Chrome, the
+JavaScript JIT setting), the page says so instead of staying blank; a school's
+IT team can allow it for sgilson7.github.io.
+
 MIT licence (the game); see `LICENSE`.

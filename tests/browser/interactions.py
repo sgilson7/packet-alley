@@ -55,6 +55,7 @@ def run(page, check, engine):
     check(page.locator(".level-card").count() == 19, "nineteen levels are listed")
     check(page.locator(".level-card.locked").count() == 18, "all but the first level start locked")
     check(images_loaded(page, "#menu"), "the menu art loaded")
+    check(page.is_hidden("#blocked"), "a normal load shows no blocked-device message")
 
     # Opening the first level shows the chapter's demonstration scene first.
     page.locator(".level-card:not(.locked)").first.click()
@@ -274,3 +275,31 @@ def bridge_flow(page, check):
     page.wait_for_selector("#overlay:not([hidden])", timeout=20000)
     check(page.inner_text("#overlay-body h2") == COPY["passed"], "every branch reaches the HQ and the logger")
     check(page.locator("#overlay-body .stars-big .gold").count() == 1, "a clean, cheap routed build earns the gold star")
+
+
+# Two ways a school's device policy can stop WebAssembly: Chrome's
+# DefaultJavaScriptJitSetting=block can leave WebAssembly undefined, or leave it
+# defined with instantiate refusing. Each is imitated by an init script.
+BLOCKS = [
+    ("WebAssembly is undefined", "delete window.WebAssembly;"),
+    (
+        "WebAssembly refuses to instantiate",
+        "WebAssembly.instantiate = () => Promise.reject(new WebAssembly.CompileError('blocked'));"
+        " WebAssembly.instantiateStreaming = () => Promise.reject(new WebAssembly.CompileError('blocked'));",
+    ),
+]
+
+
+def run_blocked(browser, base, check, engine):
+    """A blocked device sees a plain message, not a blank page. By hand: the
+    message is copy.blocked_wasm, word for word, and the menu stays hidden."""
+    for how, script in BLOCKS:
+        context = browser.new_context()
+        context.add_init_script(script)
+        page = context.new_page()
+        page.goto(base + "/index.html")
+        page.wait_for_selector("body[data-ready='true']", state="attached", timeout=20000)
+        shown = page.is_visible("#blocked") and page.inner_text("#blocked") == COPY["blocked_wasm"]
+        check(shown, f"when {how}, the page says WebAssembly is blocked and who can allow it")
+        check(page.is_hidden("#menu"), f"when {how}, no half-started menu is shown")
+        context.close()

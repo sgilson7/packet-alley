@@ -64,6 +64,27 @@ examples — are built.
 | `./scripts/check.sh` after making both super levels run on an incomplete network (Sam: the simulation must run and fail visibly, not refuse, when the network is not set up right) | BUILDER CHECK PASSED in Chromium, Firefox and WebKit; 65 `cargo test -p pa_core` green (new runs-and-fails tests in `bridge.rs` + `build.rs`); a 3-engine in-browser check confirmed an empty build on both super levels opens a failing result sheet naming the problem (SECOND-ORDER row 39). A winning run is filmed at `notes/img/seven-bridges-win.gif`. |
 | Website `make check`, `make packet`, `make gate`, `make deploy` | all passed; the listing is live and filed as a classroom tool |
 
+## Privacy kit and the blocked-device message (2026-10-19, TRIAGE T1)
+
+From a K-12 classroom feasibility analysis; Sam granted the change and its
+deploy (BRIEF.md, Autonomy). The Builder privacy kit is applied: the stricter
+CSP and `no-referrer` (boundary test
+`every_private_page_sets_the_strict_privacy_policy`), and a browser check that
+fails on any request after ready and on any stored key but `packet-alley-save`
+(the kit allows none; tightened to the declared key, SECOND-ORDER row 40).
+Every picture is now fetched before ready (row 41). When a device policy blocks
+WebAssembly the page shows `blocked_wasm` from `data/copy.json` instead of a
+blank page (row 43). New: `GLOSSARY.md`, `TONE.md`, `crates/core/tests/copy.rs`
+(scoped to the `blocked_` strings, row 44), `scripts/break_tests.py` with
+`tests/breaks.json`, `scripts/plant_leak.py` and `scripts/prove-privacy.sh`.
+
+| Command | Result |
+| --- | --- |
+| `./scripts/check.sh` | BUILDER CHECK PASSED in Chromium, Firefox and WebKit; 73 cargo tests (12 boundary, 8 copy) |
+| `python3 scripts/break_tests.py` | 7 of 7 breaks caught (2 CSP, 2 copy, 3 browser) |
+| `./scripts/prove-privacy.sh` | PRIVACY PROOF PASSED: P1 (own file with data in the query) caught by the after-ready check; P2 (save under a new key) by the storage allowlist; P3 (off-origin image) and P5 (off-origin POST) by the CSP-violation check; P4 (`sendBeacon`) by the boundary test and the browser check |
+| axe audit, local `index.html` | 0 violations |
+
 ## The curriculum packet (Sam's `packet_alley_curriculum_packet`)
 
 An evidence-first redesign handoff. **Phase 1, the content layer, is applied and

@@ -1897,22 +1897,48 @@ function labels() {
   el("zoom").setAttribute("aria-label", t("zoom_label"));
 }
 
+// Every picture the page draws is fetched before it reports ready, and the
+// images are kept so the browser serves later uses from memory: the privacy
+// check fails on any request after ready (kits/privacy).
+const art = [];
 function preloadArt() {
-  const kinds = ["host", "printer", "server", "hub", "switch", "router"];
-  const backs = ["block", "town", "wires"];
-  for (const k of kinds) {
-    const img = new Image();
-    img.src = "art/icons/" + k + ".png";
+  return Promise.all(
+    display.art.map(
+      (name) =>
+        new Promise((done) => {
+          const img = new Image();
+          img.onload = done;
+          img.onerror = done;
+          img.src = "art/" + name + ".png";
+          art.push(img);
+        }),
+    ),
+  );
+}
+
+// When a device policy blocks WebAssembly (Chrome's JavaScript JIT setting
+// set to block, for one), init() fails and nothing else can run. The page
+// then says what is blocked, in words it fetches with plain JavaScript.
+async function blocked() {
+  try {
+    copy = JSON.parse(await fetch("data/copy.json").then((r) => r.text()));
+  } catch (e) {
+    copy = {};
   }
-  for (const b of backs) {
-    const img = new Image();
-    img.src = "art/backdrops/" + b + ".png";
-  }
+  el("blocked").textContent = t("blocked_wasm") || "This device blocks WebAssembly, which Packet Alley runs on.";
+  el("blocked").hidden = false;
+  document.body.dataset.mode = "blocked";
+  document.body.dataset.ready = "true";
 }
 
 async function start() {
   try {
     await init();
+  } catch (e) {
+    await blocked();
+    return;
+  }
+  try {
     const [levels, copyText, displayText] = await Promise.all([
       fetch("data/levels.json").then((r) => r.text()),
       fetch("data/copy.json").then((r) => r.text()),
@@ -1925,7 +1951,7 @@ async function start() {
     labels();
     wire();
     renderMenu();
-    preloadArt();
+    await preloadArt();
   } catch (e) {
     el("message").textContent = (copy && copy.err_load) || "The game could not start.";
     document.body.dataset.ready = "true";

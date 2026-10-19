@@ -7,5 +7,10 @@
     {"label": "4×", "ms_per_tick": 200}
   ],
   "default_speed": 2,
-  "effect_ms": 650
+  "effect_ms": 650,
+  "_art": "Every picture the page draws, fetched before the page reports ready, so the privacy check can require that nothing is requested after it (kits/privacy, SECOND-ORDER row 40).",
+  "art": [
+    "icons/host", "icons/printer", "icons/server", "icons/hub", "icons/switch", "icons/router",
+    "backdrops/block", "backdrops/town", "backdrops/wires", "backdrops/noodle-shop", "backdrops/koenigsberg"
+  ]
 }

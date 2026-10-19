@@ -88,6 +88,10 @@ Sam approved in advance: a public GitHub repository, GitHub Pages deploys from
 it, and deploying the website listing when the game is ready ("don't stop till
 its deployed").
 
+A later grant (Sam, 2026-10-19), word for word: "ok execute all of the changes you recommend to increase feasabilitiy, i approve make deploy in all builder made repos, and make deploy in the website, keep track of all changes made in the design log here". Scope: this run,
+for the changes in TRIAGE T1; it covers pushing them to `main` (which deploys
+to Pages through the checked workflow) and the website deploy.
+
 ## Allowed core dependencies
 
 `serde`, `serde_json` (reference default).

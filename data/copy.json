@@ -292,5 +292,6 @@
   "err_build_water": "A cable can't cross the water — run it over a bridge.",
   "err_build_water_place": "You can't place a machine on the water — put it on the land.",
   "err_build_two_hosts": "A router reaches one machine per block. Put both machines on a switch, then wire the switch to the router.",
-  "err_load": "The game data could not be loaded."
+  "err_load": "The game data could not be loaded.",
+  "blocked_wasm": "Packet Alley cannot start on this device: its settings block WebAssembly, the part of the browser the game runs on. A school's IT team can allow WebAssembly for sgilson7.github.io (in Chrome, the JavaScript JIT setting)."
 }

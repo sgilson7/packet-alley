@@ -385,6 +385,9 @@ button.ghost.small { padding: 3px 9px; font-size: 0.8rem; border-width: 2px; }
 .layer td.k { color: var(--muted); width: 42%; }
 .layer td.v { font-variant-numeric: tabular-nums; }
 
+/* The plain message a blocked device sees instead of a blank page. */
+.blocked { max-width: 40em; margin: 2em auto; padding: 1em 1.25em; background: var(--cream); color: var(--ink); border: 2px solid var(--ink); border-radius: 8px; font-size: 1.1em; line-height: 1.5; }
+
 .message { text-align: center; color: var(--bad); font-weight: 600; min-height: 1.4em; }
 
 /* On a roomy screen the level is a fixed-height app shell: the whole level
