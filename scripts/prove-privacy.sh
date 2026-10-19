@@ -5,7 +5,7 @@
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PY="${BUILDER_PYTHON:-$ROOT/.venv/bin/python}"
-WORK="$(mktemp -d)"
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/prove-privacy.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
 
 leaks=$(python3 "$ROOT/scripts/plant_leak.py" --list) || { echo "could not list the leaks"; exit 1; }

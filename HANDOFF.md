@@ -84,6 +84,10 @@ blank page (row 43). New: `GLOSSARY.md`, `TONE.md`, `crates/core/tests/copy.rs`
 | `python3 scripts/break_tests.py` | 7 of 7 breaks caught (2 CSP, 2 copy, 3 browser) |
 | `./scripts/prove-privacy.sh` | PRIVACY PROOF PASSED: P1 (own file with data in the query) caught by the after-ready check; P2 (save under a new key) by the storage allowlist; P3 (off-origin image) and P5 (off-origin POST) by the CSP-violation check; P4 (`sendBeacon`) by the boundary test and the browser check |
 | axe audit, local `index.html` | 0 violations |
+| Deploy of 7ffb701 (Actions run 39312237635) | check and deploy: success |
+| `BUILDER_ORIGIN=https://sgilson7.github.io/packet-alley tests/browser/check.py` | PASSED in Chromium, Firefox and WebKit against the live site |
+| axe audit, live `https://sgilson7.github.io/packet-alley/` | 0 violations |
+| Follow-up: ready heard from a console line, not a binding (row 42); `prove-privacy.sh` honours `TMPDIR` | `./scripts/check.sh` PASSED in three engines; breaks 7 of 7; PRIVACY PROOF PASSED again |
 
 ## The curriculum packet (Sam's `packet_alley_curriculum_packet`)
 

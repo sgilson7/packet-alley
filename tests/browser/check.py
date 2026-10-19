@@ -54,12 +54,15 @@ STORAGE_KEYS = {"packet-alley-save"}
 # Pages the after-ready rule covers (the privacy kit applies to every page).
 PRIVATE_PAGES = None
 
-# Reports the moment a document sets <body data-ready="true">, so a page that
-# reloads itself starts a new before-ready phase.
+# Reports, as a console.debug line, the moment a document sets
+# <body data-ready="true">, so a page that reloads itself starts a new
+# before-ready phase. (A Playwright binding here made pointer clicks hang in
+# Chromium; a console line is a plain event.)
+READY_MARK = "builder: the page reported ready"
 READY_SCRIPT = (
     "new MutationObserver(() => {"
     " if (!window.__builderReadySent && document.body && document.body.dataset.ready === 'true') {"
-    " window.__builderReadySent = true; window.__builderReady(); } })"
+    " window.__builderReadySent = true; console.debug('" + READY_MARK + "'); } })"
     ".observe(document, {subtree: true, attributes: true, attributeFilter: ['data-ready']});"
 )
 
@@ -90,11 +93,11 @@ def watch_after_ready(context, page):
     state = {"ready": False, "doc": "", "test_nav": False}
     after = []
 
-    def on_ready(source):
-        if source["frame"] == page.main_frame:
+    def on_ready(message):
+        if message.type == "debug" and message.text == READY_MARK:
             state["ready"] = True
 
-    context.expose_binding("__builderReady", on_ready)
+    page.on("console", on_ready)
     context.add_init_script(READY_SCRIPT)
 
     def on_request(r):
